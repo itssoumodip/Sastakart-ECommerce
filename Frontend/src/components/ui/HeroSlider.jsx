@@ -31,21 +31,20 @@ const HeroSlider = ({ slides }) => {
   const goToSlide = (slideIndex) => {
     setCurrentIndex(slideIndex);
   };
-  
-  // Define styles
+    // Define styles - updated for QuickCart-like minimalist design
   const sliderStyles = {
     container: {
       position: 'relative',
-      height: '400px',
+      height: '320px',
       width: '100%',
       '@media (min-width: 640px)': {
-        height: '450px',
+        height: '360px',
       },
       '@media (min-width: 768px)': {
-        height: '500px',
+        height: '400px',
       },
       '@media (min-width: 1024px)': {
-        height: '600px',
+        height: '480px',
       },
     },
     slideContainer: {
@@ -68,69 +67,75 @@ const HeroSlider = ({ slides }) => {
     overlay: {
       position: 'absolute',
       inset: '0',
-      backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    },
-    contentContainer: {
+      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    },    contentContainer: {
       position: 'absolute',
       inset: '0',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
-      padding: '0 24px',
+      padding: '0 1.5rem',
       color: '#ffffff',
-      maxWidth: '1024px',
+      maxWidth: '90rem',
       margin: '0 auto',
       '@media (min-width: 640px)': {
-        padding: '0 48px',
+        padding: '0 2rem',
       },
       '@media (min-width: 768px)': {
-        padding: '0 64px',
+        padding: '0 3rem',
       },
     },
     heading: {
-      fontSize: '1.875rem',
-      fontWeight: '700',
+      fontSize: '1.75rem',
+      fontWeight: '600',
       marginBottom: '0.75rem',
+      maxWidth: '28rem',
       '@media (min-width: 640px)': {
-        fontSize: '2.25rem',
-        marginBottom: '1rem',
+        fontSize: '2rem',
+        marginBottom: '0.75rem',
       },
       '@media (min-width: 768px)': {
-        fontSize: '3rem',
+        fontSize: '2.5rem',
       },
     },
     description: {
-      fontSize: '1rem',
-      marginBottom: '1.25rem',
-      maxWidth: '32rem',
+      fontSize: '0.95rem',
+      marginBottom: '1rem',
+      maxWidth: '26rem',
+      opacity: '0.9',
       '@media (min-width: 640px)': {
-        fontSize: '1.125rem',
+        fontSize: '1rem',
       },
       '@media (min-width: 768px)': {
-        fontSize: '1.25rem',
-        marginBottom: '1.5rem',
+        fontSize: '1.1rem',
+        marginBottom: '1.25rem',
       },
     },
     button: {
       backgroundColor: '#ffffff',
-      color: '#000000',
-      padding: '0.75rem 1.5rem',
-      borderRadius: '9999px',
+      color: '#111',
+      padding: '0.6rem 1.25rem',
+      borderRadius: '4px',
       fontWeight: '500',
+      fontSize: '0.9rem',
       display: 'inline-block',
-      transition: 'background-color 300ms ease, box-shadow 300ms ease',
-    },
-    arrowButton: {
+      transition: 'all 200ms ease',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    },    arrowButton: {
       position: 'absolute',
       top: '50%',
       transform: 'translateY(-50%)',
-      backgroundColor: 'rgba(255, 255, 255, 0.3)',
-      padding: '0.5rem',
-      borderRadius: '9999px',
+      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      padding: '0.4rem',
+      borderRadius: '50%',
       color: '#ffffff',
       cursor: 'pointer',
       zIndex: '10',
-      transition: 'background-color 300ms ease',
+      transition: 'all 200ms ease',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
     },
     leftArrow: {
       left: '1rem',
@@ -140,65 +145,72 @@ const HeroSlider = ({ slides }) => {
     },
     dotsContainer: {
       position: 'absolute',
-      bottom: '-24px',
+      bottom: '1rem',
       left: '0',
       right: '0',
     },
     dotsInner: {
       display: 'flex',
       justifyContent: 'center',
-      gap: '0.75rem',
+      gap: '0.5rem',
     },
     dot: (isActive) => ({
       width: isActive ? '1.5rem' : '0.5rem',
-      height: '0.5rem',
-      borderRadius: '9999px',
-      transition: 'all 300ms ease',
-      backgroundColor: isActive ? '#000000' : '#9ca3af',
+      height: '0.25rem',
+      transition: 'all 200ms ease',
+      backgroundColor: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.5)',
     }),
   };
 
   return (
     <div style={sliderStyles.container}>
-      {/* Slide container */}
-      <div style={sliderStyles.slideContainer}>
+      {/* Slide container */}      <div style={sliderStyles.slideContainer}>
         <AnimatePresence initial={false} mode="wait">
           <motion.div
             key={currentIndex}
             style={sliderStyles.slide}
-            initial={{ opacity: 0, x: 100 }}
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.7, ease: "easeInOut" }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
           >
             <div style={sliderStyles.slideBackground(slides[currentIndex].image)}>
               <div style={sliderStyles.overlay}></div>
               <div style={{...sliderStyles.contentContainer}}>
                 <motion.h1 
                   style={sliderStyles.heading}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
+                  transition={{ duration: 0.4, delay: 0.1 }}
                 >
                   {slides[currentIndex].title}
                 </motion.h1>
                 <motion.p 
                   style={sliderStyles.description}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
                 >
                   {slides[currentIndex].description}
                 </motion.p>
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
                 >
                   <a 
                     href={slides[currentIndex].buttonLink} 
                     style={sliderStyles.button}
-                    className="hover:bg-gray-100 hover:shadow-md"
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f0f0f0';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 2px 5px rgba(0,0,0,0.15)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ffffff';
+                      e.currentTarget.style.transform = 'none';
+                      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                    }}
                   >
                     {slides[currentIndex].buttonText}
                   </a>
@@ -212,21 +224,35 @@ const HeroSlider = ({ slides }) => {
       {/* Left Arrow */}
       <button
         style={{...sliderStyles.arrowButton, ...sliderStyles.leftArrow}}
-        className="hover:bg-opacity-60"
         onClick={goToPrevious}
         aria-label="Previous slide"
+        onMouseOver={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
+          e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+          e.currentTarget.style.transform = 'translateY(-50%)';
+        }}
       >
-        <FiChevronLeft size={24} />
+        <FiChevronLeft size={20} />
       </button>
 
       {/* Right Arrow */}
       <button
         style={{...sliderStyles.arrowButton, ...sliderStyles.rightArrow}}
-        className="hover:bg-opacity-60"
         onClick={goToNext}
         aria-label="Next slide"
+        onMouseOver={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
+          e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+          e.currentTarget.style.transform = 'translateY(-50%)';
+        }}
       >
-        <FiChevronRight size={24} />
+        <FiChevronRight size={20} />
       </button>
 
       {/* Dots */}

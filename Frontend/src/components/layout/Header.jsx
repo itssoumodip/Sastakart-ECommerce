@@ -41,46 +41,81 @@ const Header = () => {
       navigate(`/products?search=${encodeURIComponent(searchTerm)}`);
       setSearchTerm('');
     }
-  };
-  return (
+  };  return (
     <header 
       style={{
         position: 'sticky',
         top: 0,
         zIndex: 50,
         transition: 'all 0.3s ease',
-        backgroundColor: isScrolled ? '#ffffff' : 'transparent',
-        color: isScrolled ? '#000000' : '#ffffff',
-        boxShadow: isScrolled ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)' : 'none'
+        backgroundColor: '#ffffff',
+        color: '#000000',
+        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
       }}
-    >      <div style={{ maxWidth: '72rem', margin: '0 auto', padding: '0 1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 0' }}>
-          {/* Logo */}
-          <Link to="/" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-            <span style={{ color: isScrolled ? '#000000' : '#ffffff' }}>SHOP</span>
-            <span style={{ color: isScrolled ? '#6b7280' : '#d1d5db' }}>HUB</span>
+    >
+      {/* Top navigation bar - similar to QuickCart */}
+      <div style={{ 
+        borderBottom: '1px solid #f0f0f0',
+        backgroundColor: '#f8f8f8',
+        padding: '0.4rem 0',
+        fontSize: '0.75rem'
+      }}>
+        <div style={{ maxWidth: '90rem', margin: '0 auto', padding: '0 1.5rem' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div className="hidden md:block">
+              <span style={{ color: '#666' }}>Free shipping on orders over $50</span>
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              gap: '1rem'
+            }}>
+              <Link to="/help" style={{ color: '#666', textDecoration: 'none' }} 
+                onMouseOver={(e) => { e.target.style.color = '#333'; }}
+                onMouseOut={(e) => { e.target.style.color = '#666'; }}>
+                Help
+              </Link>
+              <Link to="/track-order" style={{ color: '#666', textDecoration: 'none' }}
+                onMouseOver={(e) => { e.target.style.color = '#333'; }}
+                onMouseOut={(e) => { e.target.style.color = '#666'; }}>
+                Track Order
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main header */}
+      <div style={{ maxWidth: '90rem', margin: '0 auto', padding: '0 1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 0' }}>          {/* Logo - QuickCart-style */}
+          <Link to="/" style={{ fontSize: '1.5rem', fontWeight: '600', textDecoration: 'none' }}>
+            <span style={{ color: '#222' }}>Quick</span>
+            <span style={{ color: '#ff4646' }}>Cart</span>
           </Link>
 
-          {/* Search Bar - Hidden on mobile */}
+          {/* Search Bar - QuickCart-style */}
           <form 
             onSubmit={handleSearch}
             style={{
               display: 'none',
               alignItems: 'center',
               flexGrow: 1,
-              maxWidth: '28rem',
+              maxWidth: '32rem',
               margin: '0 2rem',
-              backgroundColor: isScrolled ? 'rgba(243, 244, 246, 0.8)' : 'rgba(55, 65, 81, 0.2)',
-              borderRadius: '9999px',
+              backgroundColor: '#f5f5f5',
+              borderRadius: '4px',
               overflow: 'hidden',
-              transition: 'all 0.3s ease',
+              border: '1px solid #ebebeb',
             }}
             className="md:flex"
             onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = isScrolled ? 'rgba(243, 244, 246, 1)' : 'rgba(55, 65, 81, 0.3)';
+              e.currentTarget.style.borderColor = '#ddd';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = isScrolled ? 'rgba(243, 244, 246, 0.8)' : 'rgba(55, 65, 81, 0.2)';
+              e.currentTarget.style.borderColor = '#ebebeb';
             }}
           >
             <input
@@ -91,7 +126,9 @@ const Header = () => {
                 padding: '0.5rem 1rem',
                 backgroundColor: 'transparent',
                 outline: 'none',
-                color: isScrolled ? '#1f2937' : '#ffffff',
+                color: '#333',
+                border: 'none',
+                fontSize: '0.9rem'
               }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -99,99 +136,148 @@ const Header = () => {
             <button 
               type="submit" 
               style={{
-                padding: '0.5rem',
-                color: isScrolled ? '#4b5563' : '#ffffff',
-                transition: 'color 0.2s ease',
+                padding: '0.5rem 0.75rem',
+                color: '#666',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer'
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.color = isScrolled ? '#1f2937' : '#d1d5db';
+                e.currentTarget.style.color = '#333';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.color = isScrolled ? '#4b5563' : '#ffffff';
+                e.currentTarget.style.color = '#666';
               }}
               aria-label="Search"
             >
-              <FiSearch size={18} />
+              <FiSearch size={16} />
             </button>
-          </form>          {/* Navigation - Desktop */}
-          <nav className="md:flex" style={{ display: 'none', alignItems: 'center', gap: '1.5rem' }}>
+          </form>          {/* Navigation - Desktop QuickCart Style */}
+          <nav className="md:flex" style={{ display: 'none', alignItems: 'center', gap: '2rem' }}>
             <Link 
               to="/products" 
               style={{
-                fontSize: '0.875rem',
+                fontSize: '0.9rem',
                 transition: 'color 0.2s ease',
-                color: isScrolled ? 'inherit' : '#ffffff'
+                color: '#444',
+                textDecoration: 'none',
+                fontWeight: '500'
               }}
               onMouseOver={(e) => {
-                e.target.style.color = isScrolled ? '#4b5563' : '#d1d5db';
+                e.target.style.color = '#000';
               }}
               onMouseOut={(e) => {
-                e.target.style.color = isScrolled ? 'inherit' : '#ffffff';
+                e.target.style.color = '#444';
               }}
             >
-              Products
+              All Products
             </Link>
             <Link 
-              to="/wishlist" 
+              to="/deals" 
               style={{
-                position: 'relative',
+                fontSize: '0.9rem',
                 transition: 'color 0.2s ease',
-                color: isScrolled ? 'inherit' : '#ffffff'
+                color: '#444',
+                textDecoration: 'none',
+                fontWeight: '500'
               }}
               onMouseOver={(e) => {
-                e.target.style.color = isScrolled ? '#4b5563' : '#d1d5db';
+                e.target.style.color = '#000';
               }}
               onMouseOut={(e) => {
-                e.target.style.color = isScrolled ? 'inherit' : '#ffffff';
+                e.target.style.color = '#444';
               }}
             >
-              <FiHeart size={18} />
+              Deals
             </Link>
             <Link 
-              to="/cart" 
+              to="/new-arrivals" 
               style={{
-                position: 'relative',
+                fontSize: '0.9rem',
                 transition: 'color 0.2s ease',
-                color: isScrolled ? 'inherit' : '#ffffff'
+                color: '#444',
+                textDecoration: 'none',
+                fontWeight: '500'
               }}
               onMouseOver={(e) => {
-                e.target.style.color = isScrolled ? '#4b5563' : '#d1d5db';
+                e.target.style.color = '#000';
               }}
               onMouseOut={(e) => {
-                e.target.style.color = isScrolled ? 'inherit' : '#ffffff';
+                e.target.style.color = '#444';
               }}
             >
-              <FiShoppingCart size={18} />
-              {cartItemCount > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  top: '-0.5rem',
-                  right: '-0.5rem',
-                  backgroundColor: '#000000',
-                  color: '#ffffff',
-                  borderRadius: '9999px',
-                  width: '1rem',
-                  height: '1rem',
+              New Arrivals
+            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+              <Link 
+                to="/wishlist" 
+                style={{
+                  position: 'relative',
+                  transition: 'color 0.2s ease',
+                  color: '#444',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem'
-                }}>
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>            {isAuthenticated ? (
+                  alignItems: 'center'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.color = '#000';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.color = '#444';
+                }}
+              >
+                <FiHeart size={18} />
+              </Link>
+              <Link 
+                to="/cart" 
+                style={{
+                  position: 'relative',
+                  transition: 'color 0.2s ease',
+                  color: '#444',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.color = '#000';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.color = '#444';
+                }}
+              >
+                <FiShoppingCart size={18} />
+                {cartItemCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-0.4rem',
+                    right: '-0.4rem',
+                    backgroundColor: '#ff4646',
+                    color: '#ffffff',
+                    borderRadius: '50%',
+                    width: '1rem',
+                    height: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.7rem',
+                    fontWeight: '600'
+                  }}>
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
+            </div>            {isAuthenticated ? (
               <Link 
                 to="/profile" 
                 style={{
                   transition: 'color 0.2s ease',
-                  color: isScrolled ? 'inherit' : '#ffffff'
+                  color: '#444',
+                  display: 'flex',
+                  alignItems: 'center'
                 }}
                 onMouseOver={(e) => {
-                  e.target.style.color = isScrolled ? '#4b5563' : '#d1d5db';
+                  e.target.style.color = '#000';
                 }}
                 onMouseOut={(e) => {
-                  e.target.style.color = isScrolled ? 'inherit' : '#ffffff';
+                  e.target.style.color = '#444';
                 }}
               >
                 <FiUser size={18} />
@@ -200,24 +286,23 @@ const Header = () => {
               <Link 
                 to="/login" 
                 style={{
-                  padding: '0.5rem 1rem',
-                  borderRadius: '9999px',
-                  fontSize: '0.875rem',
+                  padding: '0.4rem 1rem',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
                   fontWeight: '500',
-                  border: isScrolled ? '1px solid #000000' : '1px solid #ffffff',
-                  color: isScrolled ? '#000000' : '#ffffff',
+                  backgroundColor: '#ff4646',
+                  color: '#ffffff',
                   transition: 'all 0.2s ease',
+                  textDecoration: 'none'
                 }}
                 onMouseOver={(e) => {
-                  e.target.style.backgroundColor = isScrolled ? '#000000' : '#ffffff';
-                  e.target.style.color = isScrolled ? '#ffffff' : '#000000';
+                  e.target.style.backgroundColor = '#e03e3e';
                 }}
                 onMouseOut={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = isScrolled ? '#000000' : '#ffffff';
+                  e.target.style.backgroundColor = '#ff4646';
                 }}
               >
-                Login
+                Login / Sign up
               </Link>
             )}
           </nav>

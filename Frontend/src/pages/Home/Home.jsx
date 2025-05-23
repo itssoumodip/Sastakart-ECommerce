@@ -147,106 +147,137 @@ const Home = () => {
   useEffect(() => {
     // Uncomment when backend is ready
     // dispatch(fetchProducts({}));
-  }, [dispatch]);
-    return (
+  }, [dispatch]);    return (
     <div style={{ animation: 'fadeIn 0.6s ease-in-out' }}>
-      {/* Hero Slider with reduced height for more minimalism */}
-      <HeroSlider slides={heroSlides} />
+      {/* Top promotional banner - like QuickCart */}
+      <div style={{
+        backgroundColor: '#ff4646',
+        color: 'white',
+        textAlign: 'center',
+        padding: '0.5rem',
+        fontSize: '0.9rem',
+        fontWeight: '500'
+      }}>
+        <div style={{ maxWidth: '90rem', margin: '0 auto' }}>
+          Summer Sale! Use code <strong>SUMMER25</strong> for 25% off all products
+        </div>
+      </div>
       
-      {/* Featured Categories with improved spacing and layout */}
-      <section style={{ backgroundColor: '#ffffff', padding: '4rem 0' }}>
-        <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 1rem' }}>
-          <motion.h2 
+      {/* Hero Slider with minimalist design */}
+      <HeroSlider slides={heroSlides} />
+        {/* Product Categories with QuickCart-like minimal design */}
+      <section style={{ backgroundColor: '#f9fafb', padding: '3rem 0 2rem' }}>
+        <div style={{ maxWidth: '90rem', margin: '0 auto', padding: '0 1.5rem' }}>
+          <motion.div 
             style={{ 
-              fontSize: '1.5rem', 
-              fontWeight: '700', 
-              marginBottom: '2.5rem', 
-              textAlign: 'center'
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.5rem'
             }}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
           >
-            Explore Categories
-          </motion.h2>
+            <h2 style={{ 
+              fontSize: '1.25rem', 
+              fontWeight: '600',
+              color: '#333'
+            }}>
+              Shop by Category
+            </h2>
+            <Link 
+              to="/products" 
+              style={{ display: 'flex', alignItems: 'center', color: '#555', fontWeight: '500', fontSize: '0.9rem' }}
+              onMouseOver={(e) => {
+                e.target.style.color = '#000';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.color = '#555';
+              }}
+            >
+              View All <FiArrowRight style={{ marginLeft: '0.25rem', transition: 'transform 200ms ease' }} />
+            </Link>
+          </motion.div>
           
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: 'repeat(2, 1fr)', 
-            gap: '1.5rem',
-            '@media (min-width: 768px)': {
-              gridTemplateColumns: 'repeat(4, 1fr)'
-            }
+            gap: '1rem',
+            '@media (min-width: 640px)': { gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' },
+            '@media (min-width: 768px)': { gridTemplateColumns: 'repeat(4, 1fr)' },
+            '@media (min-width: 1024px)': { gridTemplateColumns: 'repeat(6, 1fr)' }
           }}>
             {featuredCategories.map((category, index) => (
               <motion.div
                 key={index}
-                whileHover={{ y: -5 }}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
               >
                 <Link 
                   to={category.link} 
                   style={{
-                    display: 'block',
-                    position: 'relative',
-                    height: '10rem',
-                    borderRadius: '0.5rem',
-                    overflow: 'hidden',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                    transition: 'box-shadow 300ms ease',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textDecoration: 'none',
+                    transition: 'transform 0.2s ease',
                   }}
-                  className="hover:shadow-md sm:h-56"
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'none';
+                  }}
                 >
-                  <img 
-                    src={category.image} 
-                    alt={category.name} 
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
-                  />
                   <div style={{
-                    position: 'absolute',
-                    inset: '0',
-                    backgroundColor: 'rgba(0,0,0,0.2)',
-                    transition: 'background-color 300ms ease',
+                    width: '100%',
+                    aspectRatio: '1/1',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    backgroundColor: '#fff',
+                    border: '1px solid #f0f0f0',
+                    marginBottom: '0.5rem',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  className="hover:bg-opacity-30">
-                    <span style={{
-                      color: '#ffffff',
-                      fontSize: '1.25rem',
-                      fontWeight: '500',
-                      padding: '0.5rem 1rem',
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                      borderRadius: '9999px'
-                    }}>
-                      {category.name}
-                    </span>
+                    justifyContent: 'center',
+                  }}>
+                    <img 
+                      src={category.image} 
+                      alt={category.name} 
+                      style={{
+                        width: '80%',
+                        height: '80%',
+                        objectFit: 'contain'
+                      }}
+                    />
                   </div>
+                  <span style={{
+                    color: '#333',
+                    fontSize: '0.85rem',
+                    fontWeight: '500',
+                    textAlign: 'center'
+                  }}>
+                    {category.name}
+                  </span>
                 </Link>
               </motion.div>
             ))}
           </div>
         </div>
-      </section>
-        {/* Featured Products with cleaner design */}
-      <section style={{ backgroundColor: '#f9fafb', padding: '4rem 0' }}>
-        <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+      </section>{/* Featured Products with QuickCart-style grid layout */}
+      <section style={{ backgroundColor: '#ffffff', padding: '3rem 0' }}>
+        <div style={{ maxWidth: '90rem', margin: '0 auto', padding: '0 1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <motion.h2 
-              style={{ fontSize: '1.5rem', fontWeight: '700' }}
+              style={{ fontSize: '1.25rem', fontWeight: '600', color: '#333' }}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.5 }}
             >
               Featured Products
             </motion.h2>
@@ -254,44 +285,53 @@ const Home = () => {
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.5 }}
             >
               <Link 
                 to="/products" 
-                style={{ display: 'flex', alignItems: 'center', color: '#000000', fontWeight: '500' }}
-                className="hover:text-gray-700 group"
+                style={{ display: 'flex', alignItems: 'center', color: '#555', fontWeight: '500', fontSize: '0.9rem' }}
+                onMouseOver={(e) => {
+                  e.target.style.color = '#000';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.color = '#555';
+                }}
               >
-                View All <FiArrowRight style={{ marginLeft: '0.5rem', transition: 'transform 300ms ease' }} className="group-hover:translate-x-1" />
+                View All <FiArrowRight style={{ marginLeft: '0.25rem', transition: 'transform 200ms ease' }} className="group-hover:translate-x-1" />
               </Link>
             </motion.div>
           </div>
           
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem 0' }}>
               <div style={{ 
-                height: '3rem', 
-                width: '3rem', 
-                borderRadius: '9999px',
-                borderTop: '2px solid #000000',
-                borderBottom: '2px solid #000000',
-              }} className="animate-spin"></div>
+                height: '2.5rem', 
+                width: '2.5rem', 
+                borderRadius: '50%',
+                borderTop: '2px solid #333',
+                borderRight: '2px solid transparent',
+                borderBottom: '2px solid #333',
+                borderLeft: '2px solid transparent',
+                animation: 'spin 1s linear infinite'
+              }}></div>
             </div>
           ) : (
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: '1fr', 
-              gap: '2rem',
-              '@media (min-width: 640px)': { gridTemplateColumns: 'repeat(2, 1fr)' },
-              '@media (min-width: 768px)': { gridTemplateColumns: 'repeat(3, 1fr)' },
-              '@media (min-width: 1024px)': { gridTemplateColumns: 'repeat(4, 1fr)' }
+              gridTemplateColumns: 'repeat(2, 1fr)', 
+              gap: '1rem',
+              '@media (min-width: 640px)': { gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' },
+              '@media (min-width: 768px)': { gridTemplateColumns: 'repeat(4, 1fr)' },
+              '@media (min-width: 1024px)': { gridTemplateColumns: 'repeat(5, 1fr)' },
+              '@media (min-width: 1280px)': { gridTemplateColumns: 'repeat(6, 1fr)' }
             }}>
-              {mockProducts.slice(0, 8).map((product, index) => (
+              {mockProducts.slice(0, 12).map((product, index) => (
                 <motion.div
                   key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  transition={{ duration: 0.3, delay: index * 0.04 }}
                 >
                   <ProductCard product={product} />
                 </motion.div>
@@ -300,77 +340,166 @@ const Home = () => {
           )}
         </div>
       </section>
-      
-      {/* Minimalist Banner Section */}
-      <section style={{ padding: '5rem 0' }}>
-        <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 1rem' }}>
-          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '0.75rem' }}>
-            <div style={{ 
-              position: 'absolute', 
-              inset: '0', 
-              background: 'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
-              zIndex: '10'
-            }}></div>
-            <img 
-              src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&q=80" 
-              alt="Spring Collection" 
+        {/* QuickCart-style Banner Section */}
+      <section style={{ padding: '3rem 0 2rem' }}>
+        <div style={{ maxWidth: '90rem', margin: '0 auto', padding: '0 1.5rem' }}>
+          <div style={{ 
+            display: 'grid',
+            gridTemplateColumns: '1fr',
+            gap: '1rem',
+            '@media (min-width: 768px)': { 
+              gridTemplateColumns: '1fr 1fr',
+            }
+          }}>
+            {/* Banner 1 */}
+            <motion.div 
               style={{ 
-                width: '100%', 
-                height: '20rem',
-                objectFit: 'cover',
-                '@media (min-width: 768px)': { height: '24rem' }
+                position: 'relative', 
+                overflow: 'hidden', 
+                borderRadius: '6px',
+                height: '200px',
+                border: '1px solid #f0f0f0'
               }}
-            />
-            <div style={{ position: 'absolute', inset: '0', zIndex: '20', display: 'flex', alignItems: 'center' }}>
-              <div style={{ padding: '0 2rem', maxWidth: '32rem', '@media (min-width: 768px)': { padding: '0 4rem' } }}>
-                <motion.h2 
-                  style={{ 
-                    fontSize: '1.875rem',
-                    fontWeight: '700',
-                    marginBottom: '1rem',
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              whileHover={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+            >
+              <div style={{ 
+                position: 'absolute', 
+                inset: '0', 
+                background: 'linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%)',
+                zIndex: '10'
+              }}></div>
+              <img 
+                src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&q=80" 
+                alt="Summer Collection" 
+                style={{ 
+                  width: '100%', 
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
+              <div style={{ position: 'absolute', inset: '0', zIndex: '20', display: 'flex', alignItems: 'center' }}>
+                <div style={{ padding: '0 1.5rem', maxWidth: '18rem' }}>
+                  <h2 style={{ 
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    marginBottom: '0.5rem',
                     color: '#ffffff',
-                    '@media (min-width: 768px)': { fontSize: '2.25rem' }
-                  }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6 }}
-                >
-                  Spring Collection
-                </motion.h2>
-                <motion.p 
-                  style={{ fontSize: '1.125rem', marginBottom: '1.5rem', color: '#f3f4f6' }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                >
-                  Discover our newest arrivals with fresh styles perfect for the season.
-                </motion.p>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
+                  }}>
+                    Summer Collection
+                  </h2>
+                  <p style={{ 
+                    fontSize: '0.85rem', 
+                    marginBottom: '1rem', 
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    Fresh summer styles with up to 40% off
+                  </p>
                   <Link 
-                    to="/products?collection=spring" 
+                    to="/products?collection=summer" 
                     style={{
                       display: 'inline-block',
                       backgroundColor: '#ffffff',
-                      color: '#000000',
-                      padding: '0.75rem 2rem',
-                      borderRadius: '9999px',
+                      color: '#333',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
                       fontWeight: '500',
-                      transition: 'background-color 300ms ease'
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s ease'
                     }}
-                    className="hover:bg-gray-100 hover:shadow-md"
+                    onMouseOver={(e) => {
+                      e.target.style.backgroundColor = '#f0f0f0';
+                      e.target.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.backgroundColor = '#ffffff';
+                      e.target.style.transform = 'none';
+                    }}
                   >
-                    Explore Collection
+                    Shop Now
                   </Link>
-                </motion.div>
+                </div>
               </div>
-            </div>
+            </motion.div>
+
+            {/* Banner 2 */}
+            <motion.div 
+              style={{ 
+                position: 'relative', 
+                overflow: 'hidden', 
+                borderRadius: '6px',
+                height: '200px',
+                border: '1px solid #f0f0f0'
+              }}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              whileHover={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+            >
+              <div style={{ 
+                position: 'absolute', 
+                inset: '0', 
+                background: 'linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%)',
+                zIndex: '10'
+              }}></div>
+              <img 
+                src="https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&q=80" 
+                alt="Tech Gadgets" 
+                style={{ 
+                  width: '100%', 
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
+              <div style={{ position: 'absolute', inset: '0', zIndex: '20', display: 'flex', alignItems: 'center' }}>
+                <div style={{ padding: '0 1.5rem', maxWidth: '18rem' }}>
+                  <h2 style={{ 
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    marginBottom: '0.5rem',
+                    color: '#ffffff',
+                  }}>
+                    Tech Gadgets
+                  </h2>
+                  <p style={{ 
+                    fontSize: '0.85rem', 
+                    marginBottom: '1rem', 
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    Latest electronics at special prices
+                  </p>
+                  <Link 
+                    to="/products?category=electronics" 
+                    style={{
+                      display: 'inline-block',
+                      backgroundColor: '#ffffff',
+                      color: '#333',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      fontWeight: '500',
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.backgroundColor = '#f0f0f0';
+                      e.target.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.backgroundColor = '#ffffff';
+                      e.target.style.transform = 'none';
+                    }}
+                  >
+                    Shop Now
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>

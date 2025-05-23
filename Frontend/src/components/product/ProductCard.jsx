@@ -20,126 +20,152 @@ const ProductCard = ({ product }) => {
     e.stopPropagation();
     dispatch(addToWishlist(product));
   };
-  
-  // Product card styles
+  // Product card styles - updated to match QuickCart reference
   const cardStyles = {
     container: {
       backgroundColor: '#ffffff',
-      borderRadius: '0.75rem',
+      borderRadius: '0.5rem',
       overflow: 'hidden',
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      position: 'relative'
+      position: 'relative',
+      aspectRatio: '1/1.1', // Making the card even more square-like, closer to QuickCart reference
+      maxWidth: '100%',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+      border: '1px solid #f0f0f0',
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
     },
     imageContainer: {
       position: 'relative',
-      height: '240px',
+      aspectRatio: '1/1', // Perfect square for the image area
       overflow: 'hidden',
-      backgroundColor: '#f3f4f6'
-    },
-    image: {
+      backgroundColor: '#f8f8f8'
+    },    image: {
       width: '100%',
       height: '100%',
-      objectFit: 'cover',
-      transition: 'transform 700ms ease',
+      objectFit: 'contain',
+      transition: 'transform 400ms ease',
+      padding: '0.5rem'
     },
     discountBadge: {
       position: 'absolute',
-      top: '12px',
-      left: '12px',
-      backgroundColor: '#000000',
+      top: '8px',
+      left: '8px',
+      backgroundColor: '#ff4646',
       color: '#ffffff',
-      padding: '4px 8px',
-      borderRadius: '9999px',
-      fontSize: '0.75rem',
-      fontWeight: '500',
+      padding: '2px 6px',
+      borderRadius: '4px',
+      fontSize: '0.7rem',
+      fontWeight: '600',
     },
     wishlistButton: {
       position: 'absolute',
-      top: '12px',
-      right: '12px',
-      padding: '8px',
+      top: '8px',
+      right: '8px',
+      padding: '6px',
       backgroundColor: '#ffffff',
       color: '#000000',
-      borderRadius: '9999px',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      borderRadius: '50%',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
       opacity: 0,
-      transition: 'opacity 300ms ease, box-shadow 300ms ease',
+      transition: 'opacity 200ms ease, transform 200ms ease',
     },
     contentContainer: {
-      padding: '16px',
+      padding: '0.75rem',
+      display: 'flex',
+      flexDirection: 'column',
+      flexGrow: 0,
+      justifyContent: 'space-between',
+      borderTop: '1px solid #f0f0f0'
     },
     category: {
-      color: '#6b7280',
-      fontSize: '0.75rem',
+      color: '#808080',
+      fontSize: '0.65rem',
       fontWeight: '500',
       textTransform: 'uppercase',
       letterSpacing: '0.05em',
-      marginBottom: '4px',
+      marginBottom: '2px',
     },
     title: {
-      fontSize: '1rem',
+      fontSize: '0.85rem',
       fontWeight: '500',
-      height: '3rem',
+      height: '2.2rem',
       display: '-webkit-box',
       WebkitLineClamp: '2',
       WebkitBoxOrient: 'vertical',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-    },
-    priceContainer: {
+      marginBottom: '4px',
+      color: '#333'
+    },    priceContainer: {
       display: 'flex',
       alignItems: 'baseline',
-      marginTop: '8px',
-      marginBottom: '4px',
+      marginTop: '4px',
+      marginBottom: '6px',
     },
     currentPrice: {
-      fontSize: '1rem',
-      fontWeight: '600',
+      fontSize: '0.9rem',
+      fontWeight: '700',
+      color: '#111'
     },
     originalPrice: {
-      fontSize: '0.75rem',
-      color: '#9ca3af',
+      fontSize: '0.65rem',
+      color: '#999',
       textDecoration: 'line-through',
-      marginLeft: '8px',
+      marginLeft: '6px',
     },
     ratingContainer: {
       display: 'flex',
       alignItems: 'center',
-      marginTop: '4px',
+      marginBottom: '8px',
     },
     reviewCount: {
-      fontSize: '0.75rem',
-      color: '#6b7280',
+      fontSize: '0.65rem',
+      color: '#808080',
       marginLeft: '4px',
     },
     addToCartButton: {
       width: '100%',
-      backgroundColor: '#000000',
-      color: '#ffffff',
-      padding: '12px 0',
-      fontSize: '0.875rem',
-      fontWeight: '500',
+      backgroundColor: '#f8f8f8',
+      color: '#333',
+      padding: '8px 0',
+      fontSize: '0.75rem',
+      fontWeight: '600',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      transition: 'background-color 300ms ease',
+      transition: 'background-color 200ms ease, color 200ms ease',
+      border: 'none',
+      borderTop: '1px solid #f0f0f0',
+      cursor: 'pointer',
+      marginTop: 'auto', // Push button to bottom
     },
     cartIcon: {
-      marginRight: '8px'
+      marginRight: '6px',
+      fontSize: '0.8rem'
     }
   };
-  
   return (
-    <div className="product-card group" style={cardStyles.container}>
-      <Link to={`/product/${product.id}`} style={{ display: 'block', flexGrow: 1 }}>
+    <div className="product-card group" style={cardStyles.container} onMouseOver={(e) => {
+      e.currentTarget.style.transform = 'translateY(-4px)';
+      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+    }} onMouseOut={(e) => {
+      e.currentTarget.style.transform = 'none';
+      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+    }}>
+      <Link to={`/product/${product.id}`} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, textDecoration: 'none', color: 'inherit' }}>
         <div style={cardStyles.imageContainer}>
           <img 
             src={product.image} 
             alt={product.name} 
             style={cardStyles.image}
-            className="group-hover:scale-105" // Keep this Tailwind class as it needs hover state
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'none';
+            }}
           />
           {product.discount > 0 && (
             <div style={cardStyles.discountBadge}>
@@ -148,14 +174,25 @@ const ProductCard = ({ product }) => {
           )}
           
           {/* Quick actions that appear on hover */}
-          <div style={cardStyles.wishlistButton} className="group-hover:opacity-100 hover:shadow-lg">
+          <div 
+            style={cardStyles.wishlistButton} 
+            className="group-hover:opacity-100"
+            onMouseOver={(e) => {
+              e.currentTarget.style.opacity = '1';
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.opacity = '0';
+              e.currentTarget.style.transform = 'none';
+            }}
+          >
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={handleAddToWishlist}
               aria-label="Add to wishlist"
-              style={{ background: 'transparent', border: 'none' }}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
             >
-              <FiHeart size={18} />
+              <FiHeart size={14} />
             </motion.button>
           </div>
         </div>
@@ -182,11 +219,18 @@ const ProductCard = ({ product }) => {
         </div>
       </Link>
       
-      {/* Fixed add to cart button */}
+      {/* Add to cart button */}
       <motion.button
         whileTap={{ scale: 0.97 }}
         style={cardStyles.addToCartButton}
-        className="hover:bg-gray-900" // Keep this Tailwind class for hover state
+        onMouseOver={(e) => {
+          e.currentTarget.style.backgroundColor = '#f0f0f0';
+          e.currentTarget.style.color = '#000';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.backgroundColor = '#f8f8f8';
+          e.currentTarget.style.color = '#333';
+        }}
         onClick={handleAddToCart}
       >
         <FiShoppingCart style={cardStyles.cartIcon} /> Add to Cart
