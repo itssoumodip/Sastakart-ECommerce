@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { FiShoppingCart, FiHeart } from 'react-icons/fi';
+import { FiShoppingCart, FiHeart, FiStar } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { addToCart } from '../../store/cartSlice';
 import { addToWishlist } from '../../store/wishlistSlice';
-import Rating from '../ui/Rating';
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
@@ -20,222 +19,105 @@ const ProductCard = ({ product }) => {
     e.stopPropagation();
     dispatch(addToWishlist(product));
   };
-  // Product card styles - updated to match QuickCart reference
-  const cardStyles = {
-    container: {
-      backgroundColor: '#ffffff',
-      borderRadius: '0.5rem',
-      overflow: 'hidden',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      position: 'relative',
-      aspectRatio: '1/1.1', // Making the card even more square-like, closer to QuickCart reference
-      maxWidth: '100%',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-      border: '1px solid #f0f0f0',
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-    },
-    imageContainer: {
-      position: 'relative',
-      aspectRatio: '1/1', // Perfect square for the image area
-      overflow: 'hidden',
-      backgroundColor: '#f8f8f8'
-    },    image: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'contain',
-      transition: 'transform 400ms ease',
-      padding: '0.5rem'
-    },
-    discountBadge: {
-      position: 'absolute',
-      top: '8px',
-      left: '8px',
-      backgroundColor: '#ff4646',
-      color: '#ffffff',
-      padding: '2px 6px',
-      borderRadius: '4px',
-      fontSize: '0.7rem',
-      fontWeight: '600',
-    },
-    wishlistButton: {
-      position: 'absolute',
-      top: '8px',
-      right: '8px',
-      padding: '6px',
-      backgroundColor: '#ffffff',
-      color: '#000000',
-      borderRadius: '50%',
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-      opacity: 0,
-      transition: 'opacity 200ms ease, transform 200ms ease',
-    },
-    contentContainer: {
-      padding: '0.75rem',
-      display: 'flex',
-      flexDirection: 'column',
-      flexGrow: 0,
-      justifyContent: 'space-between',
-      borderTop: '1px solid #f0f0f0'
-    },
-    category: {
-      color: '#808080',
-      fontSize: '0.65rem',
-      fontWeight: '500',
-      textTransform: 'uppercase',
-      letterSpacing: '0.05em',
-      marginBottom: '2px',
-    },
-    title: {
-      fontSize: '0.85rem',
-      fontWeight: '500',
-      height: '2.2rem',
-      display: '-webkit-box',
-      WebkitLineClamp: '2',
-      WebkitBoxOrient: 'vertical',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      marginBottom: '4px',
-      color: '#333'
-    },    priceContainer: {
-      display: 'flex',
-      alignItems: 'baseline',
-      marginTop: '4px',
-      marginBottom: '6px',
-    },
-    currentPrice: {
-      fontSize: '0.9rem',
-      fontWeight: '700',
-      color: '#111'
-    },
-    originalPrice: {
-      fontSize: '0.65rem',
-      color: '#999',
-      textDecoration: 'line-through',
-      marginLeft: '6px',
-    },
-    ratingContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: '8px',
-    },
-    reviewCount: {
-      fontSize: '0.65rem',
-      color: '#808080',
-      marginLeft: '4px',
-    },
-    addToCartButton: {
-      width: '100%',
-      backgroundColor: '#f8f8f8',
-      color: '#333',
-      padding: '8px 0',
-      fontSize: '0.75rem',
-      fontWeight: '600',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      transition: 'background-color 200ms ease, color 200ms ease',
-      border: 'none',
-      borderTop: '1px solid #f0f0f0',
-      cursor: 'pointer',
-      marginTop: 'auto', // Push button to bottom
-    },
-    cartIcon: {
-      marginRight: '6px',
-      fontSize: '0.8rem'
+
+  // Calculate discounted price
+  const originalPrice = product.price;
+  const discountedPrice = product.discount 
+    ? originalPrice - (originalPrice * product.discount / 100)
+    : originalPrice;
+
+  // Generate stars for rating
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<FiStar key={i} className="text-yellow-400 fill-current" />);
     }
+    
+    if (hasHalfStar) {
+      stars.push(<FiStar key="half" className="text-yellow-400 fill-current opacity-50" />);
+    }
+    
+    const remainingStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < remainingStars; i++) {
+      stars.push(<FiStar key={`empty-${i}`} className="text-gray-300" />);
+    }
+    
+    return stars;
   };
+
   return (
-    <div className="product-card group" style={cardStyles.container} onMouseOver={(e) => {
-      e.currentTarget.style.transform = 'translateY(-4px)';
-      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-    }} onMouseOut={(e) => {
-      e.currentTarget.style.transform = 'none';
-      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
-    }}>
-      <Link to={`/product/${product.id}`} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, textDecoration: 'none', color: 'inherit' }}>
-        <div style={cardStyles.imageContainer}>
+    <motion.div 
+      whileHover={{ y: -5 }}
+      className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 group overflow-hidden border border-gray-100"
+    >
+      <Link to={`/products/${product.id}`} className="block">
+        {/* Image Container */}
+        <div className="relative overflow-hidden">
           <img 
             src={product.image} 
-            alt={product.name} 
-            style={cardStyles.image}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'none';
-            }}
+            alt={product.name}
+            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
           />
+          
+          {/* Discount Badge */}
           {product.discount > 0 && (
-            <div style={cardStyles.discountBadge}>
-              {product.discount}% OFF
-            </div>
+            <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
+              {product.discount}% off
+            </span>
           )}
           
-          {/* Quick actions that appear on hover */}
-          <div 
-            style={cardStyles.wishlistButton} 
-            className="group-hover:opacity-100"
-            onMouseOver={(e) => {
-              e.currentTarget.style.opacity = '1';
-              e.currentTarget.style.transform = 'scale(1.1)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.opacity = '0';
-              e.currentTarget.style.transform = 'none';
-            }}
+          {/* Wishlist Button */}
+          <button
+            onClick={handleAddToWishlist}
+            className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-50"
           >
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={handleAddToWishlist}
-              aria-label="Add to wishlist"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
-            >
-              <FiHeart size={14} />
-            </motion.button>
-          </div>
+            <FiHeart className="text-gray-600 hover:text-red-500 transition-colors" />
+          </button>
         </div>
-        
-        <div style={cardStyles.contentContainer}>
-          <div style={cardStyles.category}>{product.category}</div>
-          <h2 style={cardStyles.title}>{product.name}</h2>
+
+        {/* Product Info */}
+        <div className="p-4">
+          {/* Product Name */}
+          <h3 className="font-medium text-gray-900 mb-1 line-clamp-2 group-hover:text-red-500 transition-colors">
+            {product.name}
+          </h3>
           
-          <div style={cardStyles.priceContainer}>
-            <div style={cardStyles.currentPrice}>${(product.price - (product.price * product.discount / 100)).toFixed(2)}</div>
-            {product.discount > 0 && (
-              <div style={cardStyles.originalPrice}>
-                ${product.price.toFixed(2)}
-              </div>
-            )}
+          {/* Rating and Reviews */}
+          <div className="flex items-center gap-1 mb-2">
+            <div className="flex items-center text-sm">
+              {renderStars(product.rating)}
+            </div>
+            <span className="text-gray-500 text-sm">({product.reviewCount})</span>
           </div>
           
-          <div style={cardStyles.ratingContainer}>
-            <Rating value={product.rating} readOnly={true} size="small" />
-            <span style={cardStyles.reviewCount}>
-              ({product.reviewCount})
+          {/* Price */}
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg font-bold text-gray-900">
+              ${discountedPrice.toFixed(2)}
             </span>
+            {product.discount > 0 && (
+              <span className="text-sm text-gray-500 line-through">
+                ${originalPrice.toFixed(2)}
+              </span>
+            )}
           </div>
         </div>
       </Link>
       
-      {/* Add to cart button */}
-      <motion.button
-        whileTap={{ scale: 0.97 }}
-        style={cardStyles.addToCartButton}
-        onMouseOver={(e) => {
-          e.currentTarget.style.backgroundColor = '#f0f0f0';
-          e.currentTarget.style.color = '#000';
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.backgroundColor = '#f8f8f8';
-          e.currentTarget.style.color = '#333';
-        }}
-        onClick={handleAddToCart}
-      >
-        <FiShoppingCart style={cardStyles.cartIcon} /> Add to Cart
-      </motion.button>
-    </div>
+      {/* Add to Cart Button */}
+      <div className="px-4 pb-4">
+        <button
+          onClick={handleAddToCart}
+          className="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors duration-300 flex items-center justify-center gap-2 font-medium"
+        >
+          <FiShoppingCart className="text-sm" />
+          Add to Cart
+        </button>
+      </div>
+    </motion.div>
   );
 };
 
