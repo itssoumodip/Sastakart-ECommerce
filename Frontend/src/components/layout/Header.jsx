@@ -41,357 +41,176 @@ const Header = () => {
       navigate(`/products?search=${encodeURIComponent(searchTerm)}`);
       setSearchTerm('');
     }
-  };  return (
-    <header 
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        transition: 'all 0.3s ease',
-        backgroundColor: '#ffffff',
-        color: '#000000',
-        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
-      }}
-    >
-      {/* Top navigation bar - similar to QuickCart */}
-      <div style={{ 
-        borderBottom: '1px solid #f0f0f0',
-        backgroundColor: '#f8f8f8',
-        padding: '0.4rem 0',
-        fontSize: '0.75rem'
-      }}>
-        <div style={{ maxWidth: '90rem', margin: '0 auto', padding: '0 1.5rem' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
+  };
+
+  return (
+    <header className="sticky top-0 z-50 bg-white shadow-sm">
+      {/* Top navigation bar */}
+      <div className="bg-gray-100 border-b border-gray-200 py-2 text-xs">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center">
             <div className="hidden md:block">
-              <span style={{ color: '#666' }}>Free shipping on orders over $50</span>
+              <span className="text-gray-600">Free shipping on orders over $50</span>
             </div>
-            <div style={{ 
-              display: 'flex', 
-              gap: '1rem'
-            }}>
-              <Link to="/help" style={{ color: '#666', textDecoration: 'none' }} 
-                onMouseOver={(e) => { e.target.style.color = '#333'; }}
-                onMouseOut={(e) => { e.target.style.color = '#666'; }}>
-                Help
+            <div className="flex gap-4">
+              <Link to="/help" className="text-gray-600 hover:text-gray-900 transition-colors">
+                Help Center
               </Link>
-              <Link to="/track-order" style={{ color: '#666', textDecoration: 'none' }}
-                onMouseOver={(e) => { e.target.style.color = '#333'; }}
-                onMouseOut={(e) => { e.target.style.color = '#666'; }}>
-                Track Order
+              <Link to="/track-order" className="text-gray-600 hover:text-gray-900 transition-colors">
+                Order Tracking
               </Link>
+              {!isAuthenticated ? (
+                <Link to="/login" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Login/Register
+                </Link>
+              ) : (
+                <Link to="/profile" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  My Account
+                </Link>
+              )}
             </div>
           </div>
         </div>
       </div>
       
       {/* Main header */}
-      <div style={{ maxWidth: '90rem', margin: '0 auto', padding: '0 1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 0' }}>          {/* Logo - QuickCart-style */}
-          <Link to="/" style={{ fontSize: '1.5rem', fontWeight: '600', textDecoration: 'none' }}>
-            <span style={{ color: '#222' }}>Quick</span>
-            <span style={{ color: '#ff4646' }}>Cart</span>
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between py-3">
+          {/* Logo */}
+          <Link to="/" className="text-2xl font-bold">
+            <span className="text-gray-900">Classy</span>
+            <span className="text-red-500">Shop</span>
           </Link>
 
-          {/* Search Bar - QuickCart-style */}
+          {/* Search Bar */}
           <form 
             onSubmit={handleSearch}
-            style={{
-              display: 'none',
-              alignItems: 'center',
-              flexGrow: 1,
-              maxWidth: '32rem',
-              margin: '0 2rem',
-              backgroundColor: '#f5f5f5',
-              borderRadius: '4px',
-              overflow: 'hidden',
-              border: '1px solid #ebebeb',
-            }}
-            className="md:flex"
-            onMouseOver={(e) => {
-              e.currentTarget.style.borderColor = '#ddd';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.borderColor = '#ebebeb';
-            }}
+            className="hidden md:flex flex-1 max-w-2xl mx-8"
           >
-            <input
-              type="text"
-              placeholder="Search products..."
-              style={{
-                width: '100%',
-                padding: '0.5rem 1rem',
-                backgroundColor: 'transparent',
-                outline: 'none',
-                color: '#333',
-                border: 'none',
-                fontSize: '0.9rem'
-              }}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button 
-              type="submit" 
-              style={{
-                padding: '0.5rem 0.75rem',
-                color: '#666',
-                backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.color = '#333';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.color = '#666';
-              }}
-              aria-label="Search"
-            >
-              <FiSearch size={16} />
-            </button>
-          </form>          {/* Navigation - Desktop QuickCart Style */}
-          <nav className="md:flex" style={{ display: 'none', alignItems: 'center', gap: '2rem' }}>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Search for products..."
+                className="w-full py-2 px-4 pr-10 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <button 
+                type="submit" 
+                className="absolute right-0 top-0 h-full px-4 bg-red-500 text-white rounded-r-md hover:bg-red-600 transition-colors"
+                aria-label="Search"
+              >
+                <FiSearch size={18} />
+              </button>
+            </div>
+          </form>
+
+          {/* Navigation - Desktop */}
+          <nav className="hidden md:flex items-center gap-8">
             <Link 
               to="/products" 
-              style={{
-                fontSize: '0.9rem',
-                transition: 'color 0.2s ease',
-                color: '#444',
-                textDecoration: 'none',
-                fontWeight: '500'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.color = '#000';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.color = '#444';
-              }}
+              className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors duration-200"
             >
               All Products
             </Link>
             <Link 
               to="/deals" 
-              style={{
-                fontSize: '0.9rem',
-                transition: 'color 0.2s ease',
-                color: '#444',
-                textDecoration: 'none',
-                fontWeight: '500'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.color = '#000';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.color = '#444';
-              }}
+              className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors duration-200"
             >
               Deals
             </Link>
             <Link 
               to="/new-arrivals" 
-              style={{
-                fontSize: '0.9rem',
-                transition: 'color 0.2s ease',
-                color: '#444',
-                textDecoration: 'none',
-                fontWeight: '500'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.color = '#000';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.color = '#444';
-              }}
+              className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors duration-200"
             >
               New Arrivals
             </Link>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            
+            <div className="flex items-center gap-5">
               <Link 
                 to="/wishlist" 
-                style={{
-                  position: 'relative',
-                  transition: 'color 0.2s ease',
-                  color: '#444',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.color = '#000';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.color = '#444';
-                }}
+                className="relative flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200"
               >
                 <FiHeart size={18} />
               </Link>
               <Link 
                 to="/cart" 
-                style={{
-                  position: 'relative',
-                  transition: 'color 0.2s ease',
-                  color: '#444',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.color = '#000';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.color = '#444';
-                }}
+                className="relative flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200"
               >
                 <FiShoppingCart size={18} />
                 {cartItemCount > 0 && (
-                  <span style={{
-                    position: 'absolute',
-                    top: '-0.4rem',
-                    right: '-0.4rem',
-                    backgroundColor: '#ff4646',
-                    color: '#ffffff',
-                    borderRadius: '50%',
-                    width: '1rem',
-                    height: '1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.7rem',
-                    fontWeight: '600'
-                  }}>
+                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-semibold">
                     {cartItemCount}
                   </span>
                 )}
               </Link>
-            </div>            {isAuthenticated ? (
+            </div>
+
+            {isAuthenticated ? (
               <Link 
                 to="/profile" 
-                style={{
-                  transition: 'color 0.2s ease',
-                  color: '#444',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.color = '#000';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.color = '#444';
-                }}
+                className="flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200"
               >
                 <FiUser size={18} />
               </Link>
             ) : (
               <Link 
                 to="/login" 
-                style={{
-                  padding: '0.4rem 1rem',
-                  borderRadius: '4px',
-                  fontSize: '0.85rem',
-                  fontWeight: '500',
-                  backgroundColor: '#ff4646',
-                  color: '#ffffff',
-                  transition: 'all 0.2s ease',
-                  textDecoration: 'none'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.backgroundColor = '#e03e3e';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.backgroundColor = '#ff4646';
-                }}
+                className="px-4 py-2 rounded text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors duration-200"
               >
                 Login / Sign up
               </Link>
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
-          <div style={{ display: 'flex', alignItems: 'center' }} className="md:hidden">
+          {/* Mobile Menu Button and Cart */}
+          <div className="flex items-center md:hidden">
             <Link 
               to="/cart" 
-              style={{
-                position: 'relative',
-                marginRight: '1rem',
-                transition: 'color 0.2s ease',
-                color: isScrolled ? 'inherit' : '#ffffff'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.color = isScrolled ? '#4b5563' : '#d1d5db';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.color = isScrolled ? 'inherit' : '#ffffff';
-              }}
+              className="relative mr-4 text-gray-700 hover:text-gray-900 transition-colors duration-200"
             >
               <FiShoppingCart size={20} />
               {cartItemCount > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  top: '-0.5rem',
-                  right: '-0.5rem',
-                  backgroundColor: '#000000',
-                  color: '#ffffff',
-                  borderRadius: '9999px',
-                  width: '1rem',
-                  height: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem'
-                }}>
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-semibold">
                   {cartItemCount}
                 </span>
               )}
             </Link>
             <button 
               onClick={toggleMenu}
-              style={{ outline: 'none', color: isScrolled ? 'inherit' : '#ffffff' }}
+              className="text-gray-700 hover:text-gray-900 transition-colors duration-200"
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             >
               {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
             </button>
-          </div>        </div>
+          </div>
+        </div>
 
         {/* Mobile Search - Visible only on mobile */}
-        <div style={{ display: 'none', paddingBottom: '1rem' }} className="md:hidden">
+        <div className="block md:hidden pb-4">
           <form 
             onSubmit={handleSearch} 
-            style={{
-              display: 'flex', 
-              alignItems: 'center',
-              backgroundColor: isScrolled ? 'rgba(243, 244, 246, 0.8)' : 'rgba(55, 65, 81, 0.2)',
-              borderRadius: '9999px',
-              overflow: 'hidden',
-              transition: 'all 0.3s ease',
-            }}
+            className="flex items-center bg-gray-100 rounded-full overflow-hidden"
           >
             <input
               type="text"
               placeholder="Search products..."
-              style={{
-                width: '100%',
-                padding: '0.5rem 1rem',
-                backgroundColor: 'transparent',
-                outline: 'none',
-                color: isScrolled ? '#1f2937' : '#ffffff',
-              }}
+              className="flex-1 py-2 px-4 bg-transparent outline-none text-gray-900 placeholder-gray-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button 
               type="submit" 
-              style={{
-                padding: '0.5rem',
-                color: isScrolled ? '#4b5563' : '#ffffff',
-              }}
+              className="p-2 text-gray-600 hover:text-red-500 transition-colors duration-200"
               aria-label="Search"
             >
               <FiSearch size={18} />
             </button>
           </form>
         </div>
-      </div>      {/* Mobile Menu */}
+      </div>
+
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -399,80 +218,50 @@ const Header = () => {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            style={{
-              display: 'block',
-              overflow: 'hidden',
-              backgroundColor: isScrolled ? '#ffffff' : 'rgba(0, 0, 0, 0.95)',
-              color: isScrolled ? '#1f2937' : '#ffffff'
-            }}
-            className="md:hidden"
+            className="md:hidden bg-white border-t border-gray-200 overflow-hidden"
           >
-            <nav style={{ display: 'flex', flexDirection: 'column', padding: '1rem 1.5rem' }}>
+            <nav className="flex flex-col px-6 py-4">
               <Link 
                 to="/products" 
-                style={{
-                  padding: '0.75rem 0',
-                  borderBottom: isScrolled ? '1px solid #e5e7eb' : '1px solid #374151',
-                  transition: 'all 0.2s ease',
-                }}
+                className="py-3 border-b border-gray-100 text-gray-700 hover:text-red-500 hover:pl-2 transition-all duration-200"
                 onClick={toggleMenu}
-                onMouseOver={(e) => {
-                  e.target.style.paddingLeft = '0.5rem';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.paddingLeft = '0';
-                }}
               >
-                Products
+                All Products
+              </Link>
+              <Link 
+                to="/deals" 
+                className="py-3 border-b border-gray-100 text-gray-700 hover:text-red-500 hover:pl-2 transition-all duration-200"
+                onClick={toggleMenu}
+              >
+                Deals
+              </Link>
+              <Link 
+                to="/new-arrivals" 
+                className="py-3 border-b border-gray-100 text-gray-700 hover:text-red-500 hover:pl-2 transition-all duration-200"
+                onClick={toggleMenu}
+              >
+                New Arrivals
               </Link>
               <Link 
                 to="/wishlist" 
-                style={{
-                  padding: '0.75rem 0',
-                  borderBottom: isScrolled ? '1px solid #e5e7eb' : '1px solid #374151',
-                  transition: 'all 0.2s ease',
-                }}
+                className="py-3 border-b border-gray-100 text-gray-700 hover:text-red-500 hover:pl-2 transition-all duration-200"
                 onClick={toggleMenu}
-                onMouseOver={(e) => {
-                  e.target.style.paddingLeft = '0.5rem';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.paddingLeft = '0';
-                }}
               >
                 Wishlist
               </Link>
               {isAuthenticated ? (
                 <Link 
                   to="/profile" 
-                  style={{
-                    padding: '0.75rem 0',
-                    transition: 'all 0.2s ease',
-                  }}
+                  className="py-3 text-gray-700 hover:text-red-500 hover:pl-2 transition-all duration-200"
                   onClick={toggleMenu}
-                  onMouseOver={(e) => {
-                    e.target.style.paddingLeft = '0.5rem';
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.paddingLeft = '0';
-                  }}
                 >
                   My Account
                 </Link>
               ) : (
                 <Link 
                   to="/login" 
-                  style={{
-                    padding: '0.75rem 0',
-                    transition: 'all 0.2s ease',
-                  }}
+                  className="py-3 text-gray-700 hover:text-red-500 hover:pl-2 transition-all duration-200"
                   onClick={toggleMenu}
-                  onMouseOver={(e) => {
-                    e.target.style.paddingLeft = '0.5rem';
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.paddingLeft = '0';
-                  }}
                 >
                   Login / Register
                 </Link>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -10,6 +10,10 @@ import { FiArrowRight, FiTruck, FiRefreshCw, FiLock, FiHeadphones, FiStar, FiUse
 const Home = () => {
   const dispatch = useDispatch();
   const { products, loading } = useSelector((state) => state.products);
+  
+  // State for category filtering
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [filteredProducts, setFilteredProducts] = useState([]);
   
   // Mock hero slider data until we connect to a real API
   const heroSlides = [
@@ -142,11 +146,26 @@ const Home = () => {
       reviewCount: 94,
       image: 'https://images.unsplash.com/photo-1547949003-9792a18a2601?auto=format&fit=crop&q=80',
     }
-  ];
-  useEffect(() => {
+  ];  useEffect(() => {
     // Uncomment when backend is ready
     // dispatch(fetchProducts({}));
   }, [dispatch]);
+
+  // Filter products based on active category
+  useEffect(() => {
+    if (activeCategory === 'All') {
+      setFilteredProducts(mockProducts);
+    } else {
+      setFilteredProducts(mockProducts.filter(product => product.category === activeCategory));
+    }
+  }, [activeCategory]);
+
+  // Get unique categories from products
+  const categories = ['All', ...new Set(mockProducts.map(product => product.category))];
+
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -207,19 +226,19 @@ const Home = () => {
               <FiArrowRight className="ml-1" />
             </Link>
           </div>
-          
-          {/* Category Tabs */}
+            {/* Category Tabs */}
           <div className="flex flex-wrap gap-2 mb-8">
-            {['All', 'Fashion', 'Electronics', 'Home', 'Sports'].map((tab, index) => (
+            {categories.map((category, index) => (
               <button
-                key={index}
+                key={category}
+                onClick={() => handleCategoryChange(category)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  index === 0 
+                  activeCategory === category 
                     ? 'bg-red-500 text-white' 
                     : 'bg-white text-gray-600 hover:bg-red-50 hover:text-red-500'
                 }`}
               >
-                {tab}
+                {category}
               </button>
             ))}
           </div>
@@ -228,9 +247,8 @@ const Home = () => {
             <div className="flex justify-center items-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {mockProducts.map((product, index) => (
+          ) : (            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {filteredProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}
