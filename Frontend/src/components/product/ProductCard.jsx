@@ -53,13 +53,12 @@ const ProductCard = ({ product }) => {
       whileHover={{ y: -5 }}
       className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 group overflow-hidden border border-gray-100"
     >
-      <Link to={`/products/${product.id}`} className="block">
-        {/* Image Container */}
-        <div className="relative overflow-hidden">
+      <Link to={`/products/${product.id}`} className="block">        {/* Image Container */}
+        <div className="relative overflow-hidden aspect-square">
           <img 
             src={product.image} 
             alt={product.name}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           
           {/* Discount Badge */}
