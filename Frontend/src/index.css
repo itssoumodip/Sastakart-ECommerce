@@ -21,6 +21,55 @@ body {
   }
 }
 
+/* Filter sidebar styles */
+.filter-sidebar {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .filter-sidebar {
+    display: block;
+  }
+
+  /* Custom slider styling */
+  .slider-container {
+    position: relative;
+    height: 40px;
+    width: 100%;
+  }
+
+  .slider-track, 
+  .slider-range {
+    position: absolute;
+    height: 4px;
+    border-radius: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .slider-track {
+    background-color: #e5e7eb;
+    width: 100%;
+  }
+
+  .slider-range {
+    background-color: #ef4444;
+  }
+
+  .slider-thumb {
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 2px solid #ef4444;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    cursor: pointer;
+  }
+}
+
 .fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }

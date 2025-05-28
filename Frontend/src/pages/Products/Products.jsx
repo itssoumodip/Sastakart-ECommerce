@@ -54,19 +54,18 @@ const DualRangeSlider = ({ min, max, value, onChange }) => {
       setMaxVal(value[1]);
     }
   }, [value]);
-
   return (
-    <div className="slider-container">
-      <div className="slider-track"></div>
-      <div ref={range} className="slider-range"></div>
+    <div className="slider-container relative h-10 w-full">
+      <div className="slider-track absolute h-1 w-full bg-gray-200 rounded top-1/2 -translate-y-1/2"></div>
+      <div ref={range} className="slider-range absolute h-1 bg-red-500 rounded top-1/2 -translate-y-1/2"></div>
       <div 
-        className="slider-thumb" 
+        className="slider-thumb absolute h-4 w-4 bg-white border-2 border-red-500 rounded-full top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" 
         style={{ left: `${getPercent(minVal)}%` }}
       ></div>
       <div 
-        className="slider-thumb" 
+        className="slider-thumb absolute h-4 w-4 bg-white border-2 border-red-500 rounded-full top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" 
         style={{ left: `${getPercent(maxVal)}%` }}
-      ></div>      <input
+      ></div><input
         ref={minInput}
         type="range"
         min={min}
@@ -602,9 +601,8 @@ const Products = () => {
           </div>
         </div>
       </div>      
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-8">
+      {/* Main Content */}      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Mobile filter overlay */}
           <AnimatePresence>
             {mobileFiltersOpen && (
@@ -828,8 +826,7 @@ const Products = () => {
                 </motion.div>
               </motion.div>
             )}
-          </AnimatePresence>
-            {/* Desktop filters sidebar */}          <div className="hidden lg:block w-64 flex-shrink-0 filter-sidebar" id="filters-sidebar">
+          </AnimatePresence>          {/* Desktop filters sidebar */}          <div className="hidden lg:block w-64 flex-shrink-0 filter-sidebar" id="filters-sidebar" style={{ zIndex: 10, position: 'relative' }}>
             <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-8 shadow-md">
               <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
                 <FiFilter className="mr-2" /> Filters
@@ -1027,9 +1024,8 @@ const Products = () => {
                 </button>
               </div>
             </div>
-          </div>
-          {/* Product grid */}
-          <div className="flex-1">            {/* Results count */}
+          </div>          {/* Product grid */}
+          <div className="flex-1 w-full">            {/* Results count */}
             {!loading && (
               <div className="mb-6">
                 <p className="text-sm text-gray-600">
