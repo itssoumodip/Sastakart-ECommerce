@@ -600,11 +600,10 @@ const Products = () => {
             </div>
           </div>
         </div>
-      </div>      
-      {/* Main Content */}      <div className="max-w-7xl mx-auto px-4 py-8">
+      </div>        {/* Main Content */}      
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Mobile filter overlay */}
-          <AnimatePresence>
+          {/* Mobile filter overlay */}          <AnimatePresence>
             {mobileFiltersOpen && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -825,8 +824,9 @@ const Products = () => {
                   </div>
                 </motion.div>
               </motion.div>
-            )}
-          </AnimatePresence>          {/* Desktop filters sidebar */}          <div className="hidden lg:block w-64 flex-shrink-0 filter-sidebar" id="filters-sidebar" style={{ zIndex: 10, position: 'relative' }}>
+            )}          </AnimatePresence>          
+          {/* Desktop filters sidebar */}          
+          <div className="block w-64 flex-shrink-0 filter-sidebar" id="filters-sidebar" style={{ zIndex: 10, position: 'relative' }}>
             <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-8 shadow-md">
               <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
                 <FiFilter className="mr-2" /> Filters
@@ -1025,7 +1025,7 @@ const Products = () => {
               </div>
             </div>
           </div>          {/* Product grid */}
-          <div className="flex-1 w-full">            {/* Results count */}
+          <div className="flex-1 min-w-0">            {/* Results count */}
             {!loading && (
               <div className="mb-6">
                 <p className="text-sm text-gray-600">
