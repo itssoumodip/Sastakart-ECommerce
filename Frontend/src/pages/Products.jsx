@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useQuery } from 'react-query'
 import { Helmet } from 'react-helmet-async'
@@ -212,11 +212,14 @@ const Products = () => {
           whileTap={{ scale: 0.95 }}
         >
           NEXT {'>'}
-        </motion.button>
-      </motion.div>
+        </motion.button>      </motion.div>
     )
-  };const ProductCard = ({ product, index }) => (
+  };
+
+  // Product Card Component
+  const ProductCard = React.forwardRef(({ product, index }, ref) => (
     <motion.div 
+      ref={ref}
       className={`bg-black border-4 border-white transition-all duration-500 group overflow-hidden ${
         viewMode === 'list' ? 'flex' : ''
       }`}
@@ -313,11 +316,11 @@ const Products = () => {
             className="w-10 h-10 bg-white text-black border-2 border-white flex items-center justify-center hover:bg-black hover:text-white transition-all duration-200"
           >
             <ShoppingCart className="h-5 w-5" />
-          </motion.button>
-        </div>
+          </motion.button>        </div>
       </div>
     </motion.div>
-  )
+  ));
+
   return (
     <>
       <Helmet>

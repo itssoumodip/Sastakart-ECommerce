@@ -58,18 +58,16 @@ exports.getProducts = catchAsyncErrors(async (req, res, next) => {
         break;
       default:
         sort = { createdAt: -1 };
-    }
-  } else {
+    }  } else {
     sort = { createdAt: -1 };
   }
+  
   // Build query
   const query = {
     ...keyword,
     ...category,
     ...priceFilter,
     ...ratingFilter
-    ...keyword,
-    ...category
   };
   
   const totalProducts = await Product.countDocuments(query);

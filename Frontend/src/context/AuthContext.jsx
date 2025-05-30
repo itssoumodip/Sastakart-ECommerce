@@ -2,6 +2,7 @@ import { createContext, useContext, useReducer, useEffect } from 'react'
 import axios from 'axios'
 import Cookies from 'js-cookie'
 import toast from 'react-hot-toast'
+import API_BASE_URL, { API_ENDPOINTS } from '../config/api'
 
 const AuthContext = createContext()
 
@@ -59,17 +60,20 @@ const initialState = {
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
-
   // Configure axios defaults
   useEffect(() => {
     const token = Cookies.get('token')
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    }
     
-    // Set base URL
+    // Set base URL and credentials
     axios.defaults.baseURL = 'http://localhost:5000'
     axios.defaults.withCredentials = true
+    
+    // Set Authorization header if token exists
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    } else {
+      delete axios.defaults.headers.common['Authorization']
+    }
   }, [])
 
   // Load user on app start
@@ -81,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: 'LOAD_USER_REQUEST' })
       
-      const { data } = await axios.get('/api/auth/me')
+      const { data } = await axios.get(API_ENDPOINTS.ME)
       
       dispatch({
         type: 'LOAD_USER_SUCCESS',
@@ -105,7 +109,7 @@ export const AuthProvider = ({ children }) => {
         },
       }
       
-      const { data } = await axios.post('/api/auth/login', { email, password }, config)
+      const { data } = await axios.post(API_ENDPOINTS.LOGIN, { email, password }, config)
       
       if (data.token) {
         Cookies.set('token', data.token, { expires: 7 })
@@ -140,7 +144,7 @@ export const AuthProvider = ({ children }) => {
         },
       }
       
-      const { data } = await axios.post('/api/auth/register', { name, email, password }, config)
+      const { data } = await axios.post(API_ENDPOINTS.REGISTER, { name, email, password }, config)
       
       if (data.token) {
         Cookies.set('token', data.token, { expires: 7 })
@@ -167,7 +171,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.get('/api/auth/logout')
+      await axios.get(API_ENDPOINTS.LOGOUT)
     } catch (error) {
       console.log(error)
     } finally {

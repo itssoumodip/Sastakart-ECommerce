@@ -174,9 +174,8 @@ const Navbar = () => {
                       >
                         <Settings className="h-4 w-4 mr-3" />
                         PROFILE
-                      </Link>
-                      <Link
-                        to="/orders"
+                      </Link>                      <Link
+                        to="/profile/orders"
                         className="flex items-center px-4 py-2 text-sm text-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wider"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
@@ -298,9 +297,8 @@ const Navbar = () => {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       PROFILE
-                    </Link>
-                    <Link
-                      to="/orders"
+                    </Link>                    <Link
+                      to="/profile/orders"
                       className="text-white hover:text-gray-300 transition-colors font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-white hover:text-black"
                       onClick={() => setIsMenuOpen(false)}
                     >

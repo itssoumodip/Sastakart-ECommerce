@@ -4,64 +4,71 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Edit, Trash2, Filter, ArrowUpDown, Plus, Package, Eye, ShoppingBag, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../../config/api';
 
 function ProductsManagement() {
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: 'Wireless Headphones',
-      price: 99.99,
-      category: 'Electronics',
-      inventory: 45,
-      status: 'Active',
-      image: 'https://placehold.co/100x100'
-    },
-    {
-      id: 2,
-      name: 'Smart Watch',
-      price: 199.99,
-      category: 'Electronics',
-      inventory: 32,
-      status: 'Active',
-      image: 'https://placehold.co/100x100'
-    },
-    {
-      id: 3,
-      name: 'Bluetooth Speaker',
-      price: 79.99,
-      category: 'Electronics',
-      inventory: 18,
-      status: 'Low Stock',
-      image: 'https://placehold.co/100x100'
-    },
-    {
-      id: 4,
-      name: 'Leather Wallet',
-      price: 49.99,
-      category: 'Accessories',
-      inventory: 56,
-      status: 'Active',
-      image: 'https://placehold.co/100x100'
-    },
-    {
-      id: 5,
-      name: 'Cotton T-Shirt',
-      price: 24.99,
-      category: 'Clothing',
-      inventory: 0,
-      status: 'Out of Stock',
-      image: 'https://placehold.co/100x100'
-    },
-  ]);
-
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const productsPerPage = 8;
+
+  // API Functions
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`http://localhost:5000${API_ENDPOINTS.PRODUCTS}`);
+      
+      if (response.data.success) {
+        // Transform backend data to match frontend structure
+        const transformedProducts = response.data.products.map(product => ({
+          id: product._id,
+          name: product.title,
+          price: product.price,
+          category: product.category,
+          inventory: product.stock || 0,
+          status: product.stock > 0 ? (product.stock < 10 ? 'Low Stock' : 'Active') : 'Out of Stock',
+          image: product.images && product.images.length > 0 ? product.images[0] : 'https://placehold.co/100x100'
+        }));
+        setProducts(transformedProducts);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast.error('Failed to fetch products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProduct = async (productId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.delete(`http://localhost:5000${API_ENDPOINTS.PRODUCTS}/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        toast.success('Product deleted successfully');
+        fetchProducts(); // Refresh the products list
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete product');
+    }
+  };
+
+  // Load products on component mount
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     let updatedProducts = [...products];
@@ -102,12 +109,9 @@ function ProductsManagement() {
     });
 
     setFilteredProducts(updatedProducts);
-  }, [searchTerm, categoryFilter, statusFilter, sortBy, sortOrder, products]);
-  const handleDeleteProduct = (id) => {
+  }, [searchTerm, categoryFilter, statusFilter, sortBy, sortOrder, products]);  const handleDeleteProduct = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      // In a real application, you would call an API to delete the product
-      setProducts(products.filter(product => product.id !== id));
-      toast.success('Product deleted successfully');
+      await deleteProduct(id);
     }
   };
 
@@ -297,9 +301,43 @@ function ProductsManagement() {
               <ArrowUpDown className="h-4 w-4" />              SORT BY {sortBy.toUpperCase()}
             </motion.button>
           </div>
-        </motion.div>
-
-        {/* Products Grid */}        <motion.div 
+        </motion.div>        {/* Products Grid */}        {loading ? (
+          <motion.div 
+            className="flex justify-center items-center py-16"
+            variants={itemVariants}
+          >
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+              <p className="text-white font-mono uppercase tracking-wider">Loading Products...</p>
+            </div>
+          </motion.div>
+        ) : filteredProducts.length === 0 ? (
+          <motion.div 
+            className="flex justify-center items-center py-16"
+            variants={itemVariants}
+          >
+            <div className="bg-white p-16 text-center max-w-lg w-full">
+              <div className="flex justify-center mb-6">
+                <Search className="h-16 w-16 text-gray-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-black font-mono uppercase mb-4">No products found</h2>
+              <p className="text-gray-700 mb-8 font-mono">Try adjusting your filters or search terms.</p>
+              <motion.button
+                onClick={() => {
+                  setSearchTerm('');
+                  setCategoryFilter('all');
+                  setStatusFilter('all');
+                }}
+                className="bg-violet-600 hover:bg-violet-700 text-white py-3 px-8 font-mono uppercase text-lg tracking-wide transition-colors duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Clear Filters
+              </motion.button>
+            </div>
+          </motion.div>
+        ) : (
+        <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
           variants={itemVariants}
         >
@@ -335,7 +373,9 @@ function ProductsManagement() {
                       {product.status}
                     </span>
                   </div>
-                </div>                <div className="p-6">
+                </div>
+                
+                <div className="p-6">
                   <h3 className="text-lg font-semibold text-white mb-2 font-mono uppercase">{product.name}</h3>
                   <p className="text-white/70 text-sm mb-2 font-mono uppercase">{product.category}</p>
                   
@@ -366,37 +406,40 @@ function ProductsManagement() {
               </motion.div>
             ))}
           </AnimatePresence>
-        </motion.div>        {/* Pagination */}
-        <motion.div 
-          className="bg-black border-2 border-white p-6"
-          variants={itemVariants}
-        >
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-white font-mono uppercase">
-              Showing {((currentPage - 1) * productsPerPage) + 1} to {Math.min(currentPage * productsPerPage, filteredProducts.length)} of {filteredProducts.length} products
-            </p>
-            <div className="flex space-x-1">
-              <motion.button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-                className="px-4 py-2 text-sm font-medium text-black bg-white border-2 border-white hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 uppercase font-mono"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Previous
-              </motion.button>
-              <motion.button
-                disabled={currentPage === Math.ceil(filteredProducts.length / productsPerPage)}
-                onClick={() => setCurrentPage(currentPage + 1)}
-                className="px-4 py-2 text-sm font-medium text-black bg-white border-2 border-white hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 uppercase font-mono"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Next
-              </motion.button>
-            </div>
-          </div>
         </motion.div>
+        )}        {/* Pagination - only show if there are products */}
+        {filteredProducts.length > 0 && (
+          <motion.div 
+            className="bg-black border-2 border-white p-6"
+            variants={itemVariants}
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-white font-mono uppercase">
+                Showing {((currentPage - 1) * productsPerPage) + 1} to {Math.min(currentPage * productsPerPage, filteredProducts.length)} of {filteredProducts.length} products
+              </p>
+              <div className="flex space-x-1">
+                <motion.button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  className="px-4 py-2 text-sm font-medium text-black bg-white border-2 border-white hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 uppercase font-mono"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Previous
+                </motion.button>
+                <motion.button
+                  disabled={currentPage === Math.ceil(filteredProducts.length / productsPerPage)}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  className="px-4 py-2 text-sm font-medium text-black bg-white border-2 border-white hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 uppercase font-mono"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Next
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );

@@ -4,8 +4,7 @@ import { useCart } from '../context/CartContext';
 import { toast } from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Star,
+import {  Star,
   Heart,
   Share2,
   ShoppingCart,
@@ -86,16 +85,23 @@ const ProductDetail = () => {
       setLoading(false);
     }
   };
-
   const fetchReviews = async () => {
     try {
       const response = await fetch(`http://localhost:5000/api/products/${id}/reviews`);
       if (response.ok) {
         const data = await response.json();
         setReviews(data.reviews || []);
+      } else if (response.status === 404) {
+        // Reviews endpoint doesn't exist or no reviews found - this is okay
+        setReviews([]);
+      } else {
+        console.warn('Failed to fetch reviews:', response.status);
+        setReviews([]);
       }
     } catch (err) {
       console.error('Failed to fetch reviews:', err);
+      // Set empty reviews on error instead of failing
+      setReviews([]);
     }
   };
 
@@ -223,11 +229,11 @@ const ProductDetail = () => {
         </motion.div>
       </div>
     );
-  }return (
+  }  return (
     <>
       <Helmet>
-        <title>{product.name} - RETRO-SHOP</title>
-        <meta name="description" content={product.description} />
+        <title>{product?.name ? `${product.name} - RETRO-SHOP` : 'RETRO-SHOP'}</title>
+        <meta name="description" content={product?.description || 'Premium products at RETRO-SHOP'} />
       </Helmet>
       
       <div className="min-h-screen bg-black">

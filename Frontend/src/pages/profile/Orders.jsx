@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { toast } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 import {
   Package,
   Eye,
@@ -30,22 +31,11 @@ const Orders = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
-
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/orders', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data.orders || []);
-      } else {
-        throw new Error('Failed to fetch orders');
-      }
+      const { data } = await axios.get('/api/orders/me');
+      setOrders(data.orders || []);
     } catch (error) {
       toast.error('Failed to load orders');
       console.error('Orders fetch error:', error);
@@ -91,11 +81,10 @@ const Orders = () => {
   const handleViewOrder = (orderId) => {
     navigate(`/profile/orders/${orderId}`);
   };
-
   const handleReorder = async (order) => {
     try {
       // Add order items back to cart
-      order.items.forEach(item => {
+      order.orderItems.forEach(item => {
         // This would typically use the cart context
         toast.success(`${item.name} added to cart`);
       });
@@ -108,14 +97,13 @@ const Orders = () => {
   const handleDownloadInvoice = (orderId) => {
     toast.success('Invoice downloaded successfully');
   };
-
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         order.items.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = order._id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         order.orderItems.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || order.orderStatus.toLowerCase() === statusFilter;
     
-    const orderDate = new Date(order.date);
+    const orderDate = new Date(order.createdAt);
     const now = new Date();
     let matchesDate = true;
     
@@ -261,34 +249,33 @@ const Orders = () => {
                     </div>
 
                     {/* Table Body */}
-                    <div className="divide-y-2 divide-white/30">
-                      {filteredOrders.map((order) => (
-                        <div key={order.id} className="grid grid-cols-1 md:grid-cols-6 hover:bg-white/5 transition-colors">
+                    <div className="divide-y-2 divide-white/30">                      {filteredOrders.map((order) => (
+                        <div key={order._id} className="grid grid-cols-1 md:grid-cols-6 hover:bg-white/5 transition-colors">
                           {/* Mobile View */}
                           <div className="block md:hidden p-4 border-b border-white/20">
                             <div className="flex justify-between items-center mb-2">
-                              <div className="font-mono text-white uppercase">#{order.id}</div>
-                              <div className={`flex items-center space-x-1 px-2 py-1 ${getStatusClass(order.status)}`}>
-                                {getStatusIcon(order.status)}
-                                <span className="text-xs font-mono uppercase">{order.status}</span>
+                              <div className="font-mono text-white uppercase">#{order._id.slice(-8)}</div>
+                              <div className={`flex items-center space-x-1 px-2 py-1 ${getStatusClass(order.orderStatus.toLowerCase())}`}>
+                                {getStatusIcon(order.orderStatus.toLowerCase())}
+                                <span className="text-xs font-mono uppercase">{order.orderStatus}</span>
                               </div>
                             </div>
                             <div className="text-sm text-white/70 font-mono mb-4">
-                              {new Date(order.date).toLocaleDateString('en-US', {
+                              {new Date(order.createdAt).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
                                 day: 'numeric',
                               })}
                             </div>
                             <div className="font-mono text-white mb-1">
-                              {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+                              {order.orderItems.length} {order.orderItems.length === 1 ? 'item' : 'items'}
                             </div>
                             <div className="font-mono font-bold text-white mb-4">
-                              ${order.total.toFixed(2)}
+                              ${order.totalPrice.toFixed(2)}
                             </div>
                             <div className="flex space-x-2">
                               <button
-                                onClick={() => handleViewOrder(order.id)}
+                                onClick={() => handleViewOrder(order._id)}
                                 className="flex-1 border border-white py-2 text-white font-mono text-sm hover:bg-white hover:text-black transition-colors uppercase flex items-center justify-center"
                               >
                                 <Eye className="w-4 h-4 mr-1" />
@@ -302,39 +289,37 @@ const Orders = () => {
                                 Reorder
                               </button>
                             </div>
-                          </div>
-
-                          {/* Desktop View */}
-                          <div className="hidden md:flex items-center p-4 font-mono text-white">{order.id}</div>
+                          </div>                          {/* Desktop View */}
+                          <div className="hidden md:flex items-center p-4 font-mono text-white">#{order._id.slice(-8)}</div>
                           <div className="hidden md:flex items-center p-4 font-mono text-white">
-                            {new Date(order.date).toLocaleDateString('en-US', {
+                            {new Date(order.createdAt).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'short',
                               day: 'numeric',
                             })}
                           </div>
                           <div className="hidden md:flex items-center p-4 font-mono text-white">
-                            {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+                            {order.orderItems.length} {order.orderItems.length === 1 ? 'item' : 'items'}
                           </div>
                           <div className="hidden md:flex items-center p-4 font-mono font-bold text-white">
-                            ${order.total.toFixed(2)}
+                            ${order.totalPrice.toFixed(2)}
                           </div>
                           <div className="hidden md:flex items-center p-4">
-                            <div className={`flex items-center space-x-2 px-3 py-1 ${getStatusClass(order.status)}`}>
-                              {getStatusIcon(order.status)}
-                              <span className="text-xs font-mono uppercase">{order.status}</span>
+                            <div className={`flex items-center space-x-2 px-3 py-1 ${getStatusClass(order.orderStatus.toLowerCase())}`}>
+                              {getStatusIcon(order.orderStatus.toLowerCase())}
+                              <span className="text-xs font-mono uppercase">{order.orderStatus}</span>
                             </div>
                           </div>
                           <div className="hidden md:flex items-center p-4 space-x-2">
                             <button
-                              onClick={() => handleViewOrder(order.id)}
+                              onClick={() => handleViewOrder(order._id)}
                               className="border border-white w-10 h-10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors"
                               title="View Order"
                             >
                               <Eye className="w-5 h-5" />
                             </button>
                             <button
-                              onClick={() => handleDownloadInvoice(order.id)}
+                              onClick={() => handleDownloadInvoice(order._id)}
                               className="border border-white w-10 h-10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors"
                               title="Download Invoice"
                             >

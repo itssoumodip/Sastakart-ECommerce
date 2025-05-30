@@ -3,57 +3,12 @@ import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Edit, Trash2, ArrowUpDown, Plus, Users, UserCheck, UserX, Shield, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../../config/api';
 
 function UsersManagement() {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'Customer',
-      status: 'Active',
-      lastLogin: '2023-11-28',
-      orders: 7
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      role: 'Customer',
-      status: 'Active',
-      lastLogin: '2023-11-25',
-      orders: 3
-    },
-    {
-      id: 3,
-      name: 'Admin User',
-      email: 'admin@example.com',
-      role: 'Admin',
-      status: 'Active',
-      lastLogin: '2023-11-29',
-      orders: 0
-    },
-    {
-      id: 4,
-      name: 'Robert Brown',
-      email: 'robert.brown@example.com',
-      role: 'Customer',
-      status: 'Inactive',
-      lastLogin: '2023-10-15',
-      orders: 2
-    },
-    {
-      id: 5,
-      name: 'Sarah Wilson',
-      email: 'sarah.wilson@example.com',
-      role: 'Customer',
-      status: 'Active',
-      lastLogin: '2023-11-20',
-      orders: 5
-    },
-  ]);
-
-  const [filteredUsers, setFilteredUsers] = useState(users);
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -62,7 +17,109 @@ function UsersManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    role: 'user',
+    status: 'Active'
+  });
   const usersPerPage = 10;
+  // API Functions
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`http://localhost:5000${API_ENDPOINTS.ADMIN_USERS}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        // Transform backend data to match frontend structure
+        const transformedUsers = response.data.users.map(user => ({
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role === 'admin' ? 'Admin' : 'Customer',
+          status: 'Active', // You can add status field to backend user model
+          lastLogin: new Date(user.createdAt).toISOString().split('T')[0],
+          orders: 0 // You can fetch order count from orders collection
+        }));
+        setUsers(transformedUsers);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast.error('Failed to fetch users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createUser = async (userData) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`http://localhost:5000${API_ENDPOINTS.ADMIN_CREATE_USER}`, userData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data.success) {
+        toast.success('User created successfully');
+        fetchUsers(); // Refresh the users list
+        setIsModalOpen(false);
+        setFormData({ name: '', email: '', role: 'user', status: 'Active' });
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      toast.error(error.response?.data?.message || 'Failed to create user');
+    }
+  };
+
+  const updateUser = async (userId, userData) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`http://localhost:5000${API_ENDPOINTS.ADMIN_UPDATE_USER(userId)}`, userData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data.success) {
+        toast.success('User updated successfully');
+        fetchUsers(); // Refresh the users list
+        setIsModalOpen(false);
+        setEditingUser(null);
+        setFormData({ name: '', email: '', role: 'user', status: 'Active' });
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error(error.response?.data?.message || 'Failed to update user');
+    }
+  };
+
+  const deleteUserAPI = async (userId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.delete(`http://localhost:5000${API_ENDPOINTS.ADMIN_DELETE_USER(userId)}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        toast.success('User deleted successfully');
+        fetchUsers(); // Refresh the users list
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete user');
+    }
+  };
 
   useEffect(() => {
     let updatedUsers = [...users];
@@ -118,23 +175,40 @@ function UsersManagement() {
       transition: { duration: 0.5 }
     }
   };
-
   const handleDeleteUser = (userId) => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      // In a real application, you would call an API to delete the user
-      setUsers(users.filter(user => user.id !== userId));
-      toast.success('User deleted successfully');
+      deleteUserAPI(userId);
     }
   };
-
   const handleEdit = (user) => {
     setEditingUser(user);
+    setFormData({
+      name: user.name,
+      email: user.email,
+      role: user.role === 'Admin' ? 'admin' : 'user',
+      status: user.status
+    });
     setIsModalOpen(true);
   };
 
   const handleAddNew = () => {
     setEditingUser(null);
+    setFormData({
+      name: '',
+      email: '',
+      role: 'user',
+      status: 'Active'
+    });
     setIsModalOpen(true);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (editingUser) {
+      updateUser(editingUser.id, formData);
+    } else {
+      createUser({ ...formData, password: 'defaultPassword123' }); // You might want to handle password differently
+    }
   };
 
   const handleSort = (field) => {
@@ -145,8 +219,8 @@ function UsersManagement() {
       setSortOrder('asc');
     }
   };
-
-  return (    <motion.div 
+  return (
+    <motion.div 
       className="min-h-screen bg-black"
       initial="hidden"
       animate="visible"
@@ -157,11 +231,42 @@ function UsersManagement() {
           <title>Users Management | Admin Dashboard</title>
         </Helmet>
 
-        {/* Header */}
-        <motion.div 
-          className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4"
-          variants={itemVariants}
-        >
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+          </div>
+        ) : filteredUsers.length === 0 ? (
+          <motion.div 
+            className="flex justify-center items-center py-16"
+            variants={itemVariants}
+          >
+            <div className="bg-white p-16 text-center max-w-lg w-full">
+              <div className="flex justify-center mb-6">
+                <Search className="h-16 w-16 text-gray-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-black font-mono uppercase mb-4">No users found</h2>
+              <p className="text-gray-700 mb-8 font-mono">Try adjusting your filters or search terms.</p>
+              <motion.button
+                onClick={() => {
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                  setRoleFilter('all');
+                }}
+                className="bg-violet-600 hover:bg-violet-700 text-white py-3 px-8 font-mono uppercase text-lg tracking-wide transition-colors duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Clear Filters
+              </motion.button>
+            </div>
+          </motion.div>
+        ) : (
+          <>
+            {/* Header */}
+            <motion.div 
+              className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4"
+              variants={itemVariants}
+            >
           <div>            <h1 className="text-4xl font-bold text-white flex items-center gap-3 font-mono uppercase tracking-widest">
               <Users className="h-8 w-8 text-white" />
               [ USERS ]
@@ -248,33 +353,31 @@ function UsersManagement() {
                 <AnimatePresence>                  {filteredUsers.slice(
                     (currentPage - 1) * usersPerPage,
                     currentPage * usersPerPage
-                  ).map((user, index) => (
-                    <motion.tr
+                  ).map((user, index) => (                    <motion.tr
                       key={user.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
                       transition={{ delay: index * 0.05 }}
-                      className="hover:bg-white hover:text-black transition-all duration-200 border-b border-white/30"
+                      className="group hover:bg-white border-b border-white/30"
                       whileHover={{ scale: 1.01 }}
-                    >
-                      <td className="px-6 py-4">
+                    >                      <td className="px-6 py-4">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
-                            <div className="h-10 w-10 border-2 border-white flex items-center justify-center text-white font-mono font-semibold">
+                            <div className="h-10 w-10 border-2 border-white group-hover:border-black flex items-center justify-center text-white group-hover:text-black font-mono font-semibold">
                               {user.name.charAt(0)}
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-semibold text-white font-mono uppercase">{user.name}</div>
-                            <div className="text-sm text-white/70 font-mono">{user.email}</div>
+                            <div className="text-sm font-semibold text-white group-hover:text-black font-mono uppercase">{user.name}</div>
+                            <div className="text-sm text-white/70 group-hover:text-black/70 font-mono">{user.email}</div>
                           </div>
                         </div>
                       </td>                      <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-3 py-1 text-xs font-mono uppercase border ${
                           user.role === 'Admin' 
-                            ? 'bg-black text-white border-white' 
-                            : 'bg-white text-black border-white'
+                            ? 'bg-black text-white border-white group-hover:bg-white group-hover:text-black group-hover:border-black' 
+                            : 'bg-white text-black border-white group-hover:bg-black group-hover:text-white group-hover:border-black'
                         }`}>
                           {user.role === 'Admin' ? <Shield className="h-3 w-3 mr-1" /> : <UserCheck className="h-3 w-3 mr-1" />}
                           {user.role}
@@ -283,28 +386,28 @@ function UsersManagement() {
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-3 py-1 text-xs font-mono uppercase border ${
                           user.status === 'Active' 
-                            ? 'bg-white text-black border-white' 
-                            : 'bg-black text-white border-white'
+                            ? 'bg-white text-black border-white group-hover:bg-black group-hover:text-white group-hover:border-black' 
+                            : 'bg-black text-white border-white group-hover:bg-white group-hover:text-black group-hover:border-black'
                         }`}>
                           {user.status === 'Active' ? <UserCheck className="h-3 w-3 mr-1" /> : <UserX className="h-3 w-3 mr-1" />}
                           {user.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-white/80 font-mono">{user.lastLogin}</td>
+                      <td className="px-6 py-4 text-sm text-white/80 group-hover:text-black/80 font-mono">{user.lastLogin}</td>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-semibold text-white font-mono">{user.orders}</span>
+                        <span className="text-sm font-semibold text-white group-hover:text-black font-mono">{user.orders}</span>
                       </td>                      <td className="px-6 py-4">
                         <div className="flex items-center space-x-2">
                           <motion.button
                             onClick={() => handleEdit(user)}
-                            className="p-2 text-white hover:bg-white hover:text-black border border-white transition-all duration-200"
+                            className="p-2 text-white group-hover:text-black hover:bg-white hover:text-black border border-white group-hover:border-black transition-all duration-200"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
                           >
                             <Edit className="h-4 w-4" />
                           </motion.button>                          <motion.button
                             onClick={() => handleDeleteUser(user.id)}
-                            className="p-2 text-white hover:bg-white hover:text-black border border-white transition-all duration-200"
+                            className="p-2 text-white group-hover:text-black hover:bg-white hover:text-black border border-white group-hover:border-black transition-all duration-200"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
                           >
@@ -316,36 +419,37 @@ function UsersManagement() {
                   ))}
                 </AnimatePresence>
               </tbody>
-            </table>
-          </div>          {/* Pagination */}
-          <div className="px-6 py-4 border-t-2 border-white bg-black">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-white/80 font-mono uppercase">
-                Showing {((currentPage - 1) * usersPerPage) + 1} to {Math.min(currentPage * usersPerPage, filteredUsers.length)} of {filteredUsers.length} users
-              </p>
-              <div className="flex space-x-1">
-                {/* pagination buttons with enhanced styling */}
-                <motion.button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  className="px-4 py-2 text-sm font-medium text-black bg-white border-2 border-white hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 uppercase font-mono"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Previous
-                </motion.button>
-                <motion.button
-                  disabled={currentPage === Math.ceil(filteredUsers.length / usersPerPage)}
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  className="px-4 py-2 text-sm font-medium text-black bg-white border-2 border-white hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 uppercase font-mono"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Next
-                </motion.button>
+            </table>          </div>          {/* Pagination */}
+          {filteredUsers.length > 0 && (
+            <div className="px-6 py-4 border-t-2 border-white bg-black">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-white/80 font-mono uppercase">
+                  Showing {((currentPage - 1) * usersPerPage) + 1} to {Math.min(currentPage * usersPerPage, filteredUsers.length)} of {filteredUsers.length} users
+                </p>
+                <div className="flex space-x-1">
+                  {/* pagination buttons with enhanced styling */}
+                  <motion.button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="px-4 py-2 text-sm font-medium text-black bg-white border-2 border-white hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 uppercase font-mono"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Previous
+                  </motion.button>
+                  <motion.button
+                    disabled={currentPage === Math.ceil(filteredUsers.length / usersPerPage)}
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="px-4 py-2 text-sm font-medium text-black bg-white border-2 border-white hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 uppercase font-mono"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Next
+                  </motion.button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </motion.div>
 
         {/* Add/Edit User Modal */}
@@ -366,7 +470,59 @@ function UsersManagement() {
                 <h3 className="text-xl font-bold text-white mb-4 uppercase tracking-widest font-mono">
                   {editingUser ? '[ EDIT USER ]' : '[ ADD USER ]'}
                 </h3>
-                {/* Modal form content would go here */}
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-mono uppercase text-white mb-2">Name</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-3 py-2 border-2 border-white bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white font-mono"
+                      placeholder="ENTER NAME..."
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-mono uppercase text-white mb-2">Email</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-3 py-2 border-2 border-white bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white font-mono"
+                      placeholder="ENTER EMAIL..."
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-mono uppercase text-white mb-2">Role</label>
+                    <select
+                      value={formData.role}
+                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      className="w-full px-3 py-2 border-2 border-white bg-black text-white focus:outline-none focus:ring-2 focus:ring-white font-mono uppercase"
+                    >
+                      <option value="user">USER</option>
+                      <option value="admin">ADMIN</option>
+                    </select>
+                  </div>
+                  
+                  {!editingUser && (
+                    <div>
+                      <label className="block text-sm font-mono uppercase text-white mb-2">Password</label>
+                      <input
+                        type="password"
+                        value={formData.password || ''}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="w-full px-3 py-2 border-2 border-white bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white font-mono"
+                        placeholder="ENTER PASSWORD..."
+                        required={!editingUser}
+                      />
+                    </div>
+                  )}
+                </form>
+
                 <div className="flex justify-end space-x-3 mt-6">
                   <motion.button
                     onClick={() => setIsModalOpen(false)}
@@ -377,6 +533,7 @@ function UsersManagement() {
                     Cancel
                   </motion.button>
                   <motion.button
+                    onClick={handleSubmit}
                     className="px-4 py-2 bg-white text-black border-2 border-white hover:bg-black hover:text-white transition-all duration-200 uppercase font-mono"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -386,8 +543,9 @@ function UsersManagement() {
                 </div>
               </motion.div>
             </motion.div>
-          )}
-        </AnimatePresence>
+          )}        </AnimatePresence>
+          </>
+        )}
       </div>
     </motion.div>
   );

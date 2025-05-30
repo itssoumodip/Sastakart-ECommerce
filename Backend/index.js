@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const errorMiddleware = require('./middleware/errorMiddleware');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -36,16 +37,7 @@ mongoose
   .catch(err => console.error('MongoDB Connection Error:', err));
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
-  
-  return res.status(statusCode).json({
-    success: false,
-    message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : {}
-  });
-});
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 
