@@ -1,0 +1,230 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-800;
+  }
+  
+  body {
+    @apply bg-black text-white antialiased;
+    font-family: 'JetBrains Mono', 'Space Mono', 'Courier Prime', monospace;
+    background-image: 
+      radial-gradient(circle at 25px 25px, #333 2px, transparent 0),
+      radial-gradient(circle at 75px 75px, #333 2px, transparent 0);
+    background-size: 100px 100px;
+    background-position: 0 0, 50px 50px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Retro Black & White Button Styles */
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transform hover:scale-105 active:scale-95;
+    border: 2px solid;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .btn-primary {
+    @apply bg-white text-black border-white hover:bg-black hover:text-white focus:ring-white shadow-lg hover:shadow-xl;
+  }
+  
+  .btn-secondary {
+    @apply bg-black text-white border-white hover:bg-white hover:text-black focus:ring-white shadow-lg hover:shadow-xl;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-white bg-transparent text-white hover:bg-white hover:text-black focus:ring-white;
+  }
+
+  .btn-dark {
+    @apply bg-black text-white border-gray-600 hover:bg-gray-800 focus:ring-gray-400 shadow-lg hover:shadow-xl;
+  }
+
+  .btn-success {
+    @apply bg-white text-black border-white hover:bg-black hover:text-white focus:ring-white shadow-lg hover:shadow-xl;
+  }
+
+  .btn-danger {
+    @apply bg-black text-white border-gray-400 hover:bg-gray-800 hover:border-white focus:ring-gray-400 shadow-lg hover:shadow-xl;
+  }
+  /* Retro Input Styles */
+  .input {
+    @apply block w-full px-4 py-3 border-2 border-white bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-all duration-200;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  
+  .form-input {
+    @apply block w-full px-4 py-3 border-2 border-white bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-all duration-200 hover:border-gray-300;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  
+  /* Retro Card Styles */
+  .card {
+    @apply bg-black border-2 border-white overflow-hidden transition-all duration-300 hover:shadow-lg;
+    box-shadow: 0 0 0 2px black, 0 0 0 4px white;
+  }
+
+  .card-hover {
+    @apply bg-black border-2 border-white overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+    box-shadow: 0 0 0 2px black, 0 0 0 4px white;
+  }
+  
+  .container {
+    @apply mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Retro Glass Effect */
+  .glass {
+    @apply backdrop-blur-lg bg-black/80 border-2 border-white;
+  }
+
+  /* Retro Gradient Text */
+  .gradient-text {
+    @apply text-white;
+    text-shadow: 2px 2px 0px #000;
+  }
+
+  /* Loading Animation */
+  .animate-pulse-slow {
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  /* Fade In Animation */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.6s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.6s ease-out forwards;
+  }
+  /* Retro Badge Styles */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 text-xs font-medium border-2;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-success {
+    @apply bg-white text-black border-white;
+  }
+
+  .badge-warning {
+    @apply bg-black text-white border-white;
+  }
+
+  .badge-danger {
+    @apply bg-black text-white border-gray-400;
+  }
+
+  .badge-info {
+    @apply bg-white text-black border-black;
+  }
+
+  /* Line Clamp */
+  .line-clamp-1 {
+    @apply overflow-hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+
+  .line-clamp-2 {
+    @apply overflow-hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .line-clamp-3 {
+    @apply overflow-hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Retro Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-black border-2 border-white;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-white border-2 border-black;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-300;
+}
+
+/* Retro Selection */
+::selection {
+  @apply bg-white text-black;
+}
