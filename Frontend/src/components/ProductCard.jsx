@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -9,22 +9,29 @@ import { forwardRef } from 'react';
 const ProductCard = forwardRef(({ product, index = 0 }, ref) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const navigate = useNavigate();
   
   const isWishlisted = isInWishlist(product._id);
-
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
     try {
+      if (product.stock === 0) {
+        toast.error('Product is out of stock');
+        return;
+      }
+      
       addToCart({
         id: product._id,
         name: product.title,
         price: product.discountPrice || product.price,
         image: product.images?.[0] || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
+        stock: product.stock || 99,
+        brand: product.brand || '',
         quantity: 1
       });
-      toast.success('Added to cart!');
     } catch (error) {
+      console.error('Cart error:', error);
       toast.error('Failed to add to cart');
     }
   };
@@ -100,26 +107,26 @@ const ProductCard = forwardRef(({ product, index = 0 }, ref) => {
               whileTap={{ scale: 0.9 }}
             >
               <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
-            </motion.button>
-            <Link to={`/products/${product._id}`} onClick={(e) => e.stopPropagation()}>
-              <motion.button 
-                className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-black shadow-sm hover:shadow-md transition-all"
+            </motion.button>            <motion.button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(`/products/${product._id}`);
+              }}
+              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-black shadow-sm hover:shadow-md transition-all"
+            >
+              <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
                 <Eye className="h-5 w-5" />
-              </motion.button>
-            </Link>
+              </motion.div>
+            </motion.button>
           </div>
-        </div>
-      </Link>
-
-      <div className="p-4">
-        <Link to={`/products/${product._id}`}>
-          <h3 className="font-medium text-gray-900 mb-1 hover:text-gray-700 transition-colors duration-200 line-clamp-2">
-            {product.title}
-          </h3>
-        </Link>
+        </div>      </Link>      <div className="p-4">
+        <h3 className="font-medium text-gray-900 mb-1 hover:text-gray-700 transition-colors duration-200 line-clamp-2" onClick={() => navigate(`/products/${product._id}`)} style={{ cursor: 'pointer' }}>
+          {product.title}
+        </h3>
         
         {/* Brand */}
         {product.brand && (

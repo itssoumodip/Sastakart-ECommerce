@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 
 const Checkout = () => {
-  const { cartItems, getCartTotal, clearCart } = useCart();
+  const { items: cartItems, getCartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -67,9 +67,8 @@ const Checkout = () => {
       billingAddress: 'same'
     }
   });
-
   useEffect(() => {
-    if (cartItems.length === 0 && !orderPlaced) {
+    if ((!cartItems || cartItems.length === 0) && !orderPlaced) {
       navigate('/cart');
       toast.error('Your cart is empty');
     }
@@ -115,9 +114,8 @@ const Checkout = () => {
     
     try {
       const shippingData = shippingForm.getValues();
-      
-      const orderData = {
-        orderItems: cartItems.map(item => ({
+        const orderData = {
+        orderItems: (cartItems || []).map(item => ({
           product: item.id,
           name: item.name,
           quantity: item.quantity,
@@ -460,9 +458,8 @@ const Checkout = () => {
   const OrderSummary = () => (
     <div className="card p-6 h-fit">
       <h3 className="text-lg font-semibold text-gray-900 mb-6">Order Summary</h3>
-      
-      <div className="space-y-4 mb-6">
-        {cartItems.map((item) => (
+        <div className="space-y-4 mb-6">
+        {(cartItems || []).map((item) => (
           <div key={item.id} className="flex gap-3">
             <div className="relative">
               <img

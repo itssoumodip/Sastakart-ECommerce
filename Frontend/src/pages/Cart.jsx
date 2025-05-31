@@ -126,10 +126,9 @@ const Cart = () => {
       </>
     );
   }
-  return (
-    <>      <Helmet>
-        <title>My Bag ({getCartItemsCount()}) - ClassyShop</title>
-        <meta name="description" content={`${getCartItemsCount()} items in your shopping bag.`} />
+  return (    <>      <Helmet>
+        <title>{`My Bag (${getCartItemsCount() || 0}) - ClassyShop`}</title>
+        <meta name="description" content={`${getCartItemsCount() || 0} items in your shopping bag.`} />
       </Helmet>
 
       <div className="min-h-screen bg-white">
@@ -138,9 +137,8 @@ const Cart = () => {
         <div className="max-w-6xl mx-auto px-4 py-12">
           {/* Page Header */}
           <div className="mb-12">
-            <h1 className="text-4xl font-light text-black mb-2 tracking-tight">My Bag</h1>
-            <p className="text-gray-500">
-              {getCartItemsCount()} {getCartItemsCount() === 1 ? 'item' : 'items'}
+            <h1 className="text-4xl font-light text-black mb-2 tracking-tight">My Bag</h1>            <p className="text-gray-500">
+              {getCartItemsCount() || 0} {(getCartItemsCount() || 0) === 1 ? 'item' : 'items'}
             </p>
           </div>
 
@@ -159,22 +157,23 @@ const Cart = () => {
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                       className="border-b border-gray-100 pb-8"
                     >
-                      <div className="flex gap-6">
-                        {/* Product Image */}
+                      <div className="flex gap-6">                        {/* Product Image */}
                         <div className="flex-shrink-0">
                           <img
-                            src={item.image}
-                            alt={item.name}
+                            src={item.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop'}
+                            alt={item.name || 'Product'}
                             className="w-32 h-40 object-cover bg-gray-50"
+                            onError={(e) => {
+                              e.target.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop';
+                            }}
                           />
                         </div>
 
                         {/* Product Details */}
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">                          <div className="flex justify-between items-start mb-4">
                             <div>
-                              <h3 className="text-xl font-medium text-black mb-1">{item.name}</h3>
-                              <p className="text-gray-500 text-sm mb-2">{item.brand}</p>
+                              <h3 className="text-xl font-medium text-black mb-1">{item.name || 'Product'}</h3>
+                              {item.brand && <p className="text-gray-500 text-sm mb-2">{item.brand}</p>}
                               <div className="flex gap-4 text-sm text-gray-500">
                                 {item.selectedSize && <span>Size: {item.selectedSize}</span>}
                                 {item.selectedColor && <span>Color: {item.selectedColor}</span>}
@@ -183,40 +182,41 @@ const Cart = () => {
                             <button
                               onClick={() => handleRemoveItem(item.id)}
                               className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                              aria-label="Remove item"
                             >
                               <Trash2 className="w-5 h-5" />
                             </button>
                           </div>
 
-                          <div className="flex items-center justify-between">
-                            {/* Quantity Controls */}
+                          <div className="flex items-center justify-between">                            {/* Quantity Controls */}
                             <div className="flex items-center border border-gray-200">
                               <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                                className="p-3 hover:bg-gray-50 transition-colors"
-                                disabled={item.quantity <= 1}
+                                onClick={() => handleQuantityChange(item.id, (item.quantity || 1) - 1)}
+                                className="p-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={(item.quantity || 1) <= 1}
+                                aria-label="Decrease quantity"
                               >
                                 <Minus className="w-4 h-4" />
                               </button>
                               <span className="px-6 py-3 font-medium min-w-[60px] text-center">
-                                {item.quantity}
+                                {item.quantity || 1}
                               </span>
                               <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                                className="p-3 hover:bg-gray-50 transition-colors"
+                                onClick={() => handleQuantityChange(item.id, (item.quantity || 1) + 1)}
+                                className="p-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={item.stock && (item.quantity || 1) >= item.stock}
+                                aria-label="Increase quantity"
                               >
                                 <Plus className="w-4 h-4" />
                               </button>
-                            </div>
-
-                            {/* Price */}
+                            </div>{/* Price */}
                             <div className="text-right">
                               <p className="text-xl font-medium text-black">
-                                ${(item.price * item.quantity).toFixed(2)}
+                                ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
                               </p>
                               {item.quantity > 1 && (
                                 <p className="text-sm text-gray-500">
-                                  ${item.price.toFixed(2)} each
+                                  ${(item.price || 0).toFixed(2)} each
                                 </p>
                               )}
                             </div>

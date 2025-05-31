@@ -72,10 +72,9 @@ const ProductDetail = () => {
       setLoading(false);
     }
   };
-
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}/reviews`);
+      const response = await fetch(`http://localhost:5000/api/products/reviews?id=${id}`);
       if (response.ok) {
         const data = await response.json();
         setReviews(data.reviews || []);
@@ -133,14 +132,19 @@ const ProductDetail = () => {
       setSelectedImage((prev) => (prev - 1 + product.images.length) % product.images.length);
     }
   };
-
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}/reviews`, {
-        method: 'POST',
-        headers: getAuthHeaders(), // Updated to use getAuthHeaders
-        body: JSON.stringify(newReview)
+      const response = await fetch(`http://localhost:5000/api/products/review`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify({
+          ...newReview,
+          productId: id
+        })
       });
       
       if (response.ok) {

@@ -77,20 +77,41 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(state.items))
   }, [state.items])
-
   const addToCart = (product, quantity = 1) => {
-    if (product.stock < quantity) {
-      toast.error('Not enough stock available')
-      return
-    }
+    // Handle both direct product objects and product data passed from ProductCard
+    let cartItem;
+    
+    if (product.id && product.name && product.price) {
+      // Data already formatted from ProductCard
+      cartItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
+        stock: product.stock || 99,
+        quantity: product.quantity || quantity,
+        brand: product.brand || '',
+        selectedSize: product.selectedSize || '',
+        selectedColor: product.selectedColor || ''
+      };
+    } else {
+      // Raw product object from database
+      if (product.stock < quantity) {
+        toast.error('Not enough stock available')
+        return
+      }
 
-    const cartItem = {
-      id: product._id,
-      name: product.title,
-      price: product.discountPrice || product.price,
-      image: product.images[0],
-      stock: product.stock,
-      quantity,
+      cartItem = {
+        id: product._id,
+        name: product.title,
+        price: product.discountPrice || product.price,
+        image: (product.images && product.images[0]) || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
+        stock: product.stock,
+        quantity,
+        brand: product.brand || '',
+        selectedSize: product.selectedSize || '',
+        selectedColor: product.selectedColor || ''
+      };
     }
 
     dispatch({ type: 'ADD_TO_CART', payload: cartItem })

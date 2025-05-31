@@ -9,9 +9,9 @@ const Home = () => {
         <div className="container mt-10 mx-auto px-4 py-16 md:py-24">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8">              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                India's Premier Eco-Friendly Marketplace
-              </h1>              <p className="text-lg text-gray-600 mb-8">                Discover locally-sourced products that blend traditional Indian craftsmanship with modern eco-friendly innovation.
-                Supporting sustainable businesses across India with every purchase.
+              India's Premier Eco-Friendly Marketplace
+            </h1>              <p className="text-lg text-gray-600 mb-8">                Discover locally-sourced products that blend traditional Indian craftsmanship with modern eco-friendly innovation.
+              Supporting sustainable businesses across India with every purchase.
               </p>
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                 <Link
@@ -29,7 +29,7 @@ const Home = () => {
               </div>
             </div>
             <div className="md:w-1/2">
-              <img                src="https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80"
+              <img src="https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80"
                 alt="EcoShop Featured Products"
                 className="rounded-lg shadow-lg w-full h-auto"
               />
@@ -46,7 +46,7 @@ const Home = () => {
             {/* Electronics Category */}
             <Link to="/products?category=Electronics" className="group">
               <div className="rounded-lg overflow-hidden bg-gray-100 aspect-square relative">
-                <img                src="https://images.unsplash.com/photo-1593344484962-796055d4a3a4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                <img src="https://images.unsplash.com/photo-1593344484962-796055d4a3a4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
                   alt="Eco-Friendly Electronics"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -54,11 +54,11 @@ const Home = () => {
               </div>
               <h3 className="mt-4 text-center font-medium">Electronics</h3>
             </Link>
-            
+
             {/* Fashion Category */}
             <Link to="/products?category=Clothing" className="group">
               <div className="rounded-lg overflow-hidden bg-gray-100 aspect-square relative">
-                <img                src="https://images.unsplash.com/photo-1609084415979-e38c11583e8b?q=80&w=2034&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                <img src="https://images.unsplash.com/photo-1609084415979-e38c11583e8b?q=80&w=2034&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt="Sustainable Fashion"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -66,11 +66,11 @@ const Home = () => {
               </div>
               <h3 className="mt-4 text-center font-medium">Fashion</h3>
             </Link>
-            
+
             {/* Home & Kitchen Category */}
             <Link to="/products?category=Home & Kitchen" className="group">
               <div className="rounded-lg overflow-hidden bg-gray-100 aspect-square relative">
-                <img                src="https://images.unsplash.com/photo-1606202598125-e2077bb5ebcc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                <img src="https://www.decorilla.com/online-decorating/wp-content/uploads/2022/10/Interior-design-styles-Eclectic-contemporary-living-room-by-Jamie-C.jpg"
                   alt="Eco-Friendly Home Products"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -78,11 +78,11 @@ const Home = () => {
               </div>
               <h3 className="mt-4 text-center font-medium">Home & Living</h3>
             </Link>
-            
+
             {/* Beauty Category */}
             <Link to="/products?category=Beauty & Personal Care" className="group">
               <div className="rounded-lg overflow-hidden bg-gray-100 aspect-square relative">
-                <img                src="https://images.unsplash.com/photo-1532413992378-f169ac26fff0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                <img src="https://cdn.britannica.com/35/222035-131-9FC95B31/makeup-cosmetics.jpg"
                   alt="Natural Beauty Products"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -101,8 +101,8 @@ const Home = () => {
             {/* Product 1 */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="aspect-square bg-gray-200 relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" 
+                <img
+                  src="https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80"
                   alt="Bamboo Water Bottle"
                   className="w-full h-full object-cover"
                 />
@@ -120,17 +120,17 @@ const Home = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Product 2 */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="aspect-square bg-gray-200 relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1556227702-d1e4e7b5c232?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" 
+                <img
+                  src="https://images.unsplash.com/photo-1556227702-d1e4e7b5c232?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80"
                   alt="Organic Cotton Shirt"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-2 left-2 bg-emerald-500 text-white text-xs px-2 py-1 rounded">
-                 Organic Cotton Shirt
+                  Organic Cotton Shirt
                 </div>
               </div>
               <div className="p-4">
@@ -143,12 +143,11 @@ const Home = () => {
                 </div>
               </div>
             </div>
-            
             {/* Product 3 */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="aspect-square bg-gray-200 relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1585821569331-f071db2abd8d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" 
+                <img
+                  src="https://images.unsplash.com/photo-1585821569331-f071db2abd8d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80"
                   alt="Bamboo Toothbrush Set"
                   className="w-full h-full object-cover"
                 />
@@ -163,12 +162,12 @@ const Home = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Product 4 */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="aspect-square bg-gray-200 relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1602532305019-3dbbd482814d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" 
+                <img
+                  src="https://images.unsplash.com/photo-1602532305019-3dbbd482814d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80"
                   alt="Solar Powered Charger"
                   className="w-full h-full object-cover"
                 />
@@ -200,7 +199,7 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0">
-              <img                src="https://images.unsplash.com/photo-1604187351574-c75ca79f5807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80"
+              <img src="https://images.unsplash.com/photo-1604187351574-c75ca79f5807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80"
                 alt="EcoShop Sustainability Practices"
                 className="rounded-lg shadow-lg w-full h-auto"
               />
