@@ -19,6 +19,7 @@ function ProductForm() {
   
   // Watch values for dynamic UI updates
   const currentCategory = watch('category');
+  
   // Categories and status options based on the backend model
   const categories = [
     'Electronics',
@@ -33,6 +34,7 @@ function ProductForm() {
     'Automotive',
     'Others'
   ];
+  
   const statusOptions = ['Active', 'Draft', 'Out of Stock'];
 
   const containerVariants = {
@@ -56,7 +58,11 @@ function ProductForm() {
       const fetchProductData = async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}`);
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}`, {
+            headers: {
+              ...getAuthHeaders()
+            }
+          });
           
           if (!response.ok) {
             throw new Error('Failed to fetch product details');
@@ -89,12 +95,13 @@ function ProductForm() {
     }
   }, [isEditMode, id, navigate, setValue]);  const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
     setLoading(true);
     
     try {
-      console.log('Starting image upload for', files.length, 'files');
-        // Validate file sizes (max 5MB per file) and types
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      // Validate file sizes and types
+      const maxSize = 5 * 1024 * 1024; // 5MB
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       
       for (const file of files) {
@@ -106,7 +113,7 @@ function ProductForm() {
         }
       }
       
-      // Convert files to base64 strings
+      // Convert files to base64
       const base64Images = await Promise.all(
         files.map(file => {
           return new Promise((resolve, reject) => {
@@ -117,53 +124,46 @@ function ProductForm() {
           });
         })
       );
-      
-      console.log('Files converted to base64, total size:', JSON.stringify({ images: base64Images }).length, 'bytes');
-        // Upload to Cloudinary via backend
-      const token = getAuthToken();
-      console.log('Token exists:', !!token);
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/products/upload`, {
+
+      // Upload to server
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/products/upload`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
         },
+        credentials: 'include',
         body: JSON.stringify({ images: base64Images })
       });
       
-      console.log('Upload response status:', response.status);
-      
-      const data = await response.json();
-      console.log('Upload response data:', data);
-      
       if (!response.ok) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to upload images');
       }
       
-      setUploadedImages([...uploadedImages, ...data.images]);
+      const data = await response.json();
+      setUploadedImages(prev => [...prev, ...data.images]);
       toast.success('Images uploaded successfully!');
     } catch (error) {
       console.error('Error uploading images:', error);
-      toast.error(error.message || 'Failed to upload images. Please try again.');
+      toast.error(error.message || 'Failed to upload images');
     } finally {
       setLoading(false);
     }
   };
 
   const removeImage = (index) => {
-    setUploadedImages(uploadedImages.filter((_, i) => i !== index));
+    setUploadedImages(images => images.filter((_, i) => i !== index));
   };
+
   const onSubmit = async (data) => {
     setLoading(true);
     try {
       if (uploadedImages.length === 0) {
         toast.error('Please upload at least one product image');
-        setLoading(false);
         return;
       }
 
-      // Format product data for API
       const productData = {
         title: data.name,
         description: data.description,
@@ -174,32 +174,32 @@ function ProductForm() {
         brand: data.brand || 'Generic',
         stock: parseInt(data.inventory) || 0,
         features: data.features ? data.features.split(',').map(f => f.trim()) : []
-      };      const token = getAuthToken();
+      };
+
       const url = isEditMode 
-        ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}` 
+        ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}`
         : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`;
-      
-      const method = isEditMode ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
-        method,
+        method: isEditMode ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
         },
+        credentials: 'include',
         body: JSON.stringify(productData)
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save product');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to save product');
       }
-      
+
       toast.success(isEditMode ? 'Product updated successfully!' : 'Product created successfully!');
       navigate('/admin/products');
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error(error.message || 'Failed to save product. Please try again.');
+      toast.error(error.message || 'Failed to save product');
     } finally {
       setLoading(false);
     }

@@ -80,19 +80,9 @@ const Navbar = () => {
               />
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
-          </form>
-
-          {/* Desktop Navigation */}
+          </form>          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">            <Link to="/products" className="nav-link">
               Products
-            </Link>
-            <Link to="/wishlist" className="nav-link relative">
-              Wishlist
-              {getWishlistCount() > 0 && (
-                <span className="absolute -top-1 -right-6 bg-amber-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {getWishlistCount()}
-                </span>
-              )}
             </Link>
             
             {/* Cart */}
@@ -247,13 +237,6 @@ const Navbar = () => {
                     {getWishlistCount()}
                   </span>
                 )}
-              </Link>
-              <Link
-                to="/cart"
-                className="block text-gray-700 hover:text-gray-900 transition-colors duration-200 font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Wishlist
               </Link>
               
               {isAuthenticated ? (

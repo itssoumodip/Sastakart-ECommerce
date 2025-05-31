@@ -60,21 +60,25 @@ const initialState = {
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
+  
   // Configure axios defaults
   useEffect(() => {
     const token = Cookies.get('token')
     
-    // Set base URL and credentials
-    axios.defaults.baseURL = 'http://localhost:5000'
+    // Set base URL from environment variable and enable credentials
+    axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
     axios.defaults.withCredentials = true
     
     // Set Authorization header if token exists
     if (token) {
+      // Add both cookie and Authorization header for maximum compatibility 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      Cookies.set('token', token, { path: '/' })
     } else {
       delete axios.defaults.headers.common['Authorization']
+      Cookies.remove('token')
     }
-  }, [])
+  }, [state.isAuthenticated]) // Re-run when auth state changes
 
   // Load user on app start
   useEffect(() => {
