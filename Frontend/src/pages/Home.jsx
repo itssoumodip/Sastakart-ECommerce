@@ -58,7 +58,7 @@ const Home = () => {
             {/* Fashion Category */}
             <Link to="/products?category=Clothing" className="group">
               <div className="rounded-lg overflow-hidden bg-gray-100 aspect-square relative">
-                <img                src="https://images.unsplash.com/photo-1581784368651-8916daa089c9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                <img                src="https://images.unsplash.com/photo-1609084415979-e38c11583e8b?q=80&w=2034&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt="Sustainable Fashion"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -70,7 +70,7 @@ const Home = () => {
             {/* Home & Kitchen Category */}
             <Link to="/products?category=Home & Kitchen" className="group">
               <div className="rounded-lg overflow-hidden bg-gray-100 aspect-square relative">
-                <img                src="https://images.unsplash.com/photo-1584346133934-a3beb5c4ad3a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                <img                src="https://images.unsplash.com/photo-1606202598125-e2077bb5ebcc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt="Eco-Friendly Home Products"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />

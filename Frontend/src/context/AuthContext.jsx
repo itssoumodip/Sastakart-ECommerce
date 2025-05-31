@@ -84,18 +84,37 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     loadUser()
   }, [])
-
   const loadUser = async () => {
     try {
       dispatch({ type: 'LOAD_USER_REQUEST' })
       
       const { data } = await axios.get(API_ENDPOINTS.ME)
       
+      // Store user data in localStorage for persistence
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user))
+      }
+      
       dispatch({
         type: 'LOAD_USER_SUCCESS',
         payload: data.user,
       })
     } catch (error) {
+      // Try to load user from localStorage if API call fails
+      const savedUser = localStorage.getItem('user')
+      if (savedUser) {
+        try {
+          const userData = JSON.parse(savedUser)
+          dispatch({
+            type: 'LOAD_USER_SUCCESS',
+            payload: userData,
+          })
+          return
+        } catch (parseError) {
+          localStorage.removeItem('user')
+        }
+      }
+      
       dispatch({
         type: 'LOAD_USER_FAIL',
         payload: error.response?.data?.message || 'Something went wrong',
@@ -194,9 +213,25 @@ export const AuthProvider = ({ children }) => {
       toast.success('Logged out successfully')
     }
   }
-
   const clearErrors = () => {
     dispatch({ type: 'CLEAR_ERRORS' })
+  }
+    const updateUser = (userData) => {
+    try {
+      // Update the user state with the new data
+      dispatch({
+        type: 'LOAD_USER_SUCCESS',
+        payload: userData,
+      })
+      
+      // Store updated user data in localStorage for persistence
+      if (userData) {
+        localStorage.setItem('user', JSON.stringify(userData))
+      }
+    } catch (error) {
+      console.error('Error updating user data:', error)
+      toast.error('Failed to update profile')
+    }
   }
 
   const value = {
@@ -206,6 +241,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     loadUser,
     clearErrors,
+    updateUser,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

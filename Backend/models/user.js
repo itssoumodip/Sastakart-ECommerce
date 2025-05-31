@@ -22,10 +22,30 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Please enter your email'],
     unique: true,
     validate: [validator.isEmail, 'Please enter valid email address']
-  },
-  phone: {
+  },  phone: {
     type: String,
     maxLength: [15, 'Phone number cannot exceed 15 characters']
+  },
+  address: {
+    type: String,
+    maxLength: [200, 'Address cannot exceed 200 characters']
+  },
+  city: {
+    type: String,
+    maxLength: [50, 'City name cannot exceed 50 characters']
+  },
+  state: {
+    type: String,
+    maxLength: [50, 'State name cannot exceed 50 characters']
+  },
+  postalCode: {
+    type: String,
+    maxLength: [10, 'Postal code cannot exceed 10 characters']
+  },
+  country: {
+    type: String,
+    maxLength: [50, 'Country name cannot exceed 50 characters'],
+    default: 'United States'
   },
   password: {
     type: String,

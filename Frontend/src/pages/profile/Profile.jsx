@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../../config/api';
 import {
   User,
   Mail,
@@ -20,38 +22,36 @@ import {
   Settings,
   Bell,
   Lock,
-  Globe,
   CreditCard,
   Package,
-  ChevronRight,
-  Calendar,
-  ShoppingBag,
   Heart,
-  LogOut
+  LogOut,
+  Check,
+  AlertCircle
 } from 'lucide-react';
 
 const Profile = () => {
-  const { user, updateUser, logout } = useAuth();
+  const { user, updateUser, logout, loadUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState('profile');
 
   const profileForm = useForm({
     defaultValues: {
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
-      address: user?.address || '',
-      city: user?.city || '',
-      state: user?.state || '',
-      postalCode: user?.postalCode || '',
-      country: user?.country || 'United States'
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'United States'
     }
   });
-
+  
   const passwordForm = useForm({
     defaultValues: {
       currentPassword: '',
@@ -60,29 +60,40 @@ const Profile = () => {
     }
   });
 
+  // Update form values when user data changes
+  useEffect(() => {
+    if (user) {
+      profileForm.reset({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || '',
+        state: user.state || '',
+        postalCode: user.postalCode || '',
+        country: user.country || 'United States'
+      });
+    }
+  }, [user, profileForm]);
+
   const handleProfileUpdate = async (data) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/users/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(data)
-      });
-
-      if (response.ok) {
-        const updatedUser = await response.json();
-        updateUser(updatedUser);
+      const response = await axios.put(API_ENDPOINTS.UPDATE_PROFILE, data);
+      
+      if (response.data && response.data.success) {
+        updateUser(response.data.user);
         setIsEditing(false);
         toast.success('Profile updated successfully!');
+        // Reload user data to ensure consistency
+        await loadUser();
       } else {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update profile');
+        throw new Error('Failed to update profile');
       }
     } catch (error) {
-      toast.error(error.message || 'Failed to update profile. Please try again.');
+      console.error('Profile update error:', error);
+      toast.error(error.response?.data?.message || 'Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -94,30 +105,28 @@ const Profile = () => {
       return;
     }
 
+    if (data.newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/users/change-password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          currentPassword: data.currentPassword,
-          newPassword: data.newPassword
-        })
+      const response = await axios.put(API_ENDPOINTS.UPDATE_PASSWORD, {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword
       });
 
-      if (response.ok) {
+      if (response.data && response.data.success) {
         setIsChangingPassword(false);
         passwordForm.reset();
         toast.success('Password changed successfully!');
       } else {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to change password');
+        throw new Error('Failed to change password');
       }
     } catch (error) {
-      toast.error(error.message || 'Failed to change password. Please try again.');
+      console.error('Password change error:', error);
+      toast.error(error.response?.data?.message || 'Failed to change password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -128,579 +137,520 @@ const Profile = () => {
     toast.success('Successfully logged out');
   };
 
+  const handleEditCancel = () => {
+    setIsEditing(false);
+    // Reset form to original user data
+    if (user) {
+      profileForm.reset({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || '',
+        state: user.state || '',
+        postalCode: user.postalCode || '',
+        country: user.country || 'United States'
+      });
+    }
+  };
+
+  const sidebarItems = [
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'orders', label: 'Orders', icon: Package },
+    { id: 'wishlist', label: 'Wishlist', icon: Heart },
+    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
+
   return (
     <>
       <Helmet>
-        <title>Your Profile - Modern Shop</title>
+        <title>Profile - ClassyShop</title>
         <meta name="description" content="Manage your account information and settings" />
       </Helmet>
 
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-10">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
-                <p className="mt-1 text-gray-600">Manage your account information and preferences</p>
-              </div>
-              <div className="mt-4 sm:mt-0">
-                <button
-                  onClick={handleLogout}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </button>
+                <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
+                <p className="mt-1 text-gray-600">Manage your profile and account preferences</p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Sidebar */}
-            <div className="lg:col-span-3">
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                {/* Profile Photo Section */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-center">
-                  <div className="relative inline-block">
-                    <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border-4 border-white/30 mb-3">
-                      {user?.avatar ? (
-                        <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <User className="w-12 h-12 text-white" />
-                      )}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                {/* Profile Summary */}
+                <div className="p-6 border-b border-gray-100">
+                  <div className="text-center">
+                    <div className="relative inline-block">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                        {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                      </div>
+                      <button className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                        <Camera className="w-4 h-4 text-gray-600" />
+                      </button>
                     </div>
-                    <button 
-                      className="absolute bottom-1 right-1 bg-white rounded-full p-1.5 shadow-sm hover:bg-gray-100"
-                      aria-label="Upload photo"
-                    >
-                      <Camera className="w-4 h-4 text-gray-700" />
-                    </button>
+                    <h3 className="mt-3 text-lg font-semibold text-gray-900">
+                      {user?.firstName} {user?.lastName}
+                    </h3>
+                    <p className="text-gray-500 text-sm">{user?.email}</p>
                   </div>
-                  <h2 className="text-lg font-semibold text-white">
-                    {user?.firstName} {user?.lastName}
-                  </h2>
-                  <p className="text-blue-100 text-sm">{user?.email}</p>
                 </div>
 
-                {/* Navigation Menu */}
+                {/* Navigation */}
                 <nav className="p-4">
                   <ul className="space-y-1">
-                    <li>
-                      <button 
-                        onClick={() => setActiveTab('general')}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg ${
-                          activeTab === 'general' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                        }`
-                      }
+                    {sidebarItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <li key={item.id}>
+                          <button
+                            onClick={() => setActiveTab(item.id)}
+                            className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                              activeTab === item.id
+                                ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-500'
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            <Icon className="w-4 h-4 mr-3" />
+                            {item.label}
+                          </button>
+                        </li>
+                      );
+                    })}
+                    <li className="pt-4 border-t border-gray-200">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center px-3 py-2.5 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                       >
-                        <div className="flex items-center">
-                          <User className="w-5 h-5 mr-3" />
-                          <span>General Information</span>
-                        </div>
-                        {activeTab === 'general' && <ChevronRight className="w-4 h-4" />}
-                      </button>
-                    </li>
-                    <li>
-                      <button 
-                        onClick={() => setActiveTab('security')}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg ${
-                          activeTab === 'security' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                        }`
-                      }
-                      >
-                        <div className="flex items-center">
-                          <Shield className="w-5 h-5 mr-3" />
-                          <span>Security</span>
-                        </div>
-                        {activeTab === 'security' && <ChevronRight className="w-4 h-4" />}
-                      </button>
-                    </li>
-                    <li>
-                      <Link 
-                        to="/profile/orders" 
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50"
-                      >
-                        <div className="flex items-center">
-                          <ShoppingBag className="w-5 h-5 mr-3" />
-                          <span>Orders</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4" />
-                      </Link>
-                    </li>
-                    <li>
-                      <Link 
-                        to="/wishlist" 
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50"
-                      >
-                        <div className="flex items-center">
-                          <Heart className="w-5 h-5 mr-3" />
-                          <span>Wishlist</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4" />
-                      </Link>
-                    </li>
-                    <li>
-                      <button 
-                        onClick={() => setActiveTab('payment')}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg ${
-                          activeTab === 'payment' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                        }`
-                      }
-                      >
-                        <div className="flex items-center">
-                          <CreditCard className="w-5 h-5 mr-3" />
-                          <span>Payment Methods</span>
-                        </div>
-                        {activeTab === 'payment' && <ChevronRight className="w-4 h-4" />}
-                      </button>
-                    </li>
-                    <li>
-                      <button 
-                        onClick={() => setActiveTab('notifications')}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg ${
-                          activeTab === 'notifications' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                        }`
-                      }
-                      >
-                        <div className="flex items-center">
-                          <Bell className="w-5 h-5 mr-3" />
-                          <span>Notifications</span>
-                        </div>
-                        {activeTab === 'notifications' && <ChevronRight className="w-4 h-4" />}
+                        <LogOut className="w-4 h-4 mr-3" />
+                        Sign Out
                       </button>
                     </li>
                   </ul>
                 </nav>
               </div>
-
-              {/* Account Status Card */}
-              <div className="bg-white rounded-2xl shadow-sm mt-6 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-gray-900">Account Status</h3>
-                  <span className="px-2.5 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">Active</span>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Member Since</span>
-                    <span className="text-sm font-medium">May 2023</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Plan</span>
-                    <span className="text-sm font-medium">Standard</span>
-                  </div>
-                </div>
-              </div>
             </div>
 
-            {/* Right Content Area */}
-            <div className="lg:col-span-9">
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
                 <AnimatePresence mode="wait">
-                  {activeTab === 'general' && (
+                  {activeTab === 'profile' && (
                     <motion.div
-                      key="general"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
+                      key="profile"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
                       className="p-6"
                     >
-                      <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-                        <h2 className="text-lg font-medium text-gray-900">General Information</h2>
+                      {/* Profile Header */}
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h2 className="text-2xl font-semibold text-gray-900">Profile Information</h2>
+                          <p className="text-gray-600">Update your account details and personal information</p>
+                        </div>
                         {!isEditing && (
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={() => setIsEditing(true)}
-                            className="inline-flex items-center text-blue-600 hover:text-blue-800"
+                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                           >
-                            <Edit3 className="h-4 w-4 mr-1" />
-                            Edit
-                          </button>
+                            <Edit3 className="w-4 h-4 mr-2" />
+                            Edit Profile
+                          </motion.button>
                         )}
                       </div>
 
-                      {isEditing ? (
-                        <form onSubmit={profileForm.handleSubmit(handleProfileUpdate)} className="space-y-6">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                              <input
-                                {...profileForm.register('firstName')}
-                                type="text"
-                                className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                              <input
-                                {...profileForm.register('lastName')}
-                                type="text"
-                                className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                              <input
-                                {...profileForm.register('email')}
-                                type="email"
-                                readOnly
-                                className="w-full border-gray-300 rounded-lg bg-gray-50"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                              <input
-                                {...profileForm.register('phone')}
-                                type="tel"
-                                className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                              />
-                            </div>
+                      {/* Profile Form */}
+                      <form onSubmit={profileForm.handleSubmit(handleProfileUpdate)} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* First Name */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <User className="w-4 h-4 inline mr-2" />
+                              First Name
+                            </label>
+                            <input
+                              {...profileForm.register('firstName')}
+                              type="text"
+                              disabled={!isEditing}
+                              className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                !isEditing ? 'bg-gray-50' : 'bg-white'
+                              }`}
+                              placeholder="Enter your first name"
+                            />
                           </div>
 
-                          <div className="border-t border-b border-gray-200 py-4 my-6">
-                            <h3 className="text-md font-medium text-gray-900 mb-4">Shipping Address</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                              <div className="sm:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                                <input
-                                  {...profileForm.register('address')}
-                                  type="text"
-                                  className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                <input
-                                  {...profileForm.register('city')}
-                                  type="text"
-                                  className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">State/Province</label>
-                                <input
-                                  {...profileForm.register('state')}
-                                  type="text"
-                                  className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
-                                <input
-                                  {...profileForm.register('postalCode')}
-                                  type="text"
-                                  className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                                <select
-                                  {...profileForm.register('country')}
-                                  className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                >
-                                  <option value="United States">United States</option>
-                                  <option value="Canada">Canada</option>
-                                  <option value="United Kingdom">United Kingdom</option>
-                                  <option value="Australia">Australia</option>
-                                  <option value="Germany">Germany</option>
-                                  <option value="France">France</option>
-                                </select>
-                              </div>
-                            </div>
+                          {/* Last Name */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <User className="w-4 h-4 inline mr-2" />
+                              Last Name
+                            </label>
+                            <input
+                              {...profileForm.register('lastName')}
+                              type="text"
+                              disabled={!isEditing}
+                              className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                !isEditing ? 'bg-gray-50' : 'bg-white'
+                              }`}
+                              placeholder="Enter your last name"
+                            />
                           </div>
 
-                          <div className="flex items-center justify-end space-x-3">
-                            <button
-                              type="button"
-                              onClick={() => setIsEditing(false)}
-                              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="submit"
-                              disabled={loading}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-75"
-                            >
-                              {loading ? 'Saving...' : 'Save Changes'}
-                            </button>
+                          {/* Email */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <Mail className="w-4 h-4 inline mr-2" />
+                              Email Address
+                            </label>
+                            <input
+                              {...profileForm.register('email')}
+                              type="email"
+                              disabled={!isEditing}
+                              className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                !isEditing ? 'bg-gray-50' : 'bg-white'
+                              }`}
+                              placeholder="Enter your email"
+                            />
                           </div>
-                        </form>
-                      ) : (
-                        <div className="space-y-6">
+
+                          {/* Phone */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <Phone className="w-4 h-4 inline mr-2" />
+                              Phone Number
+                            </label>
+                            <input
+                              {...profileForm.register('phone')}
+                              type="tel"
+                              disabled={!isEditing}
+                              className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                !isEditing ? 'bg-gray-50' : 'bg-white'
+                              }`}
+                              placeholder="Enter your phone number"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Address Section */}
+                        <div className="pt-6 border-t border-gray-200">
+                          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                            <MapPin className="w-5 h-5 mr-2" />
+                            Address Information
+                          </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                              <h3 className="text-sm font-medium text-gray-500">Personal Information</h3>
-                              <div className="mt-3 space-y-4">
-                                <div className="flex items-center">
-                                  <User className="w-5 h-5 text-gray-400 mr-3" />
-                                  <div>
-                                    <p className="text-sm text-gray-500">Name</p>
-                                    <p className="font-medium">{user?.firstName} {user?.lastName}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center">
-                                  <Mail className="w-5 h-5 text-gray-400 mr-3" />
-                                  <div>
-                                    <p className="text-sm text-gray-500">Email</p>
-                                    <p className="font-medium">{user?.email}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center">
-                                  <Phone className="w-5 h-5 text-gray-400 mr-3" />
-                                  <div>
-                                    <p className="text-sm text-gray-500">Phone</p>
-                                    <p className="font-medium">{user?.phone || 'Not provided'}</p>
-                                  </div>
-                                </div>
-                              </div>
+                            {/* Address */}
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Street Address
+                              </label>
+                              <input
+                                {...profileForm.register('address')}
+                                type="text"
+                                disabled={!isEditing}
+                                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                  !isEditing ? 'bg-gray-50' : 'bg-white'
+                                }`}
+                                placeholder="Enter your street address"
+                              />
                             </div>
 
+                            {/* City */}
                             <div>
-                              <h3 className="text-sm font-medium text-gray-500">Shipping Address</h3>
-                              <div className="mt-3">
-                                <div className="flex items-start">
-                                  <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
-                                  <div>
-                                    {user?.address ? (
-                                      <>
-                                        <p className="font-medium">{user.address}</p>
-                                        <p>{user.city}, {user.state} {user.postalCode}</p>
-                                        <p>{user.country}</p>
-                                      </>
-                                    ) : (
-                                      <p className="text-gray-500">No address provided</p>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                City
+                              </label>
+                              <input
+                                {...profileForm.register('city')}
+                                type="text"
+                                disabled={!isEditing}
+                                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                  !isEditing ? 'bg-gray-50' : 'bg-white'
+                                }`}
+                                placeholder="Enter your city"
+                              />
+                            </div>
+
+                            {/* State */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                State/Province
+                              </label>
+                              <input
+                                {...profileForm.register('state')}
+                                type="text"
+                                disabled={!isEditing}
+                                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                  !isEditing ? 'bg-gray-50' : 'bg-white'
+                                }`}
+                                placeholder="Enter your state"
+                              />
+                            </div>
+
+                            {/* Postal Code */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Postal Code
+                              </label>
+                              <input
+                                {...profileForm.register('postalCode')}
+                                type="text"
+                                disabled={!isEditing}
+                                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                  !isEditing ? 'bg-gray-50' : 'bg-white'
+                                }`}
+                                placeholder="Enter your postal code"
+                              />
+                            </div>
+
+                            {/* Country */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Country
+                              </label>
+                              <input
+                                {...profileForm.register('country')}
+                                type="text"
+                                disabled={!isEditing}
+                                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                  !isEditing ? 'bg-gray-50' : 'bg-white'
+                                }`}
+                                placeholder="Enter your country"
+                              />
                             </div>
                           </div>
                         </div>
-                      )}
+
+                        {/* Action Buttons */}
+                        {isEditing && (
+                          <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={handleEditCancel}
+                              className="flex items-center px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                            >
+                              <X className="w-4 h-4 mr-2" />
+                              Cancel
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="submit"
+                              disabled={loading}
+                              className="flex items-center px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              {loading ? (
+                                <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <Save className="w-4 h-4 mr-2" />
+                              )}
+                              {loading ? 'Saving...' : 'Save Changes'}
+                            </motion.button>
+                          </div>
+                        )}
+                      </form>
                     </motion.div>
                   )}
 
                   {activeTab === 'security' && (
                     <motion.div
                       key="security"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
                       className="p-6"
                     >
-                      <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-                        <h2 className="text-lg font-medium text-gray-900">Security Settings</h2>
-                        {!isChangingPassword && (
-                          <button
-                            onClick={() => setIsChangingPassword(true)}
-                            className="inline-flex items-center text-blue-600 hover:text-blue-800"
-                          >
-                            <Edit3 className="h-4 w-4 mr-1" />
-                            Change Password
-                          </button>
+                      {/* Security Header */}
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h2 className="text-2xl font-semibold text-gray-900">Security Settings</h2>
+                          <p className="text-gray-600">Manage your password and security preferences</p>
+                        </div>
+                      </div>
+
+                      {/* Password Change Section */}
+                      <div className="bg-gray-50 rounded-lg p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                              <Lock className="w-5 h-5 mr-2" />
+                              Change Password
+                            </h3>
+                            <p className="text-gray-600 text-sm">Update your password to keep your account secure</p>
+                          </div>
+                          {!isChangingPassword && (
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => setIsChangingPassword(true)}
+                              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              <Edit3 className="w-4 h-4 mr-2" />
+                              Change Password
+                            </motion.button>
+                          )}
+                        </div>
+
+                        {isChangingPassword && (
+                          <form onSubmit={passwordForm.handleSubmit(handlePasswordChange)} className="space-y-4">
+                            {/* Current Password */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Current Password
+                              </label>
+                              <div className="relative">
+                                <input
+                                  {...passwordForm.register('currentPassword')}
+                                  type={showPassword ? 'text' : 'password'}
+                                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Enter your current password"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* New Password */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                New Password
+                              </label>
+                              <input
+                                {...passwordForm.register('newPassword')}
+                                type="password"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter your new password"
+                              />
+                            </div>
+
+                            {/* Confirm Password */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Confirm New Password
+                              </label>
+                              <input
+                                {...passwordForm.register('confirmPassword')}
+                                type="password"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Confirm your new password"
+                              />
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center justify-end space-x-4 pt-4">
+                              <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                type="button"
+                                onClick={() => {
+                                  setIsChangingPassword(false);
+                                  passwordForm.reset();
+                                }}
+                                className="flex items-center px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                <X className="w-4 h-4 mr-2" />
+                                Cancel
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                type="submit"
+                                disabled={loading}
+                                className="flex items-center px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              >
+                                {loading ? (
+                                  <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                  <Save className="w-4 h-4 mr-2" />
+                                )}
+                                {loading ? 'Updating...' : 'Update Password'}
+                              </motion.button>
+                            </div>
+                          </form>
                         )}
                       </div>
-
-                      {isChangingPassword ? (
-                        <form onSubmit={passwordForm.handleSubmit(handlePasswordChange)} className="space-y-6 max-w-md mx-auto">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                            <div className="relative">
-                              <input
-                                {...passwordForm.register('currentPassword')}
-                                type={showPassword ? 'text' : 'password'}
-                                className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                              >
-                                {showPassword ? (
-                                  <EyeOff className="h-5 w-5 text-gray-400" />
-                                ) : (
-                                  <Eye className="h-5 w-5 text-gray-400" />
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                            <input
-                              {...passwordForm.register('newPassword')}
-                              type={showPassword ? 'text' : 'password'}
-                              className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                            <input
-                              {...passwordForm.register('confirmPassword')}
-                              type={showPassword ? 'text' : 'password'}
-                              className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            />
-                          </div>
-                          <div className="flex items-center justify-end space-x-3">
-                            <button
-                              type="button"
-                              onClick={() => setIsChangingPassword(false)}
-                              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="submit"
-                              disabled={loading}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-75"
-                            >
-                              {loading ? 'Updating...' : 'Update Password'}
-                            </button>
-                          </div>
-                        </form>
-                      ) : (
-                        <div className="space-y-6">
-                          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md">
-                            <div className="flex items-start">
-                              <Shield className="h-5 w-5 text-blue-400 mr-3 mt-0.5" />
-                              <div>
-                                <h3 className="text-sm font-medium text-blue-800">Your account is secure</h3>
-                                <p className="mt-1 text-sm text-blue-700">
-                                  We recommend changing your password regularly and enabling two-factor authentication for added security.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="border-t border-gray-200 pt-4">
-                            <h3 className="text-md font-medium text-gray-900 mb-4">Two-Factor Authentication</h3>
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
-                              </div>
-                              <div className="relative">
-                                <input type="checkbox" className="sr-only" id="toggle-2fa" />
-                                <div className="h-6 w-11 bg-gray-200 rounded-full"></div>
-                                <div className="absolute left-1 top-1 bg-white h-4 w-4 rounded-full transition"></div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="border-t border-gray-200 pt-4">
-                            <h3 className="text-md font-medium text-gray-900 mb-4">Login History</h3>
-                            <div className="space-y-3">
-                              <div className="flex items-start justify-between">
-                                <div className="flex items-start">
-                                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <Globe className="h-4 w-4 text-gray-500" />
-                                  </div>
-                                  <div className="ml-3">
-                                    <p className="text-sm font-medium text-gray-900">Chrome on Windows</p>
-                                    <p className="text-xs text-gray-500">New York, USA (Your current session)</p>
-                                  </div>
-                                </div>
-                                <span className="text-xs text-gray-500">Just now</span>
-                              </div>
-                              <div className="flex items-start justify-between">
-                                <div className="flex items-start">
-                                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <Globe className="h-4 w-4 text-gray-500" />
-                                  </div>
-                                  <div className="ml-3">
-                                    <p className="text-sm font-medium text-gray-900">Safari on iPhone</p>
-                                    <p className="text-xs text-gray-500">New York, USA</p>
-                                  </div>
-                                </div>
-                                <span className="text-xs text-gray-500">Yesterday at 2:43 PM</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </motion.div>
                   )}
 
-                  {activeTab === 'payment' && (
+                  {activeTab === 'orders' && (
                     <motion.div
-                      key="payment"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
+                      key="orders"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
                       className="p-6"
                     >
-                      <div className="border-b border-gray-200 pb-4 mb-6">
-                        <h2 className="text-lg font-medium text-gray-900">Payment Methods</h2>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <p className="text-center text-gray-500">
-                            No payment methods added yet. Add a payment method to speed up checkout.
-                          </p>
-                        </div>
-
-                        <button className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                          <CreditCard className="mr-2 h-5 w-5" />
-                          Add Payment Method
-                        </button>
+                      <div className="text-center py-12">
+                        <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Order History</h3>
+                        <p className="text-gray-600 mb-6">View and track your order history</p>
+                        <Link
+                          to="/profile/orders"
+                          className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          View Orders
+                        </Link>
                       </div>
                     </motion.div>
                   )}
 
-                  {activeTab === 'notifications' && (
+                  {activeTab === 'wishlist' && (
                     <motion.div
-                      key="notifications"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
+                      key="wishlist"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
                       className="p-6"
                     >
-                      <div className="border-b border-gray-200 pb-4 mb-6">
-                        <h2 className="text-lg font-medium text-gray-900">Notification Preferences</h2>
+                      <div className="text-center py-12">
+                        <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Your Wishlist</h3>
+                        <p className="text-gray-600 mb-6">Manage your saved items and favorites</p>
+                        <Link
+                          to="/wishlist"
+                          className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          View Wishlist
+                        </Link>
                       </div>
+                    </motion.div>
+                  )}
 
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-900">Order Updates</h3>
-                            <p className="text-sm text-gray-500">Get notifications about your order status</p>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="checkbox"
-                              defaultChecked
-                              id="notifications-order"
-                              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-900">Promotions</h3>
-                            <p className="text-sm text-gray-500">Receive emails about new promotions and discounts</p>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="checkbox"
-                              defaultChecked
-                              id="notifications-promo"
-                              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-900">New Product Arrivals</h3>
-                            <p className="text-sm text-gray-500">Get updates when new products are added</p>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="checkbox"
-                              id="notifications-products"
-                              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                          </div>
-                        </div>
+                  {(activeTab === 'notifications' || activeTab === 'settings') && (
+                    <motion.div
+                      key={activeTab}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                      className="p-6"
+                    >
+                      <div className="text-center py-12">
+                        <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Coming Soon</h3>
+                        <p className="text-gray-600">This feature is under development and will be available soon.</p>
                       </div>
                     </motion.div>
                   )}

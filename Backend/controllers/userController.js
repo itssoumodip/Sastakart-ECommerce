@@ -80,9 +80,23 @@ exports.getUserProfile = catchAsyncErrors(async (req, res, next) => {
 // Update current user profile => /api/users/profile
 exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
-    name: req.body.name,
-    email: req.body.email
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    name: `${req.body.firstName} ${req.body.lastName}`, // Keep backward compatibility
+    phone: req.body.phone,
+    address: req.body.address,
+    city: req.body.city,
+    state: req.body.state,
+    postalCode: req.body.postalCode,
+    country: req.body.country
   };
+
+  // Remove undefined values
+  Object.keys(newUserData).forEach(key => {
+    if (newUserData[key] === undefined) {
+      delete newUserData[key];
+    }
+  });
 
   const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
     new: true,
@@ -101,12 +115,12 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user.id).select('+password');
 
   // Check previous user password
-  const isMatched = await user.comparePassword(req.body.oldPassword);
+  const isMatched = await user.comparePassword(req.body.currentPassword);
   if (!isMatched) {
-    return next(new ErrorHandler('Old password is incorrect', 400));
+    return next(new ErrorHandler('Current password is incorrect', 400));
   }
 
-  user.password = req.body.password;
+  user.password = req.body.newPassword;
   await user.save();
 
   res.status(200).json({
