@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Plus, X, Upload, Package, Save, Eye, Trash2, Edit3 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { getAuthToken, getAuthHeaders } from '../../utils/auth';
 
 function ProductForm() {
   const { id } = useParams();
@@ -86,12 +87,25 @@ function ProductForm() {
 
       fetchProductData();
     }
-  }, [isEditMode, id, navigate, setValue]);
-  const handleImageUpload = async (e) => {
+  }, [isEditMode, id, navigate, setValue]);  const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     setLoading(true);
     
     try {
+      console.log('Starting image upload for', files.length, 'files');
+        // Validate file sizes (max 5MB per file) and types
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      
+      for (const file of files) {
+        if (file.size > maxSize) {
+          throw new Error(`File ${file.name} is too large. Maximum size is 5MB.`);
+        }
+        if (!allowedTypes.includes(file.type)) {
+          throw new Error(`File ${file.name} has invalid type. Only JPEG, PNG, GIF, and WebP are allowed.`);
+        }
+      }
+      
       // Convert files to base64 strings
       const base64Images = await Promise.all(
         files.map(file => {
@@ -104,27 +118,34 @@ function ProductForm() {
         })
       );
       
-      // Upload to Cloudinary via backend
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/products/upload`, {
+      console.log('Files converted to base64, total size:', JSON.stringify({ images: base64Images }).length, 'bytes');
+        // Upload to Cloudinary via backend
+      const token = getAuthToken();
+      console.log('Token exists:', !!token);
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/products/upload`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...getAuthHeaders()
         },
         body: JSON.stringify({ images: base64Images })
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to upload images');
-      }
+      console.log('Upload response status:', response.status);
       
       const data = await response.json();
+      console.log('Upload response data:', data);
+      
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+      
       setUploadedImages([...uploadedImages, ...data.images]);
       toast.success('Images uploaded successfully!');
     } catch (error) {
       console.error('Error uploading images:', error);
-      toast.error('Failed to upload images. Please try again.');
+      toast.error(error.message || 'Failed to upload images. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -153,9 +174,7 @@ function ProductForm() {
         brand: data.brand || 'Generic',
         stock: parseInt(data.inventory) || 0,
         features: data.features ? data.features.split(',').map(f => f.trim()) : []
-      };
-
-      const token = localStorage.getItem('token');
+      };      const token = getAuthToken();
       const url = isEditMode 
         ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}` 
         : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`;
@@ -166,7 +185,7 @@ function ProductForm() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...getAuthHeaders()
         },
         body: JSON.stringify(productData)
       });
@@ -183,6 +202,34 @@ function ProductForm() {
       toast.error(error.message || 'Failed to save product. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+  // Test authentication
+  const testAuth = async () => {
+    try {
+      const token = getAuthToken();
+      console.log('Testing auth with token:', !!token);
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/test`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        }
+      });
+      
+      const data = await response.json();
+      console.log('Auth test response:', data);
+      
+      if (response.ok) {
+        toast.success(`Auth working! User: ${data.user.email} (${data.user.role})`);
+      } else {
+        toast.error(`Auth failed: ${data.message}`);
+      }
+    } catch (error) {
+      console.error('Auth test error:', error);
+      toast.error('Auth test failed');
     }
   };
 

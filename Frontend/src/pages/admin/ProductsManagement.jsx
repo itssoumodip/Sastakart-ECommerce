@@ -6,6 +6,7 @@ import { Search, Edit, Trash2, Filter, ArrowUpDown, Plus, Package, Eye, Shopping
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api';
+import { getAuthToken, getAuthHeaders } from '../../utils/auth';
 
 function ProductsManagement() {
   const [products, setProducts] = useState([]);
@@ -45,13 +46,12 @@ function ProductsManagement() {
       setLoading(false);
     }
   };
-
   const deleteProduct = async (productId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.delete(`http://localhost:5000${API_ENDPOINTS.PRODUCTS}/${productId}`, {
         headers: {
-          Authorization: `Bearer ${token}`
+          ...getAuthHeaders()
         }
       });
       

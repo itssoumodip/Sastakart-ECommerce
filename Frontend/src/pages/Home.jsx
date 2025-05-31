@@ -6,7 +6,7 @@ const Home = () => {
     <div className="bg-white">
       {/* Hero Section */}
       <section className="bg-gray-50">
-        <div className="container mx-auto px-4 py-16 md:py-24">
+        <div className="container mt-10 mx-auto px-4 py-16 md:py-24">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8">              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
                 India's Premier Eco-Friendly Marketplace

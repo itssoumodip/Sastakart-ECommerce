@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, ArrowUpDown, Eye, ShoppingBag, Package, Truck, CheckCircle, Clock, DollarSign, CreditCard, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_ENDPOINTS } from '../../config/api';
+import { getAuthHeaders } from '../../utils/auth'; // Added import
 
 function OrdersManagement() {
   const [orders, setOrders] = useState([]);
@@ -24,14 +25,10 @@ function OrdersManagement() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000${API_ENDPOINTS.ADMIN_ORDERS || '/api/orders/admin/orders'}`, {
         method: 'GET',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: getAuthHeaders(), // Updated to use getAuthHeaders
       });
 
       if (!response.ok) {

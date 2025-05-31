@@ -26,6 +26,7 @@ import {
   Award,
   Package
 } from 'lucide-react';
+import { getAuthHeaders } from '../utils/auth'; // Added import
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -138,10 +139,7 @@ const ProductDetail = () => {
     try {
       const response = await fetch(`http://localhost:5000/api/products/${id}/reviews`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers: getAuthHeaders(), // Updated to use getAuthHeaders
         body: JSON.stringify(newReview)
       });
       

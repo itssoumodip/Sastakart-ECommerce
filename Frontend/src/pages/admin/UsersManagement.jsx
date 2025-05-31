@@ -5,6 +5,7 @@ import { Search, Filter, Edit, Trash2, ArrowUpDown, Plus, Users, UserCheck, User
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api';
+import { getAuthHeaders } from '../../utils/auth';
 
 function UsersManagement() {
   const [users, setUsers] = useState([]);
@@ -30,10 +31,9 @@ function UsersManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       const response = await axios.get(`http://localhost:5000${API_ENDPOINTS.ADMIN_USERS}`, {
         headers: {
-          Authorization: `Bearer ${token}`
+          ...getAuthHeaders()
         }
       });
       
@@ -60,11 +60,10 @@ function UsersManagement() {
 
   const createUser = async (userData) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.post(`http://localhost:5000${API_ENDPOINTS.ADMIN_CREATE_USER}`, userData, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
         }
       });
       
@@ -82,11 +81,10 @@ function UsersManagement() {
 
   const updateUser = async (userId, userData) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.put(`http://localhost:5000${API_ENDPOINTS.ADMIN_UPDATE_USER(userId)}`, userData, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
         }
       });
       
@@ -105,10 +103,9 @@ function UsersManagement() {
 
   const deleteUserAPI = async (userId) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.delete(`http://localhost:5000${API_ENDPOINTS.ADMIN_DELETE_USER(userId)}`, {
         headers: {
-          Authorization: `Bearer ${token}`
+          ...getAuthHeaders()
         }
       });
       
