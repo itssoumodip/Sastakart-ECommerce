@@ -16,9 +16,6 @@ import {
   Shield
 } from 'lucide-react';
 
-// Import RetroPatterns for styling consistency
-import RetroPatterns from '../components/layout/RetroPatterns';
-
 const OrderSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -39,16 +36,12 @@ const OrderSuccess = () => {
 
   const handleGoHome = () => {
     navigate('/');
-  };
-  return (
+  };  return (
     <>
       <Helmet>
-        <title>ORDER CONFIRMED - RETRO-SHOP</title>
+        <title>Order Confirmed - Modern Shop</title>
         <meta name="description" content="Your order has been successfully placed and confirmed." />
-      </Helmet>
-
-      <RetroPatterns />
-      <div className="min-h-screen bg-black pattern-grid-sm">
+      </Helmet>      <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto">
             {/* Success Animation */}
@@ -69,12 +62,11 @@ const OrderSuccess = () => {
                 }}
                 className="relative mb-6"
               >
-                <div className="w-32 h-32 bg-black border-4 border-white pixel-corners crt-effect flex items-center justify-center mx-auto vintage-border">
-                  <div className="scanline"></div>
+                <div className="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
                   <CheckCircle className="w-16 h-16 text-white" />
                 </div>
                 <motion.div
-                  className="absolute -top-2 -right-2 w-8 h-8 bg-white border-2 border-black flex items-center justify-center pixel-corners"
+                  className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 border-2 border-white rounded-full flex items-center justify-center shadow-md"
                   animate={{ 
                     rotate: [0, 10, -10, 0],
                     scale: [1, 1.1, 1]
@@ -85,145 +77,141 @@ const OrderSuccess = () => {
                     repeatType: "reverse"
                   }}
                 >
-                  <Star className="w-4 h-4 text-black" />
+                  <Star className="w-4 h-4 text-white fill-current" />
                 </motion.div>
               </motion.div>
               
               <motion.h1 
-                className="text-5xl font-bold text-white mb-4 font-mono uppercase tracking-wider"
+                className="text-4xl md:text-5xl font-bold text-gray-900 mb-4"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                [ ORDER CONFIRMED! ]
+                Order Confirmed!
               </motion.h1>
               
               <motion.p 
-                className="text-xl text-gray-300 max-w-2xl mx-auto font-mono uppercase tracking-wide"
+                className="text-xl text-gray-600 max-w-2xl mx-auto"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-              >
-                THANK YOU FOR YOUR PURCHASE! YOUR ORDER HAS BEEN SUCCESSFULLY PLACED AND YOU'LL RECEIVE A CONFIRMATION EMAIL SHORTLY.
+                transition={{ duration: 0.6, delay: 0.6 }}              >
+                Thank you for your purchase! Your order has been successfully placed and you'll receive a confirmation email shortly.
               </motion.p>
             </motion.div>
             
             <div className="grid lg:grid-cols-2 gap-8 mb-12">
               {/* Order Details Card */}
               <motion.div 
-                className="bg-black border-4 border-white p-8 vintage-border pattern-grid-lg crt-effect"
+                className="bg-white border border-gray-200 rounded-2xl p-8 shadow-lg"
                 initial={{ x: -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.8 }}
               >
-                <div className="scanline"></div>
                 <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 bg-white border-2 border-black text-black flex items-center justify-center mr-4 pixel-corners">
+                  <div className="w-12 h-12 bg-gray-900 text-white rounded-xl flex items-center justify-center mr-4">
                     <Package className="w-6 h-6" />
                   </div>
-                  <h2 className="text-2xl font-bold text-white font-mono uppercase tracking-wider">ORDER DETAILS</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center py-3 border-b border-dashed border-gray-700">
-                    <span className="text-gray-300 font-mono">ORDER NUMBER:</span>
-                    <span className="font-semibold text-white bg-black border-2 border-white px-3 py-1 font-mono pixel-corners">{orderId}</span>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Order Number:</span>
+                    <span className="font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-lg">{orderId}</span>
                   </div>
                   
-                  <div className="flex justify-between items-center py-3 border-b border-dashed border-gray-700">
-                    <span className="text-gray-300 font-mono">ORDER DATE:</span>
-                    <span className="font-semibold text-white font-mono">
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Order Date:</span>
+                    <span className="font-semibold text-gray-900">
                       {new Date().toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
-                      }).toUpperCase()}
+                      })}
                     </span>
                   </div>
                   
-                  <div className="flex justify-between items-center py-3 border-b border-dashed border-gray-700">
-                    <span className="text-gray-300 font-mono">ESTIMATED DELIVERY:</span>
-                    <span className="font-semibold text-white font-mono">
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Estimated Delivery:</span>
+                    <span className="font-semibold text-gray-900">
                       {new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
-                      }).toUpperCase()}
+                      })}
                     </span>
                   </div>
                   
                   <div className="flex justify-between items-center py-3">
-                    <span className="text-gray-300 font-mono">PAYMENT STATUS:</span>
-                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-white text-black border-2 border-black font-mono pixel-corners">
+                    <span className="text-gray-600 font-medium">Payment Status:</span>
+                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full">
                       <CheckCircle className="w-4 h-4 mr-1" />
-                      PAID
+                      Paid
                     </span>
                   </div>
-                </div>
-              </motion.div>
+                </div>              </motion.div>
 
               {/* What's Next Card */}
               <motion.div 
-                className="bg-black border-4 border-white p-8 vintage-border pattern-stripes-horizontal"
+                className="bg-white border border-gray-200 rounded-2xl p-8 shadow-lg"
                 initial={{ x: 50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 1 }}
               >
                 <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 bg-white border-2 border-black text-black flex items-center justify-center mr-4 pixel-corners">
+                  <div className="w-12 h-12 bg-gray-900 text-white rounded-xl flex items-center justify-center mr-4">
                     <Clock className="w-6 h-6" />
                   </div>
-                  <h2 className="text-2xl font-bold text-white font-mono uppercase tracking-wider">WHAT'S NEXT?</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">What's Next?</h2>
                 </div>
                 
                 <div className="space-y-4">
                   <motion.div 
-                    className="flex items-start space-x-3 p-3 bg-black border-2 border-white pixel-corners vintage-border"
+                    className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.2 }}
                   >
-                    <div className="w-8 h-8 bg-white border border-black flex items-center justify-center flex-shrink-0 pixel-corners">
-                      <Mail className="w-4 h-4 text-black" />
+                    <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-medium text-white font-mono uppercase">ORDER CONFIRMATION EMAIL</p>
-                      <p className="text-sm text-gray-400 font-mono">
-                        YOU'LL RECEIVE AN EMAIL CONFIRMATION WITH YOUR ORDER DETAILS SHORTLY.
+                      <p className="font-medium text-gray-900 mb-1">Order Confirmation Email</p>
+                      <p className="text-sm text-gray-600">
+                        You'll receive an email confirmation with your order details shortly.
                       </p>
                     </div>
                   </motion.div>
                   
                   <motion.div 
-                    className="flex items-start space-x-3 p-3 bg-black border-2 border-white pixel-corners vintage-border"
+                    className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.4 }}
                   >
-                    <div className="w-8 h-8 bg-white border border-black flex items-center justify-center flex-shrink-0 pixel-corners">
-                      <Package className="w-4 h-4 text-black" />
+                    <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Package className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-medium text-white font-mono uppercase">ORDER PROCESSING</p>
-                      <p className="text-sm text-gray-400 font-mono">
-                        WE'LL START PREPARING YOUR ORDER FOR SHIPMENT WITHIN 24 HOURS.
+                      <p className="font-medium text-gray-900 mb-1">Order Processing</p>
+                      <p className="text-sm text-gray-600">
+                        We'll start preparing your order for shipment within 24 hours.
                       </p>
-                    </div>
-                  </motion.div>
+                    </div>                  </motion.div>
                   
                   <motion.div 
-                    className="flex items-start space-x-3 p-3 bg-black border-2 border-white pixel-corners vintage-border"
+                    className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.6 }}
                   >
-                    <div className="w-8 h-8 bg-white border border-black flex items-center justify-center flex-shrink-0 pixel-corners">
-                      <Truck className="w-4 h-4 text-black" />
+                    <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Truck className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-medium text-white font-mono uppercase">SHIPPING UPDATES</p>
-                      <p className="text-sm text-gray-400 font-mono">
-                        YOU'LL RECEIVE TRACKING INFORMATION ONCE YOUR ORDER SHIPS.
+                      <p className="font-medium text-gray-900 mb-1">Shipping Updates</p>
+                      <p className="text-sm text-gray-600">
+                        You'll receive tracking information once your order ships.
                       </p>
                     </div>
                   </motion.div>
@@ -240,68 +228,64 @@ const OrderSuccess = () => {
             >
               <motion.button
                 onClick={handleViewOrders}
-                className="bg-white text-black border-4 border-black hover:bg-black hover:text-white transition-colors duration-300 flex items-center justify-center space-x-2 px-8 py-4 font-mono uppercase tracking-wider pixel-corners crt-effect"
+                className="btn-primary flex items-center justify-center space-x-2 px-8 py-4"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <div className="scanline"></div>
                 <Package className="w-5 h-5" />
-                <span>VIEW MY ORDERS</span>
+                <span>View My Orders</span>
               </motion.button>
               
               <motion.button
                 onClick={handleContinueShopping}
-                className="bg-black text-white border-4 border-white hover:bg-white hover:text-black transition-colors duration-300 flex items-center justify-center space-x-2 px-8 py-4 font-mono uppercase tracking-wider pixel-corners crt-effect"
+                className="btn-outline flex items-center justify-center space-x-2 px-8 py-4"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <div className="scanline"></div>
                 <ShoppingBag className="w-5 h-5" />
-                <span>CONTINUE SHOPPING</span>
+                <span>Continue Shopping</span>
               </motion.button>
               
               <motion.button
                 onClick={handleGoHome}
-                className="bg-black text-white border-4 border-white hover:bg-white hover:text-black transition-colors duration-300 flex items-center justify-center space-x-2 px-8 py-4 font-mono uppercase tracking-wider pixel-corners crt-effect"
+                className="btn-outline flex items-center justify-center space-x-2 px-8 py-4"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <div className="scanline"></div>
                 <Home className="w-5 h-5" />
-                <span>BACK TO HOME</span>
+                <span>Back to Home</span>
               </motion.button>
             </motion.div>
 
             {/* Help & Support Section */}
             <motion.div 
-              className="bg-black border-4 border-white p-8 mb-8 vintage-border pattern-dots crt-effect"
+              className="bg-white border border-gray-200 rounded-2xl p-8 mb-8 shadow-lg"
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.6, delay: 2 }}
             >
-              <div className="scanline"></div>
               <div className="text-center">
-                <div className="w-16 h-16 bg-white border-2 border-black text-black flex items-center justify-center mx-auto mb-4 pixel-corners">
+                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Gift className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4 font-mono uppercase tracking-wider">NEED HELP?</h3>
-                <p className="text-gray-300 mb-6 font-mono">
-                  IF YOU HAVE ANY QUESTIONS ABOUT YOUR ORDER, OUR CUSTOMER SUPPORT TEAM IS HERE TO HELP.
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Need Help?</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  If you have any questions about your order, our customer support team is here to help.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
-                    href="mailto:support@retroshop.com"
-                    className="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-white text-black border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 font-mono uppercase tracking-wider pixel-corners"
+                    href="mailto:support@modernshop.com"
+                    className="btn-primary inline-flex items-center justify-center space-x-2"
                   >
                     <Mail className="w-5 h-5" />
-                    <span>EMAIL SUPPORT</span>
+                    <span>Email Support</span>
                   </a>
                   <a
                     href="tel:+1-555-123-4567"
-                    className="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-black text-white border-2 border-white hover:bg-white hover:text-black transition-colors duration-300 font-mono uppercase tracking-wider pixel-corners"
+                    className="btn-outline inline-flex items-center justify-center space-x-2"
                   >
                     <span>📞</span>
-                    <span>CALL US: (555) 123-4567</span>
+                    <span>Call Us: (555) 123-4567</span>
                   </a>
                 </div>
               </div>
@@ -314,33 +298,32 @@ const OrderSuccess = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.6, delay: 2.2 }}
             >
-              <div className="bg-black border-4 border-white p-6 text-center vintage-border pattern-stripes">
-                <div className="w-12 h-12 bg-white border-2 border-black flex items-center justify-center mx-auto mb-3 pixel-corners">
-                  <Shield className="w-6 h-6 text-black" />
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+                <div className="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Shield className="w-6 h-6" />
                 </div>
-                <h4 className="font-semibold text-white mb-2 font-mono uppercase tracking-wide">SECURE PAYMENT</h4>
-                <p className="text-sm text-gray-400 font-mono">YOUR PAYMENT INFORMATION IS ENCRYPTED AND SECURE</p>
+                <h4 className="font-semibold text-gray-900 mb-2">Secure Payment</h4>
+                <p className="text-sm text-gray-600">Your payment information is encrypted and secure</p>
               </div>
               
-              <div className="bg-black border-4 border-white p-6 text-center vintage-border pattern-grid-sm">
-                <div className="w-12 h-12 bg-white border-2 border-black flex items-center justify-center mx-auto mb-3 pixel-corners">
-                  <Truck className="w-6 h-6 text-black" />
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Truck className="w-6 h-6" />
                 </div>
-                <h4 className="font-semibold text-white mb-2 font-mono uppercase tracking-wide">FAST SHIPPING</h4>
-                <p className="text-sm text-gray-400 font-mono">FREE SHIPPING ON ORDERS OVER $50</p>
+                <h4 className="font-semibold text-gray-900 mb-2">Fast Shipping</h4>
+                <p className="text-sm text-gray-600">Free shipping on orders over $50</p>
               </div>
               
-              <div className="bg-black border-4 border-white p-6 text-center vintage-border pattern-dots">
-                <div className="w-12 h-12 bg-white border-2 border-black flex items-center justify-center mx-auto mb-3 pixel-corners">
-                  <Star className="w-6 h-6 text-black" />
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+                <div className="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Star className="w-6 h-6" />
                 </div>
-                <h4 className="font-semibold text-white mb-2 font-mono uppercase tracking-wide">30-DAY RETURNS</h4>
-                <p className="text-sm text-gray-400 font-mono">EASY RETURNS WITHIN 30 DAYS OF PURCHASE</p>
+                <h4 className="font-semibold text-gray-900 mb-2">30-Day Returns</h4>
+                <p className="text-sm text-gray-600">Easy returns within 30 days of purchase</p>
               </div>
             </motion.div>
           </div>
         </div>
-        <div className="noise-overlay"></div>
       </div>
     </>
   );

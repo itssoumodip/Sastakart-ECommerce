@@ -54,8 +54,8 @@ function ProductForm() {
         inventory: 45,
         status: 'Active',
         images: [
-          'https://placehold.co/600x400/black/white?text=Headphones+1',
-          'https://placehold.co/600x400/black/white?text=Headphones+2'
+          'https://placehold.co/600x400/e5e7eb/6b7280?text=Headphones+1',
+          'https://placehold.co/600x400/e5e7eb/6b7280?text=Headphones+2'
         ],
         variants: [
           { id: 1, color: 'Black', size: 'One Size', price: 99.99, inventory: 25 },
@@ -93,74 +93,64 @@ function ProductForm() {
   const removeImage = (index) => {
     setUploadedImages(uploadedImages.filter((_, i) => i !== index));
   };
+
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      // Prepare complete product data with images and variants
+      // Prepare complete product data with images
       const productData = {
         ...data,
-        images: uploadedImages,
-        // Include other data as needed
+        images: uploadedImages
       };
-      
-      // In a real application, you would make an API call here
-      console.log('Submitting product data:', productData);
+
+      // In a real app, you would make an API call here
+      console.log('Product data:', productData);
       
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      toast.success(isEditMode ? 'Product updated successfully' : 'Product created successfully');
+      toast.success(isEditMode ? 'Product updated successfully!' : 'Product created successfully!');
       navigate('/admin/products');
     } catch (error) {
-      toast.error('Something went wrong. Please try again.');
+      console.error('Error saving product:', error);
+      toast.error('Failed to save product. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Add empty variant handler
-  const addVariant = () => {
-    setSelectedVariant({
-      id: Date.now(),
-      color: '',
-      size: '',
-      price: 0,
-      inventory: 0
-    });
-  };
-
   return (
     <motion.div 
-      className="min-h-screen bg-black text-white"
+      className="min-h-screen bg-white"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
       <div className="container mx-auto px-4 py-8">
         <Helmet>
-          <title>{isEditMode ? 'Edit Product' : 'Add New Product'} | Admin Dashboard</title>
+          <title>{isEditMode ? 'Edit Product' : 'Create Product'} | Admin Dashboard</title>
         </Helmet>
 
         {/* Header */}
         <motion.div 
-          className="flex items-center justify-between mb-8"
+          className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4"
           variants={itemVariants}
         >
           <div className="flex items-center gap-4">
             <motion.button
               onClick={() => navigate('/admin/products')}
-              className="p-2 text-white border-2 border-white hover:bg-white hover:text-black transition-colors duration-200"
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               whileHover={{ scale: 1.05, x: -2 }}
               whileTap={{ scale: 0.95 }}
             >
               <ArrowLeft className="h-5 w-5" />
             </motion.button>
             <div>
-              <h1 className="text-4xl font-mono font-bold text-white flex items-center gap-3 tracking-widest uppercase">
-                <Package className="h-8 w-8 text-white" />
-                [ {isEditMode ? 'EDIT PRODUCT' : 'NEW PRODUCT'} ]
+              <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
+                <Package className="h-8 w-8 text-gray-600" />
+                {isEditMode ? 'Edit Product' : 'Create Product'}
               </h1>
-              <p className="text-gray-400 mt-2 font-mono">
+              <p className="text-gray-600 mt-2">
                 {isEditMode ? 'Update product information and settings' : 'Create a new product for your store'}
               </p>
             </div>
@@ -169,7 +159,7 @@ function ProductForm() {
           <div className="flex items-center gap-3">
             <motion.button
               type="button"
-              className="px-4 py-2 text-black bg-white border-2 border-white font-mono uppercase tracking-wider hover:bg-black hover:text-white transition-colors duration-200 flex items-center gap-2"
+              className="btn-outline flex items-center gap-2"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -179,12 +169,12 @@ function ProductForm() {
             <motion.button
               onClick={handleSubmit(onSubmit)}
               disabled={loading}
-              className="px-6 py-2 bg-black text-white border-4 border-white font-mono uppercase tracking-wider hover:bg-white hover:text-black transition-colors duration-200 flex items-center gap-2 font-medium disabled:opacity-50"
+              className="btn-primary flex items-center gap-2 disabled:opacity-50"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <Save className="h-4 w-4" />
-              {loading ? 'SAVING...' : isEditMode ? 'UPDATE' : 'CREATE'}
+              {loading ? 'Saving...' : isEditMode ? 'Update' : 'Create'}
             </motion.button>
           </div>
         </motion.div>
@@ -197,295 +187,288 @@ function ProductForm() {
               variants={itemVariants}
             >
               {/* Basic Information */}
-              <div className="bg-black border-4 border-white p-6">
-                <h2 className="text-xl font-bold text-white mb-6 font-mono uppercase tracking-wider flex items-center gap-2">
-                  <Edit3 className="h-5 w-5 text-white" />
-                  [ BASIC INFORMATION ]
+              <div className="card p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <Edit3 className="h-5 w-5" />
+                  Basic Information
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2 font-mono uppercase tracking-wider">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Product Name *
                     </label>
                     <input
+                      type="text"
                       {...register('name', { required: 'Product name is required' })}
-                      className="w-full px-4 py-3 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white transition-all duration-200"
+                      className="input"
                       placeholder="Enter product name"
                     />
                     {errors.name && (
-                      <p className="mt-1 text-sm text-white">{errors.name.message}</p>
+                      <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2 font-mono uppercase tracking-wider">
-                      SKU *
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      SKU
                     </label>
                     <input
-                      {...register('sku', { required: 'SKU is required' })}
-                      className="w-full px-4 py-3 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white transition-all duration-200"
-                      placeholder="Enter SKU"
+                      type="text"
+                      {...register('sku')}
+                      className="input"
+                      placeholder="Product SKU"
                     />
-                    {errors.sku && (
-                      <p className="mt-1 text-sm text-white">{errors.sku.message}</p>
-                    )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2 font-mono uppercase tracking-wider">
-                      Regular Price *
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Price *
                     </label>
                     <input
                       type="number"
                       step="0.01"
-                      {...register('price', { required: 'Price is required', min: 0 })}
-                      className="w-full px-4 py-3 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white transition-all duration-200"
+                      {...register('price', { required: 'Price is required' })}
+                      className="input"
                       placeholder="0.00"
                     />
                     {errors.price && (
-                      <p className="mt-1 text-sm text-white">{errors.price.message}</p>
+                      <p className="text-red-600 text-sm mt-1">{errors.price.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2 font-mono uppercase tracking-wider">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Sale Price
                     </label>
                     <input
                       type="number"
                       step="0.01"
-                      {...register('salePrice', { min: 0 })}
-                      className="w-full px-4 py-3 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white transition-all duration-200"
+                      {...register('salePrice')}
+                      className="input"
                       placeholder="0.00"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2 font-mono uppercase tracking-wider">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Category *
                     </label>
                     <select
                       {...register('category', { required: 'Category is required' })}
-                      className="w-full px-4 py-3 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white transition-all duration-200"
+                      className="input"
                     >
-                      <option value="">Select Category</option>
+                      <option value="">Select category</option>
                       {categories.map(category => (
                         <option key={category} value={category}>{category}</option>
                       ))}
                     </select>
                     {errors.category && (
-                      <p className="mt-1 text-sm text-white">{errors.category.message}</p>
+                      <p className="text-red-600 text-sm mt-1">{errors.category.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2 font-mono uppercase tracking-wider">
-                      Stock Quantity *
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Status
                     </label>
-                    <input
-                      type="number"
-                      {...register('inventory', { required: 'Stock quantity is required', min: 0 })}
-                      className="w-full px-4 py-3 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white transition-all duration-200"
-                      placeholder="0"
-                    />
-                    {errors.inventory && (
-                      <p className="mt-1 text-sm text-white">{errors.inventory.message}</p>
-                    )}
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-white mb-2 font-mono uppercase tracking-wider">
-                      Product Status
-                    </label>
-                    <div className="flex gap-4 items-center">
+                    <select
+                      {...register('status')}
+                      className="input"
+                    >
                       {statusOptions.map(status => (
-                        <label key={status} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            value={status}
-                            {...register('status', { required: true })}
-                            className="w-4 h-4 text-white bg-black border-white focus:ring-white"
-                          />
-                          <span className="text-white font-mono">{status}</span>
-                        </label>
+                        <option key={status} value={status}>{status}</option>
                       ))}
-                    </div>
+                    </select>
                   </div>
+                </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-white mb-2 font-mono uppercase tracking-wider">
-                      Description *
-                    </label>
-                    <textarea
-                      {...register('description', { required: 'Description is required' })}
-                      rows={6}
-                      className="w-full px-4 py-3 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white transition-all duration-200"
-                      placeholder="Enter product description"
-                    ></textarea>
-                    {errors.description && (
-                      <p className="mt-1 text-sm text-white">{errors.description.message}</p>
-                    )}
-                  </div>
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    {...register('description')}
+                    rows={4}
+                    className="input"
+                    placeholder="Product description..."
+                  />
                 </div>
               </div>
 
               {/* Product Images */}
-              <div className="bg-black border-4 border-white p-6">
-                <h2 className="text-xl font-bold text-white mb-6 font-mono uppercase tracking-wider flex items-center gap-2">
-                  <Upload className="h-5 w-5 text-white" />
-                  [ PRODUCT IMAGES ]
+              <div className="card p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  Product Images
                 </h2>
-                
-                {/* Image Upload */}
-                <div className="mb-6">
-                  <label 
-                    className="w-full h-32 border-2 border-dashed border-white flex items-center justify-center cursor-pointer hover:bg-gray-900 transition-colors duration-200"
-                  >
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
-                    <div className="text-center">
-                      <Upload className="h-8 w-8 text-white mx-auto mb-2" />
-                      <p className="text-white font-mono uppercase tracking-wider">DRAG & DROP OR CLICK TO UPLOAD</p>
+
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <div className="text-sm text-gray-600 mb-4">
+                      <label htmlFor="images" className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer">
+                        Click to upload
+                      </label>
+                      <span> or drag and drop</span>
                     </div>
-                  </label>
-                </div>
-                
-                {/* Image Preview */}
-                {uploadedImages.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {uploadedImages.map((image, index) => (
-                      <div key={index} className="relative group border-2 border-white">
-                        <img 
-                          src={image} 
-                          alt={`Product preview ${index + 1}`} 
-                          className="w-full h-32 object-cover"
-                        />
-                        <button 
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-2 right-2 p-1 bg-black text-white border border-white hover:bg-white hover:text-black transition-colors"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
+                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                    <input
+                      id="images"
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
                   </div>
-                )}
+
+                  {uploadedImages.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <AnimatePresence>
+                        {uploadedImages.map((image, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            className="relative group"
+                          >
+                            <img
+                              src={image}
+                              alt={`Product ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                            <motion.button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <X className="h-4 w-4" />
+                            </motion.button>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
 
-            {/* Sidebar Information */}
-            <motion.div variants={itemVariants} className="space-y-6">
-              <div className="bg-black border-4 border-white p-6">
-                <h2 className="text-xl font-bold text-white mb-6 font-mono uppercase tracking-wider">
-                  [ SPECIFICATIONS ]
+            {/* Sidebar */}
+            <motion.div 
+              className="space-y-6"
+              variants={itemVariants}
+            >
+              {/* Inventory */}
+              <div className="card p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Inventory
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-semibold text-white font-mono uppercase tracking-wider">Key</label>
-                      <label className="block text-sm font-semibold text-white font-mono uppercase tracking-wider">Value</label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        placeholder="e.g. Weight"
-                        className="flex-1 px-4 py-2 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white"
-                      />
-                      <input
-                        placeholder="e.g. 2.5 lbs"
-                        className="flex-1 px-4 py-2 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white"
-                      />
-                      <button
-                        type="button"
-                        className="p-2 border-2 border-white text-white hover:bg-white hover:text-black transition-colors"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    </div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Stock Quantity *
+                    </label>
+                    <input
+                      type="number"
+                      {...register('inventory', { required: 'Stock quantity is required' })}
+                      className="input"
+                      placeholder="0"
+                    />
+                    {errors.inventory && (
+                      <p className="text-red-600 text-sm mt-1">{errors.inventory.message}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Low Stock Alert
+                    </label>
+                    <input
+                      type="number"
+                      {...register('lowStockAlert')}
+                      className="input"
+                      placeholder="10"
+                    />
                   </div>
                 </div>
               </div>
-              
-              <div className="bg-black border-4 border-white p-6">
-                <h2 className="text-xl font-bold text-white mb-6 font-mono uppercase tracking-wider">
-                  [ PRODUCT VARIANTS ]
+
+              {/* SEO */}
+              <div className="card p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">
+                  SEO
                 </h2>
                 
-                <button
-                  type="button"
-                  onClick={addVariant}
-                  className="w-full py-3 border-2 border-white bg-black text-white font-mono hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-2 mb-4"
-                >
-                  <Plus className="h-4 w-4" />
-                  ADD VARIANT
-                </button>
-                
-                {/* Show basic variant info */}
-                {selectedVariant && (
-                  <div className="border-2 border-white p-4 mt-4">
-                    <h3 className="font-mono uppercase tracking-wider text-white mb-4 border-b border-white pb-2">VARIANT DETAILS</h3>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-mono uppercase tracking-wider text-white mb-1">Color</label>
-                        <input
-                          value={selectedVariant.color}
-                          onChange={(e) => setSelectedVariant({...selectedVariant, color: e.target.value})}
-                          className="w-full px-3 py-2 border-2 border-white bg-black text-white font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-mono uppercase tracking-wider text-white mb-1">Size</label>
-                        <input
-                          value={selectedVariant.size}
-                          onChange={(e) => setSelectedVariant({...selectedVariant, size: e.target.value})}
-                          className="w-full px-3 py-2 border-2 border-white bg-black text-white font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-mono uppercase tracking-wider text-white mb-1">Price</label>
-                        <input
-                          type="number"
-                          value={selectedVariant.price}
-                          onChange={(e) => setSelectedVariant({...selectedVariant, price: parseFloat(e.target.value)})}
-                          className="w-full px-3 py-2 border-2 border-white bg-black text-white font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-mono uppercase tracking-wider text-white mb-1">Inventory</label>
-                        <input
-                          type="number"
-                          value={selectedVariant.inventory}
-                          onChange={(e) => setSelectedVariant({...selectedVariant, inventory: parseInt(e.target.value)})}
-                          className="w-full px-3 py-2 border-2 border-white bg-black text-white font-mono"
-                        />
-                      </div>
-                      
-                      <div className="flex justify-end pt-2 border-t border-white space-x-2">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedVariant(null)}
-                          className="px-3 py-2 border-2 border-white font-mono text-white hover:bg-white hover:text-black transition-colors"
-                        >
-                          CANCEL
-                        </button>
-                        <button
-                          type="button"
-                          className="px-3 py-2 bg-white text-black border-2 border-white font-mono hover:bg-black hover:text-white transition-colors"
-                        >
-                          SAVE VARIANT
-                        </button>
-                      </div>
-                    </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Meta Title
+                    </label>
+                    <input
+                      type="text"
+                      {...register('metaTitle')}
+                      className="input"
+                      placeholder="SEO title"
+                    />
                   </div>
-                )}
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Meta Description
+                    </label>
+                    <textarea
+                      {...register('metaDescription')}
+                      rows={3}
+                      className="input"
+                      placeholder="SEO description"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="card p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">
+                  Quick Actions
+                </h2>
+                
+                <div className="space-y-3">
+                  <motion.button
+                    type="button"
+                    className="w-full btn-outline text-sm"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Duplicate Product
+                  </motion.button>
+                  
+                  <motion.button
+                    type="button"
+                    className="w-full btn-outline text-sm"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Export Data
+                  </motion.button>
+                  
+                  {isEditMode && (
+                    <motion.button
+                      type="button"
+                      className="w-full text-red-600 border border-red-200 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Trash2 className="h-4 w-4 inline mr-2" />
+                      Delete Product
+                    </motion.button>
+                  )}
+                </div>
               </div>
             </motion.div>
           </div>

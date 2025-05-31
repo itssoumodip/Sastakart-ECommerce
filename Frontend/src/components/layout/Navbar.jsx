@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
-import { Search, ShoppingCart, User, Menu, X, LogOut, Package, Settings, Heart, Bell } from 'lucide-react'
+import { Search, ShoppingCart, User, Menu, X, LogOut, Package, Settings, Heart } from 'lucide-react'
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -44,161 +44,116 @@ const Navbar = () => {
     navigate('/')
   }
 
-  const menuVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,      transition: { duration: 0.2, ease: "easeOut" }
-    },
-    exit: { 
-      opacity: 0, 
-      y: -20,
-      transition: { duration: 0.15, ease: "easeIn" }
-    }
-  }
-
   return (
-    <motion.nav 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-black/95 backdrop-blur-md shadow-lg border-b-4 border-white' 
-          : 'bg-black/80 backdrop-blur-sm border-b-2 border-white/30'
-      }`}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-    >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-white shadow-md border-b border-gray-200' 
+        : 'bg-white/95 backdrop-blur-sm'
+    }`}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex-shrink-0"
           >
             <Link 
               to="/" 
-              className="text-2xl font-bold text-white hover:text-gray-300 transition-colors duration-200 font-mono tracking-wider"
-              style={{
-                textShadow: '2px 2px 0px #000',
-                letterSpacing: '0.1em'
-              }}
+              className="text-xl lg:text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors duration-200"
             >
-              [ RETRO-SHOP ]
+              <span className="hidden sm:inline">MODERN SHOP</span>
+              <span className="sm:hidden">MS</span>
             </Link>
           </motion.div>
 
           {/* Search Bar - Desktop */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-lg mx-8">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-8">
             <div className="relative w-full">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="SEARCH PRODUCTS..."
-                className="w-full pl-12 pr-4 py-3 border-2 border-white bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-all duration-200 hover:border-gray-300 font-mono uppercase tracking-wider"
-                style={{ letterSpacing: '0.05em' }}
+                placeholder="Search products..."
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
               />
-              <Search className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
           </form>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
-              <Link 
-                to="/products" 
-                className="text-white hover:text-gray-300 transition-colors font-mono uppercase tracking-wider border-2 border-transparent hover:border-white px-3 py-1"
-              >
-                PRODUCTS
-              </Link>
-            </motion.div>
-            
-            {/* Wishlist */}
-            <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
-              <Link to="/wishlist" className="relative text-white hover:text-gray-300 transition-colors border-2 border-white p-2">
-                <Heart className="h-6 w-6" />
-              </Link>
-            </motion.div>
+          <div className="hidden lg:flex items-center space-x-8">
+            <Link to="/products" className="nav-link">
+              Products
+            </Link>
+            <Link to="/wishlist" className="nav-link">
+              Wishlist
+            </Link>
             
             {/* Cart */}
-            <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
-              <Link to="/cart" className="relative text-white hover:text-gray-300 transition-colors border-2 border-white p-2">
-                <ShoppingCart className="h-6 w-6" />
-                {getCartItemsCount() > 0 && (
-                  <motion.span 
-                    className="absolute -top-2 -right-2 bg-white text-black text-xs font-bold font-mono w-6 h-6 flex items-center justify-center border-2 border-black"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  >
-                    {getCartItemsCount()}
-                  </motion.span>
-                )}
-              </Link>
-            </motion.div>
+            <Link 
+              to="/cart" 
+              className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors duration-200"
+            >
+              <ShoppingCart className="h-6 w-6" />
+              {getCartItemsCount() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {getCartItemsCount()}
+                </span>
+              )}
+            </Link>
 
             {/* User Menu */}
             {isAuthenticated ? (
               <div className="relative">
-                <motion.button
+                <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors border-2 border-white p-2"
-                  whileHover={{ y: -2 }}
-                  whileTap={{ y: 0 }}
+                  className="flex items-center space-x-2 p-2 text-gray-700 hover:text-gray-900 transition-colors duration-200"
                 >
-                  <div className="w-8 h-8 bg-white text-black border-2 border-black flex items-center justify-center">
-                    <span className="text-black text-sm font-bold font-mono">
-                      {user?.name?.charAt(0)?.toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="text-sm font-mono uppercase tracking-wider hidden lg:block">{user?.name}</span>
-                </motion.button>
-                
+                  <User className="h-6 w-6" />
+                  <span className="hidden xl:block text-sm font-medium">{user?.name}</span>
+                </button>
+
                 <AnimatePresence>
                   {isUserMenuOpen && (
                     <motion.div
-                      className="absolute right-0 mt-2 w-56 bg-black border-4 border-white py-2 z-50"
-                      variants={menuVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2"
                     >
-                      <div className="px-4 py-2 border-b-2 border-white">
-                        <p className="text-sm font-bold text-white font-mono uppercase">{user?.name}</p>
-                        <p className="text-sm text-gray-300 font-mono">{user?.email}</p>
-                      </div>
                       <Link
                         to="/profile"
-                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wider"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        <Settings className="h-4 w-4 mr-3" />
-                        PROFILE
-                      </Link>                      <Link
+                        <User className="h-4 w-4 mr-3" />
+                        Profile
+                      </Link>
+                      <Link
                         to="/profile/orders"
-                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wider"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         <Package className="h-4 w-4 mr-3" />
-                        ORDERS
+                        Orders
                       </Link>
                       {user?.role === 'admin' && (
                         <Link
                           to="/admin"
-                          className="flex items-center px-4 py-2 text-sm text-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wider"
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
                           <Settings className="h-4 w-4 mr-3" />
-                          ADMIN
+                          Admin
                         </Link>
                       )}
-                      <hr className="my-2 border-white" />
                       <button
                         onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wider"
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       >
                         <LogOut className="h-4 w-4 mr-3" />
-                        LOGOUT
+                        Logout
                       </button>
                     </motion.div>
                   )}
@@ -206,35 +161,43 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
-                  <Link
-                    to="/login"
-                    className="text-white hover:text-gray-300 transition-colors font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-white hover:text-black"
-                  >
-                    LOGIN
-                  </Link>
-                </motion.div>
-                <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
-                  <Link
-                    to="/register"
-                    className="bg-white text-black font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-black hover:text-white transition-all duration-300"
-                  >
-                    REGISTER
-                  </Link>
-                </motion.div>
+                <Link
+                  to="/login"
+                  className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="btn-primary"
+                >
+                  Sign Up
+                </Link>
               </div>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <motion.button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden text-white hover:text-gray-300 p-2 border-2 border-white"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </motion.button>
+          {/* Mobile menu button */}
+          <div className="lg:hidden flex items-center space-x-4">
+            <Link 
+              to="/cart" 
+              className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors duration-200"
+            >
+              <ShoppingCart className="h-6 w-6" />
+              {getCartItemsCount() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {getCartItemsCount()}
+                </span>
+              )}
+            </Link>
+            
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 text-gray-700 hover:text-gray-900 transition-colors duration-200"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Search */}
@@ -244,106 +207,98 @@ const Navbar = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="SEARCH PRODUCTS..."
-              className="w-full pl-12 pr-4 py-3 border-2 border-white bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white font-mono uppercase tracking-wider"
+              placeholder="Search products..."
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
             />
-            <Search className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           </form>
         </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              className="md:hidden border-t-2 border-white py-4"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex flex-col space-y-4">
-                <Link
-                  to="/products"
-                  className="text-white hover:text-gray-300 transition-colors font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-white hover:text-black"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  PRODUCTS
-                </Link>
-                <Link
-                  to="/cart"
-                  className="flex items-center text-white hover:text-gray-300 transition-colors font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-white hover:text-black"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <ShoppingCart className="h-5 w-5 mr-2" />
-                  CART ({getCartItemsCount()})
-                </Link>
-                
-                {isAuthenticated ? (
-                  <div className="flex flex-col space-y-3 pt-3 border-t-2 border-white">
-                    <div className="flex items-center space-x-3 border-2 border-white p-3">
-                      <div className="w-10 h-10 bg-white text-black border-2 border-black flex items-center justify-center">
-                        <span className="text-black font-bold font-mono">
-                          {user?.name?.charAt(0)?.toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-white font-mono uppercase">{user?.name}</p>
-                        <p className="text-xs text-gray-300 font-mono">{user?.email}</p>
-                      </div>
-                    </div>
-                    <Link
-                      to="/profile"
-                      className="text-white hover:text-gray-300 transition-colors font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-white hover:text-black"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      PROFILE
-                    </Link>                    <Link
-                      to="/profile/orders"
-                      className="text-white hover:text-gray-300 transition-colors font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-white hover:text-black"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      ORDERS
-                    </Link>
-                    {user?.role === 'admin' && (
-                      <Link
-                        to="/admin"
-                        className="text-white hover:text-gray-300 transition-colors font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-white hover:text-black"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        ADMIN
-                      </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="text-left text-white hover:text-gray-300 transition-colors font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-white hover:text-black"
-                    >
-                      LOGOUT
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col space-y-3 pt-3 border-t-2 border-white">
-                    <Link
-                      to="/login"
-                      className="text-white hover:text-gray-300 transition-colors font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-white hover:text-black"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      LOGIN
-                    </Link>
-                    <Link
-                      to="/register"
-                      className="bg-white text-black font-mono uppercase tracking-wider border-2 border-white px-4 py-2 hover:bg-black hover:text-white transition-all duration-300 w-fit"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      REGISTER
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
-    </motion.nav>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="lg:hidden bg-white border-t border-gray-200"
+          >
+            <div className="px-4 py-6 space-y-4">
+              <Link
+                to="/products"
+                className="block text-gray-700 hover:text-gray-900 transition-colors duration-200 font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Products
+              </Link>
+              <Link
+                to="/wishlist"
+                className="block text-gray-700 hover:text-gray-900 transition-colors duration-200 font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Wishlist
+              </Link>
+              
+              {isAuthenticated ? (
+                <div className="space-y-4 pt-4 border-t border-gray-200">
+                  <div className="flex items-center space-x-3 pb-2">
+                    <User className="h-6 w-6 text-gray-700" />
+                    <span className="font-medium text-gray-900">{user?.name}</span>
+                  </div>
+                  <Link
+                    to="/profile"
+                    className="block text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    to="/profile/orders"
+                    className="block text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Orders
+                  </Link>
+                  {user?.role === 'admin' && (
+                    <Link
+                      to="/admin"
+                      className="block text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="block text-gray-700 hover:text-gray-900 transition-colors duration-200 w-full text-left"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4 pt-4 border-t border-gray-200">
+                  <Link
+                    to="/login"
+                    className="block w-full text-center py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="block w-full text-center py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
   )
 }
 

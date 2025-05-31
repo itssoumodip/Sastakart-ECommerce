@@ -86,11 +86,10 @@ function OrderDetail() {
     setOrder({ ...order, status: newStatus });
     toast.success(`Order status updated to ${newStatus}`);
   };
-
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -98,21 +97,20 @@ function OrderDetail() {
   if (!order) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-black border-2 border-white text-white px-6 py-4">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm text-gray-900 px-6 py-4">
           Order not found. The order may have been deleted or the ID is invalid.
         </div>
         <button
           onClick={() => navigate('/admin/orders')}
-          className="mt-4 text-white hover:underline font-mono uppercase"
+          className="mt-4 text-blue-600 hover:text-blue-700 hover:underline"
         >
           Return to Orders
         </button>
       </div>
     );
   }
-
   return (
-    <div className="container mx-auto px-4 py-8 bg-black text-white">
+    <div className="container mx-auto px-4 py-8 bg-gray-50 min-h-screen">
       <Helmet>
         <title>{`Order ${order.id}`} | Admin</title>
       </Helmet>
@@ -120,7 +118,7 @@ function OrderDetail() {
       <div className="mb-8">
         <button
           onClick={() => navigate('/admin/orders')}
-          className="flex items-center text-white hover:text-gray-300 font-mono uppercase"
+          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
           Back to Orders
@@ -130,15 +128,15 @@ function OrderDetail() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white font-mono tracking-widest uppercase">[ ORDER {order.id} ]</h1>
-          <p className="text-gray-400 mt-1 font-mono">Placed on {order.date}</p>
+          <h1 className="text-3xl font-bold text-gray-900">Order {order.id}</h1>
+          <p className="text-gray-600 mt-1">Placed on {order.date}</p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <select
             value={order.status}
             onChange={handleStatusChange}
-            className="border-2 border-white py-2 px-3 bg-black text-white font-mono uppercase focus:outline-none focus:ring-2 focus:ring-white"
+            className="border border-gray-300 rounded-lg py-2 px-3 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="Pending">Pending</option>
             <option value="Processing">Processing</option>
@@ -148,7 +146,7 @@ function OrderDetail() {
           </select>
 
           <button 
-            className="flex items-center gap-1 border-2 border-white py-2 px-3 bg-black text-white hover:bg-white hover:text-black transition-colors font-mono uppercase"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             onClick={() => window.print()}
           >
             <Printer className="h-4 w-4" />
@@ -157,28 +155,27 @@ function OrderDetail() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Items and Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">        {/* Left Column - Items and Summary */}
         <div className="lg:col-span-2 space-y-8">
           {/* Order Items */}
-          <div className="bg-black border-4 border-white overflow-hidden">
-            <div className="p-6 border-b-2 border-white">
-              <h2 className="text-lg font-semibold text-white font-mono uppercase tracking-wider">[ ORDER ITEMS ]</h2>
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Order Items</h2>
             </div>
 
-            <div className="divide-y-2 divide-white">
+            <div className="divide-y divide-gray-200">
               {order.items.map((item) => (
                 <div key={item.id} className="p-6 flex items-center">
-                  <div className="h-15 w-15 overflow-hidden flex-shrink-0 border-2 border-white">
+                  <div className="h-15 w-15 overflow-hidden flex-shrink-0 rounded-lg border border-gray-200">
                     <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                   </div>
                   <div className="ml-4 flex-1">
-                    <h3 className="font-medium text-white font-mono uppercase">{item.name}</h3>
-                    <p className="text-sm text-gray-400 font-mono">SKU: {item.sku}</p>
+                    <h3 className="font-medium text-gray-900">{item.name}</h3>
+                    <p className="text-sm text-gray-600">SKU: {item.sku}</p>
                   </div>
-                  <div className="text-right font-mono">
-                    <div className="font-medium">${item.price.toFixed(2)} × {item.quantity}</div>
-                    <div className="font-bold">${item.total.toFixed(2)}</div>
+                  <div className="text-right">
+                    <div className="text-gray-600">${item.price.toFixed(2)} × {item.quantity}</div>
+                    <div className="font-semibold text-gray-900">${item.total.toFixed(2)}</div>
                   </div>
                 </div>
               ))}
@@ -186,61 +183,59 @@ function OrderDetail() {
           </div>
 
           {/* Order Summary */}
-          <div className="bg-black border-4 border-white overflow-hidden">
-            <div className="p-6 border-b-2 border-white">
-              <h2 className="text-lg font-semibold text-white font-mono uppercase tracking-wider">[ ORDER SUMMARY ]</h2>
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Order Summary</h2>
             </div>
             <div className="p-6">
-              <div className="space-y-3 text-sm font-mono">
+              <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-400 uppercase">Subtotal</span>
-                  <span>${order.subtotal.toFixed(2)}</span>
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="text-gray-900">${order.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400 uppercase">Shipping</span>
-                  <span>${order.shippingCost.toFixed(2)}</span>
+                  <span className="text-gray-600">Shipping</span>
+                  <span className="text-gray-900">${order.shippingCost.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400 uppercase">Tax</span>
-                  <span>${order.tax.toFixed(2)}</span>
+                  <span className="text-gray-600">Tax</span>
+                  <span className="text-gray-900">${order.tax.toFixed(2)}</span>
                 </div>
                 {order.discount > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-400 uppercase">Discount</span>
-                    <span className="text-white">-${order.discount.toFixed(2)}</span>
+                    <span className="text-gray-600">Discount</span>
+                    <span className="text-green-600">-${order.discount.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="border-t-2 border-white pt-3 mt-3">
-                  <div className="flex justify-between font-bold text-base">
-                    <span className="uppercase">Total</span>
-                    <span>${order.total.toFixed(2)}</span>
+                <div className="border-t border-gray-200 pt-3 mt-3">
+                  <div className="flex justify-between font-semibold text-base">
+                    <span className="text-gray-900">Total</span>
+                    <span className="text-gray-900">${order.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Right Column - Customer Info */}
+        </div>        {/* Right Column - Customer Info */}
         <div className="space-y-8">
           {/* Customer Information */}
-          <div className="bg-black border-4 border-white overflow-hidden">
-            <div className="p-6 border-b-2 border-white">
-              <h2 className="text-lg font-semibold text-white font-mono uppercase tracking-wider">[ CUSTOMER ]</h2>
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Customer</h2>
             </div>
             <div className="p-6">
-              <h3 className="font-medium text-white font-mono uppercase">{order.customer.name}</h3>
-              <div className="mt-4 space-y-2 font-mono">
+              <h3 className="font-medium text-gray-900">{order.customer.name}</h3>
+              <div className="mt-4 space-y-2">
                 <a 
                   href={`mailto:${order.customer.email}`} 
-                  className="flex items-center text-gray-400 hover:text-white"
+                  className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   {order.customer.email}
                 </a>
                 <a 
                   href={`tel:${order.customer.phone}`} 
-                  className="flex items-center text-gray-400 hover:text-white"
+                  className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
                 >
                   <Phone className="h-4 w-4 mr-2" />
                   {order.customer.phone}
@@ -250,12 +245,12 @@ function OrderDetail() {
           </div>
 
           {/* Shipping Information */}
-          <div className="bg-black border-4 border-white overflow-hidden">
-            <div className="p-6 border-b-2 border-white">
-              <h2 className="text-lg font-semibold text-white font-mono uppercase tracking-wider">[ SHIPPING ADDRESS ]</h2>
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Shipping Address</h2>
             </div>
             <div className="p-6">
-              <div className="space-y-1 font-mono text-gray-300">
+              <div className="space-y-1 text-gray-700">
                 <p>{order.shippingAddress.line1}</p>
                 {order.shippingAddress.line2 && <p>{order.shippingAddress.line2}</p>}
                 <p>
@@ -263,35 +258,35 @@ function OrderDetail() {
                 </p>
                 <p>{order.shippingAddress.country}</p>
               </div>
-              <div className="mt-4 pt-4 border-t-2 border-white">
-                <h3 className="font-medium text-white font-mono uppercase mb-2">Shipping Method</h3>
-                <p className="text-gray-400 font-mono">{order.shipping.method}</p>
-                <p className="text-gray-400 font-mono">Tracking: {order.shipping.trackingNumber}</p>
-                <p className="text-gray-400 font-mono">Est. Delivery: {order.shipping.estimatedDelivery}</p>
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <h3 className="font-medium text-gray-900 mb-2">Shipping Method</h3>
+                <p className="text-gray-600">{order.shipping.method}</p>
+                <p className="text-gray-600">Tracking: {order.shipping.trackingNumber}</p>
+                <p className="text-gray-600">Est. Delivery: {order.shipping.estimatedDelivery}</p>
               </div>
             </div>
           </div>
 
           {/* Payment Information */}
-          <div className="bg-black border-4 border-white overflow-hidden">
-            <div className="p-6 border-b-2 border-white">
-              <h2 className="text-lg font-semibold text-white font-mono uppercase tracking-wider">[ PAYMENT INFORMATION ]</h2>
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Payment Information</h2>
             </div>
-            <div className="p-6 font-mono">
+            <div className="p-6">
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-400 uppercase">Method</span>
-                  <span className="text-white">{order.payment.method}</span>
+                  <span className="text-gray-600">Method</span>
+                  <span className="text-gray-900">{order.payment.method}</span>
                 </div>
                 {order.payment.cardLast4 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-400 uppercase">Card</span>
-                    <span className="text-white">**** **** **** {order.payment.cardLast4}</span>
+                    <span className="text-gray-600">Card</span>
+                    <span className="text-gray-900">**** **** **** {order.payment.cardLast4}</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t border-white">
-                  <span className="text-gray-400 uppercase">Status</span>
-                  <span className="bg-white text-black px-2 font-bold uppercase">{order.payment.status}</span>
+                <div className="flex justify-between pt-2 border-t border-gray-200">
+                  <span className="text-gray-600">Status</span>
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">{order.payment.status}</span>
                 </div>
               </div>
             </div>

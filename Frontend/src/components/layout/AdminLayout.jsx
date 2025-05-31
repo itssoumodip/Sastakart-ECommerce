@@ -63,12 +63,11 @@ function AdminLayout() {
     { to: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
 
-  return (    <div className="flex h-screen bg-black">
+  return (    <div className="flex min-h-screen bg-gray-50">
       {/* Mobile sidebar backdrop */}
-      <AnimatePresence>
-        {sidebarOpen && (
+      <AnimatePresence>        {sidebarOpen && (
           <motion.div 
-            className="fixed inset-0 z-40 lg:hidden bg-black/70"
+            className="fixed inset-0 z-40 lg:hidden bg-black/50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -78,26 +77,26 @@ function AdminLayout() {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <motion.div 
-        className={`
-          fixed inset-y-0 left-0 z-50 w-64 bg-black border-r-2 border-white
+      <motion.div        className={`
+          fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg border-r border-gray-200
           lg:relative lg:z-0
         `}
         variants={sidebarVariants}
         animate={sidebarOpen ? "open" : "closed"}
         initial={false}
         style={{ display: sidebarOpen || window.innerWidth >= 1024 ? 'block' : 'none' }}
-      >
-        <div className="flex items-center justify-between h-16 px-6 border-b-2 border-white bg-black">
+      >        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 bg-white">
           <motion.h1 
-            className="text-xl font-bold text-white flex items-center gap-2 uppercase tracking-widest"
+            className="text-xl font-bold text-gray-900 flex items-center gap-2"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <Sparkles className="h-6 w-6" />
-            [ ADMIN ]
-          </motion.h1>          <motion.button 
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <BarChart3 className="h-5 w-5 text-white" />
+            </div>
+            Admin Panel
+          </motion.h1><motion.button 
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-white hover:bg-white hover:text-black transition-all border border-white p-1"
             whileHover={{ scale: 1.1 }}

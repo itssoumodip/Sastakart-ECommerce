@@ -129,14 +129,12 @@ const Profile = () => {
   return (
     <>
       <Helmet>
-        <title>My Profile - RETRO-SHOP</title>
+        <title>My Profile - Modern E-Commerce</title>
         <meta name="description" content="Manage your account information and preferences." />
       </Helmet>
 
-      <div className="min-h-screen bg-black">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(white_1px,transparent_1px)] [background-size:16px_16px]"></div>
-        
-        <div className="container mx-auto px-4 py-8 relative z-10">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50">
+        <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <motion.div 
@@ -145,9 +143,9 @@ const Profile = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="bg-black border-2 border-white p-8 text-white">
-                <h1 className="text-4xl font-mono font-bold mb-2 uppercase tracking-widest">[ MY PROFILE ]</h1>
-                <p className="text-white/70 font-mono uppercase tracking-wide">Manage your account information and preferences</p>
+              <div className="bg-white rounded-2xl shadow-xl p-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                <h1 className="text-4xl font-bold mb-2">My Profile</h1>
+                <p className="text-indigo-100">Manage your account information and preferences</p>
               </div>
             </motion.div>
 
@@ -159,171 +157,263 @@ const Profile = () => {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <div className="bg-black border-2 border-white p-6 space-y-2">
+                <div className="bg-white rounded-2xl shadow-xl p-6 space-y-2">
                   <div className="text-center mb-6">
                     <div className="relative">
-                      <div className="w-24 h-24 border-2 border-white mx-auto mb-4 flex items-center justify-center">
+                      <div className="w-24 h-24 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center">
                         <User className="w-12 h-12 text-white" />
                       </div>
-                      <button className="absolute bottom-0 right-0 w-8 h-8 bg-white text-black border border-white flex items-center justify-center hover:bg-black hover:text-white transition-colors">
+                      <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition-colors">
                         <Camera className="w-4 h-4" />
                       </button>
                     </div>
-                    <h2 className="text-xl font-bold text-white font-mono uppercase tracking-widest">
+                    <h2 className="text-xl font-bold text-gray-900">
                       {user?.firstName} {user?.lastName}
                     </h2>
-                    <p className="text-white/70 text-sm font-mono">{user?.email}</p>
+                    <p className="text-gray-600 text-sm">{user?.email}</p>
                     <div className="mt-2">
-                      <span className="inline-flex items-center px-3 py-1 border border-white text-xs font-medium text-white font-mono uppercase tracking-wider">
-                        <div className="w-2 h-2 bg-white rounded-none mr-2"></div>
-                        Verified
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                        Verified Account
                       </span>
                     </div>
                   </div>
 
                   <nav className="space-y-1">
-                    <button className="w-full flex items-center space-x-3 px-4 py-3 text-left bg-white text-black border-2 border-white font-mono uppercase tracking-wide">
+                    <button className="w-full flex items-center space-x-3 px-4 py-3 text-left rounded-xl bg-indigo-50 text-indigo-700 border-l-4 border-indigo-500">
                       <User className="w-5 h-5" />
                       <span className="font-medium">Profile Info</span>
                     </button>
-                    <button className="w-full flex items-center space-x-3 px-4 py-3 text-left text-white border border-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wide">
+                    <button className="w-full flex items-center space-x-3 px-4 py-3 text-left rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                       <Lock className="w-5 h-5" />
                       <span>Security</span>
                     </button>
-                    <button className="w-full flex items-center space-x-3 px-4 py-3 text-left text-white border border-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wide">
+                    <button className="w-full flex items-center space-x-3 px-4 py-3 text-left rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                       <Bell className="w-5 h-5" />
                       <span>Notifications</span>
                     </button>
-                    <button className="w-full flex items-center space-x-3 px-4 py-3 text-left text-white border border-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wide">
+                    <button className="w-full flex items-center space-x-3 px-4 py-3 text-left rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                       <CreditCard className="w-5 h-5" />
-                      <span>Payment</span>
+                      <span>Payment Methods</span>
                     </button>
-                    <button className="w-full flex items-center space-x-3 px-4 py-3 text-left text-white border border-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wide">
+                    <button className="w-full flex items-center space-x-3 px-4 py-3 text-left rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                       <Package className="w-5 h-5" />
-                      <span>Orders</span>
+                      <span>Order History</span>
                     </button>
                   </nav>
+
+                  <div className="pt-6 border-t border-gray-200">
+                    <div className="space-y-3 text-sm text-gray-600">
+                      <div className="flex items-center space-x-3">
+                        <Mail className="w-4 h-4" />
+                        <span>Member since {new Date(user?.createdAt || Date.now()).getFullYear()}</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Shield className="w-4 h-4" />
+                        <span>Account secured</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
 
-              {/* Main Content Area */}
-              <motion.div 
-                className="lg:col-span-3 space-y-8"
-                initial={{ x: 50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
-                {/* Profile Information Section */}
-                <div className="bg-black border-2 border-white p-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold text-white font-mono uppercase tracking-wide">[ PERSONAL INFORMATION ]</h3>
-                    {!isEditing && (
-                      <button
-                        onClick={() => setIsEditing(true)}
-                        className="flex items-center space-x-2 px-4 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wider"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                        <span>Edit</span>
-                      </button>
-                    )}
+              {/* Main Content */}
+              <div className="lg:col-span-3 space-y-8">
+                {/* Personal Information */}
+                <motion.div 
+                  className="bg-white rounded-2xl shadow-xl p-8"
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                >
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                        <User className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900">Personal Information</h3>
+                        <p className="text-gray-600">Update your personal details</p>
+                      </div>
+                    </div>
+                    <AnimatePresence mode="wait">
+                      {!isEditing ? (
+                        <motion.button
+                          key="edit"
+                          onClick={() => setIsEditing(true)}
+                          className="btn-primary flex items-center space-x-2"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Edit3 className="w-4 h-4" />
+                          <span>Edit</span>
+                        </motion.button>
+                      ) : (
+                        <motion.div
+                          key="actions"
+                          className="flex space-x-2"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                        >
+                          <motion.button
+                            onClick={cancelEdit}
+                            className="btn-outline flex items-center space-x-2"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <X className="w-4 h-4" />
+                            <span>Cancel</span>
+                          </motion.button>
+                          <motion.button
+                            type="submit"
+                            form="profile-form"
+                            disabled={loading}
+                            className="btn-primary flex items-center space-x-2"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Save className="w-4 h-4" />
+                            <span>{loading ? 'Saving...' : 'Save'}</span>
+                          </motion.button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                  
-                  {isEditing ? (
-                    <form onSubmit={profileForm.handleSubmit(handleProfileUpdate)} className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* First Name */}
-                        <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">First Name</label>
-                          <input
-                            type="text"
-                            {...profileForm.register('firstName', { required: true })}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
-                          />
-                          {profileForm.formState.errors.firstName && (
-                            <p className="mt-1 text-sm text-white font-mono">First name is required</p>
-                          )}
+
+                  <AnimatePresence mode="wait">
+                    {isEditing ? (
+                      <motion.form
+                        id="profile-form"
+                        onSubmit={profileForm.handleSubmit(handleProfileUpdate)}
+                        className="space-y-6"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              First Name
+                            </label>
+                            <input
+                              {...profileForm.register('firstName', { required: 'First name is required' })}
+                              type="text"
+                              className="form-input"
+                              placeholder="Enter your first name"
+                            />
+                            {profileForm.formState.errors.firstName && (
+                              <p className="text-red-500 text-sm mt-1">{profileForm.formState.errors.firstName.message}</p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Last Name
+                            </label>
+                            <input
+                              {...profileForm.register('lastName', { required: 'Last name is required' })}
+                              type="text"
+                              className="form-input"
+                              placeholder="Enter your last name"
+                            />
+                            {profileForm.formState.errors.lastName && (
+                              <p className="text-red-500 text-sm mt-1">{profileForm.formState.errors.lastName.message}</p>
+                            )}
+                          </div>
                         </div>
-                        
-                        {/* Last Name */}
+
                         <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">Last Name</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Email Address
+                          </label>
                           <input
-                            type="text"
-                            {...profileForm.register('lastName', { required: true })}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
-                          />
-                          {profileForm.formState.errors.lastName && (
-                            <p className="mt-1 text-sm text-white font-mono">Last name is required</p>
-                          )}
-                        </div>
-                        
-                        {/* Email */}
-                        <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">Email Address</label>
-                          <input
+                            {...profileForm.register('email', { 
+                              required: 'Email is required',
+                              pattern: {
+                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                message: 'Invalid email address'
+                              }
+                            })}
                             type="email"
-                            {...profileForm.register('email', { required: true })}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
-                            disabled
+                            className="form-input"
+                            placeholder="Enter your email address"
                           />
+                          {profileForm.formState.errors.email && (
+                            <p className="text-red-500 text-sm mt-1">{profileForm.formState.errors.email.message}</p>
+                          )}
                         </div>
-                        
-                        {/* Phone */}
+
                         <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">Phone Number</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Phone Number
+                          </label>
                           <input
-                            type="tel"
                             {...profileForm.register('phone')}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
+                            type="tel"
+                            className="form-input"
+                            placeholder="Enter your phone number"
                           />
                         </div>
-                        
-                        {/* Address */}
-                        <div className="md:col-span-2">
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">Street Address</label>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Address
+                          </label>
                           <input
-                            type="text"
                             {...profileForm.register('address')}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
-                          />
-                        </div>
-                        
-                        {/* City */}
-                        <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">City</label>
-                          <input
                             type="text"
-                            {...profileForm.register('city')}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
+                            className="form-input"
+                            placeholder="Enter your street address"
                           />
                         </div>
-                        
-                        {/* State/Province */}
-                        <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">State/Province</label>
-                          <input
-                            type="text"
-                            {...profileForm.register('state')}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
-                          />
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              City
+                            </label>
+                            <input
+                              {...profileForm.register('city')}
+                              type="text"
+                              className="form-input"
+                              placeholder="Enter your city"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              State
+                            </label>
+                            <input
+                              {...profileForm.register('state')}
+                              type="text"
+                              className="form-input"
+                              placeholder="Enter your state"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Postal Code
+                            </label>
+                            <input
+                              {...profileForm.register('postalCode')}
+                              type="text"
+                              className="form-input"
+                              placeholder="Enter postal code"
+                            />
+                          </div>
                         </div>
-                        
-                        {/* Postal Code */}
+
                         <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">ZIP/Postal Code</label>
-                          <input
-                            type="text"
-                            {...profileForm.register('postalCode')}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
-                          />
-                        </div>
-                        
-                        {/* Country */}
-                        <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">Country</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Country
+                          </label>
                           <select
                             {...profileForm.register('country')}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
+                            className="form-input"
                           >
                             <option value="United States">United States</option>
                             <option value="Canada">Canada</option>
@@ -331,240 +421,237 @@ const Profile = () => {
                             <option value="Australia">Australia</option>
                             <option value="Germany">Germany</option>
                             <option value="France">France</option>
-                            <option value="Japan">Japan</option>
-                            <option value="China">China</option>
+                            <option value="Other">Other</option>
                           </select>
                         </div>
-                      </div>
+                      </motion.form>
+                    ) : (
+                      <motion.div
+                        className="space-y-6"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="p-4 bg-gray-50 rounded-xl">
+                            <label className="block text-sm font-medium text-gray-500 mb-1">First Name</label>
+                            <p className="text-gray-900 font-semibold">{user?.firstName || 'Not set'}</p>
+                          </div>
+                          <div className="p-4 bg-gray-50 rounded-xl">
+                            <label className="block text-sm font-medium text-gray-500 mb-1">Last Name</label>
+                            <p className="text-gray-900 font-semibold">{user?.lastName || 'Not set'}</p>
+                          </div>
+                        </div>
 
-                      <div className="flex space-x-4 pt-4 border-t-2 border-white/30">
-                        <button
-                          type="submit"
-                          disabled={loading}
-                          className="bg-white text-black border-2 border-white px-6 py-2 font-mono uppercase tracking-wider font-bold hover:bg-black hover:text-white transition-colors flex items-center"
-                        >
-                          {loading ? (
-                            <>
-                              <div className="h-4 w-4 border-2 border-black border-t-transparent animate-spin mr-2"></div>
-                              SAVING...
-                            </>
-                          ) : (
-                            <>
-                              <Save className="h-4 w-4 mr-2" />
-                              SAVE CHANGES
-                            </>
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="border-2 border-white px-6 py-2 text-white font-mono uppercase tracking-wider hover:bg-white hover:text-black transition-colors flex items-center"
-                        >
-                          <X className="h-4 w-4 mr-2" />
-                          CANCEL
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-1 border border-white/30 p-4">
-                          <p className="text-sm text-white/50 font-mono uppercase tracking-wider">First Name</p>
-                          <p className="text-white font-mono">{user?.firstName || 'N/A'}</p>
+                        <div className="p-4 bg-gray-50 rounded-xl">
+                          <label className="block text-sm font-medium text-gray-500 mb-1">Email Address</label>
+                          <p className="text-gray-900 font-semibold">{user?.email || 'Not set'}</p>
                         </div>
-                        <div className="space-y-1 border border-white/30 p-4">
-                          <p className="text-sm text-white/50 font-mono uppercase tracking-wider">Last Name</p>
-                          <p className="text-white font-mono">{user?.lastName || 'N/A'}</p>
+
+                        <div className="p-4 bg-gray-50 rounded-xl">
+                          <label className="block text-sm font-medium text-gray-500 mb-1">Phone Number</label>
+                          <p className="text-gray-900 font-semibold">{user?.phone || 'Not set'}</p>
                         </div>
-                        <div className="space-y-1 border border-white/30 p-4">
-                          <p className="text-sm text-white/50 font-mono uppercase tracking-wider">Email</p>
-                          <p className="text-white font-mono">{user?.email || 'N/A'}</p>
-                        </div>
-                        <div className="space-y-1 border border-white/30 p-4">
-                          <p className="text-sm text-white/50 font-mono uppercase tracking-wider">Phone</p>
-                          <p className="text-white font-mono">{user?.phone || 'N/A'}</p>
-                        </div>
-                        <div className="space-y-1 border border-white/30 p-4">
-                          <p className="text-sm text-white/50 font-mono uppercase tracking-wider">Location</p>
-                          <p className="text-white font-mono">
-                            {user?.city && user?.state ? `${user.city}, ${user.state}` : 'N/A'}
-                            {user?.country && `, ${user.country}`}
+
+                        <div className="p-4 bg-gray-50 rounded-xl">
+                          <label className="block text-sm font-medium text-gray-500 mb-1">Address</label>
+                          <p className="text-gray-900 font-semibold">
+                            {user?.address ? (
+                              <>
+                                {user.address}<br />
+                                {user.city && `${user.city}, `}
+                                {user.state && `${user.state} `}
+                                {user.postalCode}<br />
+                                {user.country}
+                              </>
+                            ) : (
+                              'Not set'
+                            )}
                           </p>
                         </div>
-                        <div className="space-y-1 border border-white/30 p-4">
-                          <p className="text-sm text-white/50 font-mono uppercase tracking-wider">Member Since</p>
-                          <p className="text-white font-mono">November 2023</p>
-                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+
+                {/* Security Settings */}
+                <motion.div 
+                  className="bg-white rounded-2xl shadow-xl p-8"
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                >
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
+                        <Lock className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900">Security Settings</h3>
+                        <p className="text-gray-600">Manage your password and security preferences</p>
                       </div>
                     </div>
-                  )}
-                </div>
-
-                {/* Password Change Section */}
-                <div className="bg-black border-2 border-white p-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold text-white font-mono uppercase tracking-wide">[ CHANGE PASSWORD ]</h3>
-                    {!isChangingPassword && (
-                      <button
-                        onClick={() => setIsChangingPassword(true)}
-                        className="flex items-center space-x-2 px-4 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-wider"
-                      >
-                        <Lock className="w-4 h-4" />
-                        <span>Change</span>
-                      </button>
-                    )}
+                    <AnimatePresence mode="wait">
+                      {!isChangingPassword ? (
+                        <motion.button
+                          key="change-password"
+                          onClick={() => setIsChangingPassword(true)}
+                          className="btn-primary flex items-center space-x-2"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Lock className="w-4 h-4" />
+                          <span>Change Password</span>
+                        </motion.button>
+                      ) : (
+                        <motion.div
+                          key="password-actions"
+                          className="flex space-x-2"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                        >
+                          <motion.button
+                            onClick={cancelPasswordChange}
+                            className="btn-outline flex items-center space-x-2"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <X className="w-4 h-4" />
+                            <span>Cancel</span>
+                          </motion.button>
+                          <motion.button
+                            type="submit"
+                            form="password-form"
+                            disabled={loading}
+                            className="btn-primary flex items-center space-x-2"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Save className="w-4 h-4" />
+                            <span>{loading ? 'Changing...' : 'Change Password'}</span>
+                          </motion.button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
-                  {isChangingPassword ? (
-                    <form onSubmit={passwordForm.handleSubmit(handlePasswordChange)} className="space-y-6">
-                      <div className="space-y-4">
-                        {/* Current Password */}
+                  <AnimatePresence mode="wait">
+                    {isChangingPassword ? (
+                      <motion.form
+                        id="password-form"
+                        onSubmit={passwordForm.handleSubmit(handlePasswordChange)}
+                        className="space-y-6"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                      >
                         <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">Current Password</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Current Password
+                          </label>
                           <div className="relative">
                             <input
+                              {...passwordForm.register('currentPassword', { required: 'Current password is required' })}
                               type={showPassword ? 'text' : 'password'}
-                              {...passwordForm.register('currentPassword', { required: true })}
-                              className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0 pr-10"
+                              className="form-input pr-10"
+                              placeholder="Enter your current password"
                             />
                             <button
                               type="button"
-                              className="absolute inset-y-0 right-0 pr-3 flex items-center"
                               onClick={() => setShowPassword(!showPassword)}
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center"
                             >
                               {showPassword ? (
-                                <EyeOff className="h-5 w-5 text-white/70 hover:text-white" />
+                                <EyeOff className="w-5 h-5 text-gray-400" />
                               ) : (
-                                <Eye className="h-5 w-5 text-white/70 hover:text-white" />
+                                <Eye className="w-5 h-5 text-gray-400" />
                               )}
                             </button>
                           </div>
                           {passwordForm.formState.errors.currentPassword && (
-                            <p className="mt-1 text-sm text-white font-mono">Current password is required</p>
+                            <p className="text-red-500 text-sm mt-1">{passwordForm.formState.errors.currentPassword.message}</p>
                           )}
                         </div>
-                        
-                        {/* New Password */}
+
                         <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">New Password</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            New Password
+                          </label>
                           <input
-                            type="password"
                             {...passwordForm.register('newPassword', { 
-                              required: true,
+                              required: 'New password is required',
                               minLength: {
                                 value: 6,
                                 message: 'Password must be at least 6 characters'
                               }
                             })}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
+                            type="password"
+                            className="form-input"
+                            placeholder="Enter your new password"
                           />
                           {passwordForm.formState.errors.newPassword && (
-                            <p className="mt-1 text-sm text-white font-mono">
-                              {passwordForm.formState.errors.newPassword.message || 'New password is required'}
-                            </p>
+                            <p className="text-red-500 text-sm mt-1">{passwordForm.formState.errors.newPassword.message}</p>
                           )}
                         </div>
-                        
-                        {/* Confirm New Password */}
+
                         <div>
-                          <label className="block font-mono text-sm font-medium text-white uppercase tracking-wide mb-1">Confirm New Password</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Confirm New Password
+                          </label>
                           <input
+                            {...passwordForm.register('confirmPassword', { required: 'Please confirm your new password' })}
                             type="password"
-                            {...passwordForm.register('confirmPassword', { 
-                              required: true,
-                              validate: value => value === passwordForm.watch('newPassword') || 'Passwords do not match'
-                            })}
-                            className="w-full bg-black border-2 border-white text-white font-mono h-12 focus:ring-0"
+                            className="form-input"
+                            placeholder="Confirm your new password"
                           />
                           {passwordForm.formState.errors.confirmPassword && (
-                            <p className="mt-1 text-sm text-white font-mono">
-                              {passwordForm.formState.errors.confirmPassword.message || 'Confirm password is required'}
-                            </p>
+                            <p className="text-red-500 text-sm mt-1">{passwordForm.formState.errors.confirmPassword.message}</p>
                           )}
                         </div>
-                      </div>
-
-                      <div className="flex space-x-4 pt-4 border-t-2 border-white/30">
-                        <button
-                          type="submit"
-                          disabled={loading}
-                          className="bg-white text-black border-2 border-white px-6 py-2 font-mono uppercase tracking-wider font-bold hover:bg-black hover:text-white transition-colors flex items-center"
-                        >
-                          {loading ? (
-                            <>
-                              <div className="h-4 w-4 border-2 border-black border-t-transparent animate-spin mr-2"></div>
-                              UPDATING...
-                            </>
-                          ) : (
-                            <>
-                              <Save className="h-4 w-4 mr-2" />
-                              UPDATE PASSWORD
-                            </>
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelPasswordChange}
-                          className="border-2 border-white px-6 py-2 text-white font-mono uppercase tracking-wider hover:bg-white hover:text-black transition-colors flex items-center"
-                        >
-                          <X className="h-4 w-4 mr-2" />
-                          CANCEL
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <div className="border border-white/30 p-4">
-                      <p className="text-white font-mono">For security reasons, your password is not displayed. Use the change button to update your password.</p>
-                      <div className="mt-2 flex items-center">
-                        <Shield className="w-5 h-5 text-white mr-2" />
-                        <p className="text-white/70 text-sm font-mono uppercase tracking-wider">Last changed: 30 days ago</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Notification Preferences */}
-                <div className="bg-black border-2 border-white p-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold text-white font-mono uppercase tracking-wide">[ NOTIFICATION PREFERENCES ]</h3>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between border border-white/30 p-4">
-                      <div className="flex items-center">
-                        <Mail className="w-5 h-5 text-white mr-3" />
-                        <span className="text-white font-mono">Email Notifications</span>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" defaultChecked />
-                        <div className="w-11 h-6 bg-black peer-focus:outline-none border-2 border-white peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-white after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                      </label>
-                    </div>
-                    
-                    <div className="flex items-center justify-between border border-white/30 p-4">
-                      <div className="flex items-center">
-                        <Package className="w-5 h-5 text-white mr-3" />
-                        <span className="text-white font-mono">Order Updates</span>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" defaultChecked />
-                        <div className="w-11 h-6 bg-black peer-focus:outline-none border-2 border-white peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-white after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                      </label>
-                    </div>
-                    
-                    <div className="flex items-center justify-between border border-white/30 p-4">
-                      <div className="flex items-center">
-                        <Settings className="w-5 h-5 text-white mr-3" />
-                        <span className="text-white font-mono">Promotions and Deals</span>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" />
-                        <div className="w-11 h-6 bg-black peer-focus:outline-none border-2 border-white peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-white after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+                      </motion.form>
+                    ) : (
+                      <motion.div
+                        className="space-y-6"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                <Shield className="w-4 h-4 text-white" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-green-900">Password Protected</h4>
+                                <p className="text-sm text-green-700">Your account is secured with a strong password</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                <Mail className="w-4 h-4 text-white" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-blue-900">Email Verified</h4>
+                                <p className="text-sm text-blue-700">Your email address has been verified</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </div>
             </div>
           </div>
         </div>

@@ -1,158 +1,194 @@
 import { Link } from 'react-router-dom'
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react'
+import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Leaf, Shield, Truck } from 'lucide-react'
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-white border-t-4 border-white">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">          {/* Company Info */}
-          <div className="space-y-4 border-2 border-white p-4">
+    <footer className="bg-gray-900 text-white">
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          
+          {/* Company Info */}
+          <div className="space-y-6">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white border-2 border-black flex items-center justify-center">
-                <span className="text-black font-bold text-xl font-mono">R</span>
+              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                <span className="text-gray-900 font-bold text-lg">E</span>
               </div>
-              <span className="text-xl font-bold font-mono tracking-wider">[ RETRO-SHOP ]</span>
+              <span className="text-xl font-medium">EcoShop</span>
             </div>
-            <p className="text-gray-300 text-sm leading-relaxed font-mono uppercase">
-              YOUR ONE-STOP DESTINATION FOR QUALITY PRODUCTS AT AFFORDABLE PRICES. 
-              WE BRING YOU THE BEST SHOPPING EXPERIENCE WITH FAST DELIVERY AND EXCELLENT CUSTOMER SERVICE.
+            <p className="text-gray-300 text-sm leading-relaxed">
+              We're committed to creating products that are better for you and better for the planet. 
+              Discover our thoughtfully designed collection of sustainable goods.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-white hover:text-gray-300 transition-colors border-2 border-white p-2 hover:bg-white hover:text-black">
+              <a href="#" className="text-gray-300 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-white hover:text-gray-300 transition-colors border-2 border-white p-2 hover:bg-white hover:text-black">
+              <a href="#" className="text-gray-300 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-white hover:text-gray-300 transition-colors border-2 border-white p-2 hover:bg-white hover:text-black">
+              <a href="#" className="text-gray-300 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800">
                 <Instagram className="h-5 w-5" />
               </a>
             </div>
-          </div>          {/* Quick Links */}
-          <div className="space-y-4 border-2 border-white p-4">
-            <h3 className="text-lg font-semibold font-mono uppercase tracking-wider">[ QUICK LINKS ]</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/products" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1 block tracking-wider">
-                  ALL PRODUCTS
-                </Link>
-              </li>
-              <li>
-                <Link to="/products?category=Electronics" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1 block tracking-wider">
-                  ELECTRONICS
-                </Link>
-              </li>
-              <li>
-                <Link to="/products?category=Clothing" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1 block tracking-wider">
-                  CLOTHING
-                </Link>
-              </li>
-              <li>
-                <Link to="/products?category=Home & Kitchen" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1 block tracking-wider">
-                  HOME & KITCHEN
-                </Link>
-              </li>
-              <li>
-                <Link to="/products?category=Beauty & Personal Care" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1 block tracking-wider">
-                  BEAUTY & PERSONAL CARE
-                </Link>
-              </li>
-            </ul>
-          </div>          {/* Customer Service */}
-          <div className="space-y-4 border-2 border-white p-4">
-            <h3 className="text-lg font-semibold font-mono uppercase tracking-wider">[ CUSTOMER SERVICE ]</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1 block tracking-wider">
-                  HELP & FAQ
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1 block tracking-wider">
-                  RETURN POLICY
-                </a>
-              </li>
-              <li> 
-                <a href="#" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1 block tracking-wider">
-                  SHIPPING INFO
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1 block tracking-wider">
-                  TRACK YOUR ORDER
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1 block tracking-wider">
-                  CONTACT SUPPORT
-                </a>
-              </li>
-            </ul>
-          </div>          {/* Contact Info */}
-          <div className="space-y-4 border-2 border-white p-4">
-            <h3 className="text-lg font-semibold font-mono uppercase tracking-wider">[ CONTACT US ]</h3>
+          </div>
+
+          {/* Shop */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium">Shop</h3>
             <ul className="space-y-3">
-              <li className="flex items-start space-x-3">
-                <div className="border-2 border-white p-1">
-                  <MapPin className="h-5 w-5 text-white mt-0.5 flex-shrink-0" />
-                </div>
-                <span className="text-gray-300 text-sm font-mono">
-                  123 COMMERCE STREET<br />
-                  BUSINESS DISTRICT<br />
-                  CITY, STATE 12345
-                </span>
+              <li>
+                <Link to="/products" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  All Products
+                </Link>
               </li>
-              <li className="flex items-center space-x-3">
-                <div className="border-2 border-white p-1">
-                  <Phone className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-gray-300 text-sm font-mono">+1 (555) 123-4567</span>
+              <li>
+                <Link to="/products?category=Electronics" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Electronics
+                </Link>
               </li>
-              <li className="flex items-center space-x-3">
-                <div className="border-2 border-white p-1">
-                  <Mail className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-gray-300 text-sm font-mono">SUPPORT@RETROSHOP.COM</span>
+              <li>
+                <Link to="/products?category=Clothing" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Fashion
+                </Link>
+              </li>
+              <li>
+                <Link to="/products?category=Home & Kitchen" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Home & Living
+                </Link>
+              </li>
+              <li>
+                <Link to="/products?category=Beauty & Personal Care" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Beauty & Care
+                </Link>
               </li>
             </ul>
           </div>
-        </div>        
-        {/* Newsletter Signup */}
-        <div className="border-t-4 border-white mt-8 pt-8">
-          <div className="max-w-md mx-auto text-center border-2 border-white p-6">
-            <h3 className="text-lg font-semibold mb-4 font-mono uppercase tracking-wider">[ STAY UPDATED ]</h3>
-            <p className="text-gray-300 text-sm mb-4 font-mono uppercase">
-              SUBSCRIBE TO OUR NEWSLETTER FOR EXCLUSIVE DEALS AND NEW ARRIVALS
-            </p>
-            <form className="flex gap-2">
-              <input
-                type="email"
-                placeholder="ENTER YOUR EMAIL"
-                className="flex-1 px-4 py-2 bg-black border-2 border-white text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white font-mono uppercase"
-              />
-              <button
-                type="submit"
-                className="px-6 py-2 bg-white text-black border-2 border-white hover:bg-black hover:text-white transition-colors font-mono uppercase tracking-wider"
-              >
-                SUBSCRIBE
-              </button>
-            </form>
+
+          {/* Support */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium">Support</h3>
+            <ul className="space-y-3">
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Help Center
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Returns & Exchanges
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Shipping Information
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Size Guide
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Contact Us
+                </a>
+              </li>
+            </ul>
           </div>
-        </div>        
+
+          {/* Company */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium">Company</h3>
+            <ul className="space-y-3">
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Sustainability
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Careers
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Press
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Stores
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Features */}
+        <div className="border-t border-gray-800 mt-12 pt-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex items-center space-x-3">
+              <Leaf className="h-6 w-6 text-green-400" />
+              <div>
+                <h4 className="font-medium text-sm">Sustainable Materials</h4>
+                <p className="text-gray-400 text-xs">Eco-friendly and responsibly sourced</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Truck className="h-6 w-6 text-blue-400" />
+              <div>
+                <h4 className="font-medium text-sm">Free Shipping</h4>
+                <p className="text-gray-400 text-xs">On orders over $75</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Shield className="h-6 w-6 text-purple-400" />
+              <div>
+                <h4 className="font-medium text-sm">30-Day Returns</h4>
+                <p className="text-gray-400 text-xs">Hassle-free returns and exchanges</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Info */}
+        <div className="border-t border-gray-800 mt-8 pt-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+            <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6">
+              <div className="flex items-center space-x-2">
+                <Phone className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-300 text-sm">1-800-555-0123</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Mail className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-300 text-sm">hello@ecoshop.com</span>
+              </div>
+            </div>
+            <div className="text-gray-400 text-sm">
+              Monday - Friday: 9AM - 6PM PST
+            </div>
+          </div>
+        </div>
+
         {/* Bottom Bar */}
-        <div className="border-t-4 border-white mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-300 text-sm mb-4 md:mb-0 font-mono tracking-wider uppercase">
-            &copy; 2025 RETRO-SHOP. ALL RIGHTS RESERVED.
+        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <p className="text-gray-400 text-sm">
+            © 2025 EcoShop. All rights reserved.
           </p>
           <div className="flex space-x-6 text-sm">
-            <a href="#" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1">
-              PRIVACY POLICY
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              Privacy Policy
             </a>
-            <a href="#" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1">
-              TERMS OF SERVICE
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              Terms of Service
             </a>
-            <a href="#" className="text-gray-300 hover:text-white transition-colors font-mono uppercase border-2 border-transparent hover:border-white px-2 py-1">
-              COOKIE POLICY
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              Accessibility
             </a>
           </div>
         </div>

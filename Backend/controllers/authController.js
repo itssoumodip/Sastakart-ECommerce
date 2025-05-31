@@ -6,11 +6,15 @@ const crypto = require('crypto');
 
 // Register a user => /api/auth/register
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { name, firstName, lastName, email, phone, password } = req.body;
 
+  // Create user with all available fields
   const user = await User.create({
     name,
+    firstName,
+    lastName,
     email,
+    phone,
     password,
     avatar: 'default-avatar.jpg'
   });

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, ArrowUpDown, Eye, ShoppingBag, Package, Truck, CheckCircle, Clock, DollarSign, CreditCard } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, Eye, ShoppingBag, Package, Truck, CheckCircle, Clock, DollarSign, CreditCard, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 function OrdersManagement() {
@@ -82,8 +82,26 @@ function OrdersManagement() {
       );
     }
 
+    // Sort orders
+    updatedOrders.sort((a, b) => {
+      const fieldA = a[sortBy];
+      const fieldB = b[sortBy];
+
+      if (sortBy === 'date') {
+        return sortOrder === 'asc' 
+          ? new Date(fieldA) - new Date(fieldB)
+          : new Date(fieldB) - new Date(fieldA);
+      } else if (typeof fieldA === 'string') {
+        return sortOrder === 'asc' 
+          ? fieldA.localeCompare(fieldB) 
+          : fieldB.localeCompare(fieldA);
+      } else {
+        return sortOrder === 'asc' ? fieldA - fieldB : fieldB - fieldA;
+      }
+    });
+
     setFilteredOrders(updatedOrders);
-  }, [searchTerm, statusFilter, orders]);
+  }, [searchTerm, statusFilter, sortBy, sortOrder, orders]);
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -111,41 +129,65 @@ function OrdersManagement() {
     }
   };
 
-  const getStatusIcon = (status) => {
+  const getStatusBadge = (status) => {
+    const baseClasses = "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium";
+    
     switch (status) {
       case 'Delivered':
-        return <CheckCircle className="h-3 w-3 mr-1" />;
+        return (
+          <span className={`${baseClasses} bg-green-100 text-green-800`}>
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Delivered
+          </span>
+        );
       case 'Shipped':
-        return <Truck className="h-3 w-3 mr-1" />;
+        return (
+          <span className={`${baseClasses} bg-blue-100 text-blue-800`}>
+            <Truck className="h-3 w-3 mr-1" />
+            Shipped
+          </span>
+        );
       case 'Processing':
-        return <Package className="h-3 w-3 mr-1" />;
+        return (
+          <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>
+            <Package className="h-3 w-3 mr-1" />
+            Processing
+          </span>
+        );
       case 'Pending':
-        return <Clock className="h-3 w-3 mr-1" />;
+        return (
+          <span className={`${baseClasses} bg-orange-100 text-orange-800`}>
+            <Clock className="h-3 w-3 mr-1" />
+            Pending
+          </span>
+        );
+      case 'Cancelled':
+        return (
+          <span className={`${baseClasses} bg-red-100 text-red-800`}>
+            <XCircle className="h-3 w-3 mr-1" />
+            Cancelled
+          </span>
+        );
       default:
-        return <Package className="h-3 w-3 mr-1" />;
+        return (
+          <span className={`${baseClasses} bg-gray-100 text-gray-800`}>
+            <Package className="h-3 w-3 mr-1" />
+            {status}
+          </span>
+        );
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Delivered':
-        return 'bg-black text-white border-2 border-white';
-      case 'Shipped':
-        return 'bg-white text-black border-2 border-black';
-      case 'Processing':
-        return 'bg-gray-800 text-white border border-white';
-      case 'Pending':
-        return 'bg-white text-black border border-dashed border-black';
-      case 'Cancelled':
-        return 'bg-black text-white border border-dashed border-white';
-      default:
-        return 'bg-white text-black border border-black';
-    }
+  const getTotalRevenue = () => {
+    return orders
+      .filter(order => order.status !== 'Cancelled')
+      .reduce((total, order) => total + order.total, 0)
+      .toFixed(2);
   };
 
   return (
     <motion.div 
-      className="min-h-screen bg-black text-white"
+      className="min-h-screen bg-white"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -161,11 +203,11 @@ function OrdersManagement() {
           variants={itemVariants}
         >
           <div>
-            <h1 className="text-4xl font-mono font-bold text-white flex items-center gap-3 tracking-widest uppercase">
-              <ShoppingBag className="h-8 w-8 text-white" />
-              [ ORDERS MANAGEMENT ]
+            <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
+              <ShoppingBag className="h-8 w-8 text-gray-600" />
+              Orders
             </h1>
-            <p className="text-gray-400 mt-2 font-mono">Track and manage all customer orders</p>
+            <p className="text-gray-600 mt-2">Track and manage all customer orders</p>
           </div>
         </motion.div>
 
@@ -175,61 +217,61 @@ function OrdersManagement() {
           variants={itemVariants}
         >
           <motion.div 
-            className="bg-black p-6 border-4 border-white"
+            className="card p-6 hover:shadow-lg transition-all duration-300"
             whileHover={{ scale: 1.02, y: -2 }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-mono uppercase tracking-wider">Total Orders</p>
-                <p className="text-2xl font-bold text-white font-mono">{orders.length}</p>
+                <p className="text-gray-600 text-sm font-medium">Total Orders</p>
+                <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
               </div>
-              <div className="border-2 border-white p-3">
-                <ShoppingBag className="h-6 w-6 text-white" />
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <ShoppingBag className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </motion.div>
 
           <motion.div 
-            className="bg-black p-6 border-4 border-white"
+            className="card p-6 hover:shadow-lg transition-all duration-300"
             whileHover={{ scale: 1.02, y: -2 }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-mono uppercase tracking-wider">Pending Orders</p>
-                <p className="text-2xl font-bold text-white font-mono">{orders.filter(o => o.status === 'Pending').length}</p>
+                <p className="text-gray-600 text-sm font-medium">Pending Orders</p>
+                <p className="text-2xl font-bold text-gray-900">{orders.filter(o => o.status === 'Pending').length}</p>
               </div>
-              <div className="border-2 border-white p-3">
-                <Clock className="h-6 w-6 text-white" />
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <Clock className="h-6 w-6 text-orange-600" />
               </div>
             </div>
           </motion.div>
 
           <motion.div 
-            className="bg-black p-6 border-4 border-white"
+            className="card p-6 hover:shadow-lg transition-all duration-300"
             whileHover={{ scale: 1.02, y: -2 }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-mono uppercase tracking-wider">Processing</p>
-                <p className="text-2xl font-bold text-white font-mono">{orders.filter(o => o.status === 'Processing').length}</p>
+                <p className="text-gray-600 text-sm font-medium">Delivered Orders</p>
+                <p className="text-2xl font-bold text-gray-900">{orders.filter(o => o.status === 'Delivered').length}</p>
               </div>
-              <div className="border-2 border-white p-3">
-                <Package className="h-6 w-6 text-white" />
+              <div className="p-3 bg-green-100 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </motion.div>
 
           <motion.div 
-            className="bg-black p-6 border-4 border-white"
+            className="card p-6 hover:shadow-lg transition-all duration-300"
             whileHover={{ scale: 1.02, y: -2 }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-mono uppercase tracking-wider">Total Revenue</p>
-                <p className="text-2xl font-bold text-white font-mono">${orders.reduce((sum, order) => sum + order.total, 0).toFixed(2)}</p>
+                <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
+                <p className="text-2xl font-bold text-gray-900">${getTotalRevenue()}</p>
               </div>
-              <div className="border-2 border-white p-3">
-                <DollarSign className="h-6 w-6 text-white" />
+              <div className="p-3 bg-green-100 rounded-lg">
+                <DollarSign className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </motion.div>
@@ -237,187 +279,172 @@ function OrdersManagement() {
 
         {/* Filters and Search */}
         <motion.div 
-          className="bg-black border-4 border-white p-6 mb-8"
+          className="card p-6 mb-8"
           variants={itemVariants}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Search orders or customers..."
+                placeholder="Search orders..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white transition-all duration-200"
+                className="input pl-10"
               />
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Filter className="h-5 w-5 text-white" />
-              <select 
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-white bg-black text-white font-mono focus:ring-2 focus:ring-white focus:border-white transition-all duration-200"
-              >
-                <option value="all">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Processing">Processing</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="input"
+            >
+              <option value="all">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Processing">Processing</option>
+              <option value="Shipped">Shipped</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+
+            <motion.button
+              onClick={() => handleSort('date')}
+              className="btn-outline flex items-center justify-center gap-2"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              Sort by {sortBy}
+            </motion.button>
           </div>
         </motion.div>
 
         {/* Orders Table */}
         <motion.div 
-          className="bg-black border-4 border-white overflow-hidden mb-8"
+          className="card overflow-hidden"
           variants={itemVariants}
         >
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y-2 divide-white">
-              <thead className="bg-white text-black font-mono">
+            <table className="w-full">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('id')}
-                  >
-                    <div className="flex items-center">
-                      Order ID
-                      {sortBy === 'id' && (
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      )}
-                    </div>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Order ID
                   </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('date')}
-                  >
-                    <div className="flex items-center">
-                      Date
-                      {sortBy === 'date' && (
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      )}
-                    </div>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Customer
                   </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('customer')}
-                  >
-                    <div className="flex items-center">
-                      Customer
-                      {sortBy === 'customer' && (
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      )}
-                    </div>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
                   </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('total')}
-                  >
-                    <div className="flex items-center">
-                      Total
-                      {sortBy === 'total' && (
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      )}
-                    </div>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Items
                   </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('status')}
-                  >
-                    <div className="flex items-center">
-                      Status
-                      {sortBy === 'status' && (
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      )}
-                    </div>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Payment
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y-2 divide-white bg-black">
-                {filteredOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-900 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-mono font-medium text-white">{order.id}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-mono text-sm text-gray-300">{order.date}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-mono font-medium text-white">{order.customer}</div>
-                      <div className="text-xs text-gray-400 font-mono">{order.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-mono text-white">${order.total.toFixed(2)}</div>
-                      <div className="text-xs text-gray-400 flex items-center font-mono">
-                        <CreditCard className="h-3 w-3 mr-1" />{order.paymentMethod}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-semibold font-mono inline-flex items-center ${getStatusColor(order.status)}`}>
-                        {getStatusIcon(order.status)}
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <Link 
-                        to={`/admin/orders/${order.id}`}
-                        className="inline-flex items-center border-2 border-white px-3 py-1 bg-black text-white font-mono hover:bg-white hover:text-black transition-colors duration-200"
-                      >
-                        <Eye className="h-3 w-3 mr-1" />
-                        VIEW
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="bg-white divide-y divide-gray-200">
+                <AnimatePresence>
+                  {filteredOrders.slice(
+                    (currentPage - 1) * ordersPerPage,
+                    currentPage * ordersPerPage
+                  ).map((order, index) => (
+                    <motion.tr
+                      key={order.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{order.id}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{order.customer}</div>
+                          <div className="text-sm text-gray-500">{order.email}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{new Date(order.date).toLocaleDateString()}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{order.items} items</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">${order.total.toFixed(2)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(order.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <CreditCard className="h-4 w-4 mr-1" />
+                          {order.paymentMethod}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <Link
+                          to={`/admin/orders/${order.id}`}
+                          className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                        >
+                          <Eye className="h-4 w-4" />
+                          View
+                        </Link>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>
         </motion.div>
 
         {/* Pagination */}
-        <motion.div 
-          className="flex justify-center my-8" 
-          variants={itemVariants}
-        >
-          <nav className="flex items-center space-x-2">
-            <button 
-              className="px-4 py-2 border-2 border-white bg-black text-white font-mono hover:bg-white hover:text-black transition-colors"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
-              PREV
-            </button>
-            {[...Array(Math.ceil(filteredOrders.length / ordersPerPage))].map((_, i) => (
-              <button 
-                key={i} 
-                onClick={() => setCurrentPage(i + 1)}
-                className={`px-4 py-2 border-2 font-mono ${
-                  currentPage === i + 1 
-                    ? 'bg-white text-black border-white' 
-                    : 'bg-black text-white border-white hover:bg-white hover:text-black transition-colors'
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button 
-              className="px-4 py-2 border-2 border-white bg-black text-white font-mono hover:bg-white hover:text-black transition-colors"
-              disabled={currentPage === Math.ceil(filteredOrders.length / ordersPerPage)}
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              NEXT
-            </button>
-          </nav>
-        </motion.div>
+        {filteredOrders.length > 0 && (
+          <motion.div 
+            className="card p-6 mt-6"
+            variants={itemVariants}
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                Showing {((currentPage - 1) * ordersPerPage) + 1} to {Math.min(currentPage * ordersPerPage, filteredOrders.length)} of {filteredOrders.length} orders
+              </p>
+              <div className="flex space-x-2">
+                <motion.button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  className="btn-outline text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Previous
+                </motion.button>
+                <motion.button
+                  disabled={currentPage === Math.ceil(filteredOrders.length / ordersPerPage)}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  className="btn-outline text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Next
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );

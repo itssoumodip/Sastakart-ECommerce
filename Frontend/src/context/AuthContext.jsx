@@ -133,8 +133,7 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: message }
     }
   }
-
-  const register = async (name, email, password) => {
+  const register = async (firstName, lastName, email, phone, password) => {
     try {
       dispatch({ type: 'REGISTER_REQUEST' })
       
@@ -144,7 +143,17 @@ export const AuthProvider = ({ children }) => {
         },
       }
       
-      const { data } = await axios.post(API_ENDPOINTS.REGISTER, { name, email, password }, config)
+      // Combine first and last name to backward compatible with the backend
+      const name = `${firstName} ${lastName}`;
+      
+      const { data } = await axios.post(API_ENDPOINTS.REGISTER, { 
+        name,
+        firstName, 
+        lastName, 
+        email, 
+        phone,
+        password 
+      }, config)
       
       if (data.token) {
         Cookies.set('token', data.token, { expires: 7 })

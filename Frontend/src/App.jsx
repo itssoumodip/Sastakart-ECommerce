@@ -38,21 +38,19 @@ import ScrollToTop from './components/ScrollToTop'
 
 function App() {
   const { loading } = useAuth()
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-200 border-t-black"></div>
       </div>
     )
   }
-
   return (
-    <div className="min-h-screen mt-20 bg-gray-50">
+    <div className="min-h-screen bg-white">
       <ScrollToTop />
       <Navbar />
 
-      <main className="min-h-screen">
+      <main className="min-h-screen mt-20">
         <Routes>
           {/* Public Routes */}          
           <Route path="/" element={<Home />} />
