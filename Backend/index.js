@@ -12,6 +12,8 @@ const productRoutes = require('./routes/product');
 const userRoutes = require('./routes/user');
 const orderRoutes = require('./routes/order');
 const paymentRoutes = require('./routes/payment');
+const uploadRoutes = require('./routes/upload');
+const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 
@@ -20,7 +22,8 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
 }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
 // Routes
@@ -29,6 +32,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Database connection
 mongoose

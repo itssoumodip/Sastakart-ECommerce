@@ -104,7 +104,13 @@ exports.getProductById = catchAsyncErrors(async (req, res, next) => {
 // Create new product => /api/products
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
   req.body.user = req.user.id;
-
+  
+  // Handle image URLs (if uploaded via Cloudinary)
+  if (req.body.images && Array.isArray(req.body.images)) {
+    // Images are already processed and we have URLs
+    req.body.images = req.body.images;
+  }
+  
   const product = await Product.create(req.body);
 
   res.status(201).json({

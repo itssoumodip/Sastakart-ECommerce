@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
+import { useWishlist } from '../../context/WishlistContext'
 import { Search, ShoppingCart, User, Menu, X, LogOut, Package, Settings, Heart } from 'lucide-react'
 
 const Navbar = () => {
@@ -12,6 +13,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
   const { user, isAuthenticated, logout } = useAuth()
   const { getCartItemsCount } = useCart()
+  const { getWishlistCount } = useWishlist()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -81,12 +83,16 @@ const Navbar = () => {
           </form>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            <Link to="/products" className="nav-link">
+          <div className="hidden lg:flex items-center space-x-8">            <Link to="/products" className="nav-link">
               Products
             </Link>
-            <Link to="/wishlist" className="nav-link">
+            <Link to="/wishlist" className="nav-link relative">
               Wishlist
+              {getWishlistCount() > 0 && (
+                <span className="absolute -top-1 -right-6 bg-amber-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {getWishlistCount()}
+                </span>
+              )}
             </Link>
             
             {/* Cart */}
@@ -230,9 +236,20 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Products
+              </Link>              <Link
+                to="/wishlist"
+                className="flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200 font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span>Wishlist</span>
+                {getWishlistCount() > 0 && (
+                  <span className="ml-2 bg-amber-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    {getWishlistCount()}
+                  </span>
+                )}
               </Link>
               <Link
-                to="/wishlist"
+                to="/cart"
                 className="block text-gray-700 hover:text-gray-900 transition-colors duration-200 font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >

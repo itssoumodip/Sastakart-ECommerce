@@ -25,12 +25,12 @@ const Register = () => {
   } = useForm()
 
   const watchedPassword = watch('password')
-
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/')
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, navigate]);
+  
   const onSubmit = async (data) => {
     try {
       setIsLoading(true)
@@ -40,7 +40,8 @@ const Register = () => {
         data.email, 
         data.phone, 
         data.password
-      )      if (result.success) {
+      );      
+      if (result.success) {
         toast.success('Account created successfully! Welcome to ClassyShop! 🎉')
         navigate('/')
       }

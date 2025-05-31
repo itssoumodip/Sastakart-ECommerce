@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { toast } from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,12 +27,11 @@ import {
   Package
 } from 'lucide-react';
 
-import { getMockProduct } from '../data/mockProducts';
-
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,45 +40,31 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [reviews, setReviews] = useState([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
+  const [reviews, setReviews] = useState([]);
+
+  // Check if product is in wishlist
+  const productInWishlist = product && isInWishlist(product.id);
 
   useEffect(() => {
     fetchProduct();
     fetchReviews();
   }, [id]);
-
   const fetchProduct = async () => {
     try {
       setLoading(true);
       
-      // Try to fetch from API first
-      try {
-        const response = await fetch(`http://localhost:5000/api/products/${id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setProduct(data.product);
-          if (data.product.images?.length > 0) setSelectedImage(0);
-          if (data.product.sizes?.length > 0) setSelectedSize(data.product.sizes[0]);
-          if (data.product.colors?.length > 0) setSelectedColor(data.product.colors[0]);
-          return;
-        }
-      } catch (apiError) {
-        console.log('API not available, using mock data');
-      }
-      
-      // Fallback to mock data
-      const mockProduct = getMockProduct(id);
-      if (mockProduct) {
-        setProduct(mockProduct);
-        if (mockProduct.images?.length > 0) setSelectedImage(0);
-        if (mockProduct.sizes?.length > 0) setSelectedSize(mockProduct.sizes[0]);
-        if (mockProduct.colors?.length > 0) setSelectedColor(mockProduct.colors[0]);
-      } else {
+      const response = await fetch(`http://localhost:5000/api/products/${id}`);
+      if (!response.ok) {
         throw new Error('Product not found');
       }
+      
+      const data = await response.json();
+      setProduct(data.product);
+      if (data.product.images?.length > 0) setSelectedImage(0);
+      if (data.product.sizes?.length > 0) setSelectedSize(data.product.sizes[0]);
+      if (data.product.colors?.length > 0) setSelectedColor(data.product.colors[0]);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -111,6 +97,23 @@ const ProductDetail = () => {
     
     addToCart(cartItem);
     toast.success('Product added to cart!');
+  };
+
+  const toggleWishlist = () => {
+    if (!product) return;
+    
+    if (productInWishlist) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0] || '',
+        description: product.description || '',
+        category: product.category || 'Uncategorized'
+      });
+    }
   };
 
   const handleQuantityChange = (change) => {
@@ -450,13 +453,14 @@ const ProductDetail = () => {
                     <ShoppingCart className="w-5 h-5" />
                     <span>Add to Cart</span>
                   </button>
-                  
-                  <button
-                    onClick={() => setIsWishlisted(!isWishlisted)}
-                    className={`btn-outline p-3 ${isWishlisted ? 'bg-red-50 border-red-300 text-red-600' : ''}`}
+                    <motion.button
+                    onClick={toggleWishlist}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`btn-outline p-3 ${productInWishlist ? 'bg-pink-50 border-pink-300 text-pink-600' : ''}`}
                   >
-                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
-                  </button>
+                    <Heart className={`w-5 h-5 ${productInWishlist ? 'fill-current' : ''}`} />
+                  </motion.button>
                   
                   <button className="btn-outline p-3">
                     <Share2 className="w-5 h-5" />

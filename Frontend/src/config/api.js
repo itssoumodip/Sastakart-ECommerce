@@ -21,15 +21,17 @@ export const API_ENDPOINTS = {
   ADMIN_CREATE_USER: '/api/auth/register',
   ADMIN_UPDATE_USER: (id) => `/api/users/admin/user/${id}`,
   ADMIN_DELETE_USER: (id) => `/api/users/admin/user/${id}`,
-  
-  // Product endpoints
+    // Product endpoints
   PRODUCTS: '/api/products',
   PRODUCT_DETAILS: (id) => `/api/products/${id}`,
-  
-  // Order endpoints
+  UPLOAD_PRODUCT_IMAGES: '/api/upload/products/upload',
+    // Order endpoints
   ORDERS: '/api/orders',
   ORDER_DETAILS: (id) => `/api/orders/${id}`,
   MY_ORDERS: '/api/orders/me',
+  
+  // Dashboard endpoints
+  DASHBOARD_STATS: '/api/dashboard/stats',
   
   // Payment endpoints
   PAYMENTS: '/api/payments',

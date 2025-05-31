@@ -2,26 +2,48 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { toast } from 'react-hot-toast';
 import { forwardRef } from 'react';
 
 const ProductCard = forwardRef(({ product, index = 0 }, ref) => {
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  
+  const isWishlisted = isInWishlist(product._id);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
     try {
       addToCart({
-        _id: product._id,
-        title: product.title,
+        id: product._id,
+        name: product.title,
         price: product.discountPrice || product.price,
-        images: product.images || ['https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop'],
-        stock: product.stock
+        image: product.images?.[0] || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
+        quantity: 1
       });
       toast.success('Added to cart!');
     } catch (error) {
       toast.error('Failed to add to cart');
+    }
+  };
+  
+  const handleToggleWishlist = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isWishlisted) {
+      removeFromWishlist(product._id);
+    } else {
+      addToWishlist({
+        id: product._id,
+        name: product.title,
+        price: product.discountPrice || product.price,
+        image: product.images?.[0] || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
+        description: product.description || '',
+        category: product.category || 'Uncategorized'
+      });
     }
   };
 
@@ -68,19 +90,26 @@ const ProductCard = forwardRef(({ product, index = 0 }, ref) => {
           {/* Quick Actions */}
           <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300">
             <motion.button 
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-black shadow-sm hover:shadow-md transition-all"
+              onClick={handleToggleWishlist}
+              className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all ${
+                isWishlisted 
+                  ? 'bg-pink-500 text-white' 
+                  : 'bg-white text-gray-700 hover:text-pink-500'
+              }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              <Heart className="h-5 w-5" />
+              <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
             </motion.button>
-            <motion.button 
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-black shadow-sm hover:shadow-md transition-all"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <Eye className="h-5 w-5" />
-            </motion.button>
+            <Link to={`/products/${product._id}`} onClick={(e) => e.stopPropagation()}>
+              <motion.button 
+                className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-black shadow-sm hover:shadow-md transition-all"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Eye className="h-5 w-5" />
+              </motion.button>
+            </Link>
           </div>
         </div>
       </Link>
@@ -106,7 +135,7 @@ const ProductCard = forwardRef(({ product, index = 0 }, ref) => {
               <Star
                 key={i}
                 className={`h-4 w-4 ${
-                  i < Math.floor(product.rating)
+                  i < Math.floor(product.rating || 4)
                     ? 'text-yellow-400 fill-yellow-400'
                     : 'text-gray-300'
                 }`}
@@ -123,22 +152,27 @@ const ProductCard = forwardRef(({ product, index = 0 }, ref) => {
         {/* Price and Add to Cart */}
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-lg font-medium text-gray-900">
-              ${product.discountPrice || product.price}
-            </span>
-            {product.discountPrice && product.discountPrice < product.price && (
-              <span className="text-sm text-gray-500 line-through">
-                ${product.price}
-              </span>
+            {product.discountPrice && product.discountPrice < product.price ? (
+              <>
+                <span className="font-medium text-lg text-gray-900">${product.discountPrice.toFixed(2)}</span>
+                <span className="text-sm text-gray-500 line-through">${product.price.toFixed(2)}</span>
+              </>
+            ) : (
+              <span className="font-medium text-lg text-gray-900">${(product.price || 0).toFixed(2)}</span>
             )}
           </div>
+          
           <motion.button
             onClick={handleAddToCart}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="btn-primary p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={product.stock === 0}
-            title={product.stock === 0 ? 'Out of stock' : 'Add to cart'}          >
+            className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm ${
+              product.stock === 0
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-black text-white hover:bg-gray-800'
+            } transition-colors duration-200`}
+            whileHover={product.stock > 0 ? { scale: 1.1 } : {}}
+            whileTap={product.stock > 0 ? { scale: 0.9 } : {}}
+          >
             <ShoppingCart className="h-5 w-5" />
           </motion.button>
         </div>

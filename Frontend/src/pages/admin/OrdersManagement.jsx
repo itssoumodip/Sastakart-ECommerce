@@ -4,68 +4,63 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, ArrowUpDown, Eye, ShoppingBag, Package, Truck, CheckCircle, Clock, DollarSign, CreditCard, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_ENDPOINTS } from '../../config/api';
 
 function OrdersManagement() {
-  const [orders, setOrders] = useState([
-    {
-      id: 'ORD-1234',
-      date: '2023-11-28',
-      customer: 'John Doe',
-      email: 'john.doe@example.com',
-      total: 125.99,
-      status: 'Delivered',
-      items: 3,
-      paymentMethod: 'Credit Card'
-    },
-    {
-      id: 'ORD-1235',
-      date: '2023-11-27',
-      customer: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      total: 89.50,
-      status: 'Processing',
-      items: 1,
-      paymentMethod: 'PayPal'
-    },
-    {
-      id: 'ORD-1236',
-      date: '2023-11-26',
-      customer: 'Robert Brown',
-      email: 'robert.brown@example.com',
-      total: 245.75,
-      status: 'Shipped',
-      items: 4,
-      paymentMethod: 'Credit Card'
-    },
-    {
-      id: 'ORD-1237',
-      date: '2023-11-25',
-      customer: 'Sarah Wilson',
-      email: 'sarah.wilson@example.com',
-      total: 112.30,
-      status: 'Pending',
-      items: 2,
-      paymentMethod: 'Credit Card'
-    },
-    {
-      id: 'ORD-1238',
-      date: '2023-11-24',
-      customer: 'Michael Johnson',
-      email: 'michael.johnson@example.com',
-      total: 78.25,
-      status: 'Cancelled',
-      items: 1,
-      paymentMethod: 'PayPal'
-    },
-  ]);
-
-  const [filteredOrders, setFilteredOrders] = useState(orders);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('date');
+  const [statusFilter, setStatusFilter] = useState('all');  const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 10;
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000${API_ENDPOINTS.ADMIN_ORDERS || '/api/orders/admin/orders'}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders');
+      }
+
+      const data = await response.json();
+      
+      // Transform backend data to match frontend structure
+      const transformedOrders = data.orders?.map(order => ({
+        id: order._id,
+        date: order.createdAt,
+        customer: order.user?.name || 'Unknown Customer',
+        email: order.user?.email || 'No email',
+        total: order.totalPrice,
+        status: order.orderStatus,
+        items: order.orderItems?.length || 0,
+        paymentMethod: order.paymentInfo?.type || 'Unknown'
+      })) || [];
+
+      setOrders(transformedOrders);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+      setError(err.message);
+      toast.error('Failed to fetch orders');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     let updatedOrders = [...orders];

@@ -18,7 +18,6 @@ import {
   SlidersHorizontal,
   ArrowUpDown
 } from 'lucide-react'
-import { getMockProducts } from '../data/mockProducts'
 import ProductCard from '../components/ProductCard'
 
 const Products = () => {
@@ -59,7 +58,6 @@ const Products = () => {
     { value: 'rating', label: 'Highest Rated' },
     { value: 'popular', label: 'Most Popular' }
   ]
-
   // Fetch products
   const { data: productsData, isLoading, error } = useQuery(
     ['products', filters],
@@ -69,62 +67,12 @@ const Products = () => {
         if (value) params.append(key, value)
       })
       
-      // Try API first, fallback to mock data
-      try {
-        const { data } = await axios.get(`/api/products?${params.toString()}`)
-        return data
-      } catch (apiError) {
-        console.log('API not available, using mock data')
-        // Return mock data with filtering applied
-        const mockData = getMockProducts(filters.limit)
-        
-        // Apply basic filtering for demo
-        let filteredProducts = [...mockData.products]
-        
-        if (filters.search) {
-          filteredProducts = filteredProducts.filter(product => 
-            product.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-            product.description.toLowerCase().includes(filters.search.toLowerCase())
-          )
-        }
-        
-        if (filters.category) {
-          filteredProducts = filteredProducts.filter(product => 
-            product.category === filters.category
-          )
-        }
-        
-        if (filters.minPrice) {
-          filteredProducts = filteredProducts.filter(product => 
-            (product.discountPrice || product.price) >= parseFloat(filters.minPrice)
-          )
-        }
-        
-        if (filters.maxPrice) {
-          filteredProducts = filteredProducts.filter(product => 
-            (product.discountPrice || product.price) <= parseFloat(filters.maxPrice)
-          )
-        }
-        
-        // Apply sorting
-        if (filters.sort === 'price_asc') {
-          filteredProducts.sort((a, b) => (a.discountPrice || a.price) - (b.discountPrice || b.price))
-        } else if (filters.sort === 'price_desc') {
-          filteredProducts.sort((a, b) => (b.discountPrice || b.price) - (a.discountPrice || a.price))
-        } else if (filters.sort === 'rating') {
-          filteredProducts.sort((a, b) => b.rating - a.rating)
-        }
-        
-        return {
-          products: filteredProducts,
-          totalProducts: filteredProducts.length,
-          totalPages: Math.ceil(filteredProducts.length / filters.limit),
-          currentPage: filters.page
-        }
-      }
+      const { data } = await axios.get(`/api/products?${params.toString()}`)
+      return data
     },
     {
-      keepPreviousData: true
+      retry: 2,
+      retryDelay: 1000,
     }
   )
 

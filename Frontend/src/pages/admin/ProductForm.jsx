@@ -18,9 +18,20 @@ function ProductForm() {
   
   // Watch values for dynamic UI updates
   const currentCategory = watch('category');
-
-  // Sample categories and status options
-  const categories = ['Electronics', 'Clothing', 'Accessories', 'Home & Kitchen'];
+  // Categories and status options based on the backend model
+  const categories = [
+    'Electronics',
+    'Clothing',
+    'Home & Kitchen',
+    'Beauty & Personal Care',
+    'Books',
+    'Sports & Outdoors',
+    'Toys & Games',
+    'Health & Wellness',
+    'Jewelry',
+    'Automotive',
+    'Others'
+  ];
   const statusOptions = ['Active', 'Draft', 'Out of Stock'];
 
   const containerVariants = {
@@ -39,81 +50,137 @@ function ProductForm() {
       transition: { duration: 0.5 }
     }
   };
-
   useEffect(() => {
     if (isEditMode) {
-      // In a real application, fetch product data from API
-      // For demo purposes, we'll use mock data
-      const mockProduct = {
-        name: 'Wireless Headphones',
-        sku: 'PRD-0001',
-        price: 99.99,
-        salePrice: 89.99,
-        category: 'Electronics',
-        description: 'High-quality wireless headphones with noise cancellation.',
-        inventory: 45,
-        status: 'Active',
-        images: [
-          'https://placehold.co/600x400/e5e7eb/6b7280?text=Headphones+1',
-          'https://placehold.co/600x400/e5e7eb/6b7280?text=Headphones+2'
-        ],
-        variants: [
-          { id: 1, color: 'Black', size: 'One Size', price: 99.99, inventory: 25 },
-          { id: 2, color: 'White', size: 'One Size', price: 99.99, inventory: 20 }
-        ],
-        specifications: [
-          { key: 'Battery Life', value: '20 hours' },
-          { key: 'Connectivity', value: 'Bluetooth 5.0' }
-        ]
+      const fetchProductData = async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}`);
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch product details');
+          }
+          
+          const { product } = await response.json();
+          
+          // Set form values
+          setValue('name', product.title);
+          setValue('description', product.description);
+          setValue('price', product.price);
+          setValue('salePrice', product.discountPrice);
+          setValue('category', product.category);
+          setValue('brand', product.brand);
+          setValue('inventory', product.stock);
+          setValue('status', product.stock > 0 ? (product.stock < 10 ? 'Low Stock' : 'Active') : 'Out of Stock');
+          setValue('features', product.features?.join(', '));
+          
+          setUploadedImages(product.images || []);
+        } catch (error) {
+          console.error('Error fetching product details:', error);
+          toast.error('Failed to load product details');
+          navigate('/admin/products');
+        } finally {
+          setLoading(false);
+        }
       };
 
-      // Set form values
-      Object.keys(mockProduct).forEach(key => {
-        if (key !== 'images' && key !== 'variants' && key !== 'specifications') {
-          setValue(key, mockProduct[key]);
-        }
+      fetchProductData();
+    }
+  }, [isEditMode, id, navigate, setValue]);
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    setLoading(true);
+    
+    try {
+      // Convert files to base64 strings
+      const base64Images = await Promise.all(
+        files.map(file => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+          });
+        })
+      );
+      
+      // Upload to Cloudinary via backend
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/products/upload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ images: base64Images })
       });
       
-      setUploadedImages(mockProduct.images);
+      if (!response.ok) {
+        throw new Error('Failed to upload images');
+      }
+      
+      const data = await response.json();
+      setUploadedImages([...uploadedImages, ...data.images]);
+      toast.success('Images uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      toast.error('Failed to upload images. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  }, [isEditMode, setValue]);
-
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    
-    // In a real app, you would upload to a service and get URLs back
-    // For this demo, we'll create object URLs
-    const newImages = files.map(file => 
-      URL.createObjectURL(file)
-    );
-    
-    setUploadedImages([...uploadedImages, ...newImages]);
   };
 
   const removeImage = (index) => {
     setUploadedImages(uploadedImages.filter((_, i) => i !== index));
   };
-
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      // Prepare complete product data with images
+      if (uploadedImages.length === 0) {
+        toast.error('Please upload at least one product image');
+        setLoading(false);
+        return;
+      }
+
+      // Format product data for API
       const productData = {
-        ...data,
-        images: uploadedImages
+        title: data.name,
+        description: data.description,
+        price: parseFloat(data.price),
+        discountPrice: data.salePrice ? parseFloat(data.salePrice) : null,
+        images: uploadedImages,
+        category: data.category,
+        brand: data.brand || 'Generic',
+        stock: parseInt(data.inventory) || 0,
+        features: data.features ? data.features.split(',').map(f => f.trim()) : []
       };
 
-      // In a real app, you would make an API call here
-      console.log('Product data:', productData);
+      const token = localStorage.getItem('token');
+      const url = isEditMode 
+        ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}` 
+        : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`;
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const method = isEditMode ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(productData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save product');
+      }
       
       toast.success(isEditMode ? 'Product updated successfully!' : 'Product created successfully!');
       navigate('/admin/products');
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error('Failed to save product. Please try again.');
+      toast.error(error.message || 'Failed to save product. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -248,6 +315,19 @@ function ProductForm() {
                       className="input"
                       placeholder="0.00"
                     />
+                  </div>                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Brand *
+                    </label>
+                    <input
+                      type="text"
+                      {...register('brand', { required: 'Brand is required' })}
+                      className="input"
+                      placeholder="Enter brand name"
+                    />
+                    {errors.brand && (
+                      <p className="text-red-600 text-sm mt-1">{errors.brand.message}</p>
+                    )}
                   </div>
 
                   <div>

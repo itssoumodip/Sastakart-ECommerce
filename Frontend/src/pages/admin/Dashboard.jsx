@@ -1,27 +1,58 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart3, Users, ShoppingBag, Package, DollarSign, TrendingUp, Eye } from 'lucide-react';
+import { API_ENDPOINTS } from '../../config/api';
 
 function Dashboard() {
   const [stats, setStats] = useState({
-    totalSales: 12560,
-    totalOrders: 124,
-    totalProducts: 68,
-    totalCustomers: 95,
-    recentOrders: [
-      { id: 'ORD-1234', date: '2023-11-28', customer: 'John Doe', total: 125.99, status: 'Delivered' },
-      { id: 'ORD-1235', date: '2023-11-27', customer: 'Jane Smith', total: 89.50, status: 'Processing' },
-      { id: 'ORD-1236', date: '2023-11-26', customer: 'Robert Brown', total: 245.75, status: 'Shipped' },
-      { id: 'ORD-1237', date: '2023-11-25', customer: 'Sarah Wilson', total: 112.30, status: 'Pending' },
-    ],
-    topProducts: [
-      { id: 1, name: 'Wireless Headphones', sold: 24, revenue: 2399.76 },
-      { id: 2, name: 'Smart Watch', sold: 18, revenue: 3599.82 },
-      { id: 3, name: 'Bluetooth Speaker', sold: 15, revenue: 1499.85 },
-    ]
-  });
+    totalSales: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    totalCustomers: 0,
+    recentOrders: [],
+    topProducts: []
+  });  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
+
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:5000${API_ENDPOINTS.DASHBOARD_STATS}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard stats');
+      }
+
+      const data = await response.json();
+      setStats(data.stats);
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+      setError(err.message);
+      // Set default values on error
+      setStats({
+        totalSales: 0,
+        totalOrders: 0,
+        totalProducts: 0,
+        totalCustomers: 0,
+        recentOrders: [],
+        topProducts: []
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -38,8 +69,7 @@ function Dashboard() {
       y: 0,
       transition: { duration: 0.5 }
     }
-  };
-  return (
+  };  return (
     <motion.div 
       className="min-h-screen bg-white"
       initial="hidden"
@@ -49,7 +79,25 @@ function Dashboard() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <Helmet>
           <title>Admin Dashboard | E-Commerce Store</title>
-        </Helmet>        <motion.div 
+        </Helmet>
+
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">Error loading dashboard: {error}</p>
+            <button 
+              onClick={fetchDashboardStats}
+              className="btn-primary"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <>
+        <motion.div 
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-6 sm:mb-8"
           variants={itemVariants}
         >
@@ -192,10 +240,9 @@ function Dashboard() {
                       <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap font-medium block sm:table-cell">
                         <span className="sm:hidden font-semibold text-gray-700">Order: </span>
                         {order.id}
-                      </td>
-                      <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-gray-600 block sm:table-cell">
+                      </td>                      <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-gray-600 block sm:table-cell">
                         <span className="sm:hidden font-semibold text-gray-700">Date: </span>
-                        {order.date}
+                        {new Date(order.date).toLocaleDateString()}
                       </td>
                       <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap font-medium text-gray-900 block sm:table-cell">
                         <span className="sm:hidden font-semibold text-gray-700">Customer: </span>                        {order.customer}
@@ -269,10 +316,11 @@ function Dashboard() {
                     </motion.tr>
                   ))}
                 </AnimatePresence>
-              </tbody>
-            </table>
+              </tbody>            </table>
           </div>
         </motion.div>
+          </>
+        )}
       </div>
     </motion.div>
   );
