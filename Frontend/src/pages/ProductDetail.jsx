@@ -5,6 +5,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { toast } from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 import {
   Star,
   Heart,
@@ -48,42 +49,36 @@ const ProductDetail = () => {
   // Check if product is in wishlist
   const productInWishlist = product && isInWishlist(product.id);
 
-  useEffect(() => {
-    fetchProduct();
-    fetchReviews();
-  }, [id]);
   const fetchProduct = async () => {
     try {
       setLoading(true);
       
-      const response = await fetch(`http://localhost:5000/api/products/${id}`);
-      if (!response.ok) {
-        throw new Error('Product not found');
-      }
-      
-      const data = await response.json();
-      setProduct(data.product);
-      if (data.product.images?.length > 0) setSelectedImage(0);
-      if (data.product.sizes?.length > 0) setSelectedSize(data.product.sizes[0]);
-      if (data.product.colors?.length > 0) setSelectedColor(data.product.colors[0]);
+      const response = await axios.get(`/api/products/${id}`);
+      setProduct(response.data.product);
+      if (response.data.product.images?.length > 0) setSelectedImage(0);
+      if (response.data.product.sizes?.length > 0) setSelectedSize(response.data.product.sizes[0]);
+      if (response.data.product.colors?.length > 0) setSelectedColor(response.data.product.colors[0]);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || 'Product not found');
     } finally {
       setLoading(false);
     }
   };
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/products/reviews?id=${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setReviews(data.reviews || []);
-      }
+      const response = await axios.get(`/api/products/reviews?id=${id}`);
+      setReviews(response.data.reviews || []);
     } catch (err) {
       console.error('Failed to fetch reviews:', err);
       setReviews([]);
     }
   };
+
+  useEffect(() => {
+    fetchProduct();
+    fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -131,32 +126,21 @@ const ProductDetail = () => {
     } else {
       setSelectedImage((prev) => (prev - 1 + product.images.length) % product.images.length);
     }
-  };
-  const handleSubmitReview = async (e) => {
+  };  const handleSubmitReview = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/products/review`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders()
-        },
-        body: JSON.stringify({
-          ...newReview,
-          productId: id
-        })
+      await axios.put(`/api/products/review`, {
+        ...newReview,
+        productId: id
       });
       
-      if (response.ok) {
-        toast.success('Review submitted successfully!');
-        setNewReview({ rating: 5, comment: '' });
-        setShowReviewForm(false);
-        fetchReviews();
-      } else {
-        toast.error('Failed to submit review');
-      }
+      toast.success('Review submitted successfully!');
+      setNewReview({ rating: 5, comment: '' });
+      setShowReviewForm(false);
+      fetchReviews();
     } catch (err) {
-      toast.error('Failed to submit review');
+      console.error('Review submission error:', err);
+      toast.error(err.response?.data?.message || 'Failed to submit review');
     }
   };
 
@@ -235,9 +219,8 @@ const ProductDetail = () => {
         <title>{product?.name ? `${product.name} - EcoShop` : 'EcoShop'}</title>
         <meta name="description" content={product?.description || 'Premium products at EcoShop'} />
       </Helmet>
-      
-      <div className="min-h-screen bg-white">
-        <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
           {/* Breadcrumb */}
           <motion.nav 
             className="flex items-center space-x-2 text-sm text-gray-500 mb-6 pb-4 border-b border-gray-200"
@@ -352,44 +335,55 @@ const ProductDetail = () => {
                     {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                   </span>
                 </div>
-              </div>
-
-              {/* Price */}
-              <div className="flex items-center space-x-3">
-                <span className="text-3xl font-light text-gray-900">
-                  ${product.discountPrice || product.price}
-                </span>
-                {product.discountPrice && product.discountPrice < product.price && (
-                  <span className="text-xl text-gray-500 line-through">
+              </div>              {/* Price */}
+              <div className="flex items-center space-x-3 mb-6">
+                {product.discountPrice && product.discountPrice < product.price ? (
+                  <>
+                    <span className="text-3xl font-semibold text-gray-900">
+                      ${product.discountPrice}
+                    </span>
+                    <span className="text-xl text-gray-500 line-through">
+                      ${product.price}
+                    </span>
+                    <span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      Save ${(product.price - product.discountPrice).toFixed(2)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-3xl font-semibold text-gray-900">
                     ${product.price}
                   </span>
                 )}
               </div>
 
               {/* Description */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Description</h3>
+              <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center">
+                  <span className="w-1 h-6 bg-black rounded-full mr-3"></span>
+                  Description
+                </h3>
                 <p className="text-gray-600 leading-relaxed">
                   {product.description}
                 </p>
-              </div>
-
-              {/* Options */}
+              </div>              {/* Options */}
               {(product.sizes?.length > 0 || product.colors?.length > 0) && (
-                <div className="space-y-4">
+                <div className="space-y-6 mb-6 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                   {/* Size Selection */}
                   {product.sizes?.length > 0 && (
                     <div>
-                      <h3 className="text-sm font-medium text-gray-900 mb-2">Size</h3>
+                      <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                        <span className="w-1 h-6 bg-black rounded-full mr-3"></span>
+                        Size
+                      </h3>
                       <div className="flex flex-wrap gap-2">
                         {product.sizes.map(size => (
                           <button
                             key={size}
                             onClick={() => setSelectedSize(size)}
-                            className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                            className={`w-12 h-12 border rounded-full text-sm font-medium transition-all duration-200 ${
                               selectedSize === size
-                                ? 'bg-gray-900 text-white border-gray-900'
-                                : 'bg-white text-gray-900 border-gray-300 hover:border-gray-900'
+                                ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900 ring-offset-2 shadow-md'
+                                : 'bg-white text-gray-700 border-gray-200 hover:border-gray-900 hover:shadow-sm'
                             }`}
                           >
                             {size}
@@ -402,71 +396,108 @@ const ProductDetail = () => {
                   {/* Color Selection */}
                   {product.colors?.length > 0 && (
                     <div>
-                      <h3 className="text-sm font-medium text-gray-900 mb-2">Color</h3>
-                      <div className="flex flex-wrap gap-2">
+                      <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                        <span className="w-1 h-6 bg-black rounded-full mr-3"></span>
+                        Color
+                      </h3>
+                      <div className="flex flex-wrap gap-3">
                         {product.colors.map(color => (
                           <button
                             key={color}
                             onClick={() => setSelectedColor(color)}
-                            className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                              selectedColor === color
-                                ? 'bg-gray-900 text-white border-gray-900'
-                                : 'bg-white text-gray-900 border-gray-300 hover:border-gray-900'
-                            }`}
+                            className={`group relative`}
                           >
-                            {color}
+                            <span 
+                              className={`block w-10 h-10 rounded-full transition-all duration-200 border-2 ${
+                                selectedColor === color
+                                  ? 'ring-2 ring-gray-900 ring-offset-2 border-white'
+                                  : 'border-gray-200 group-hover:border-gray-300'
+                              }`}
+                              style={{ 
+                                backgroundColor: color.toLowerCase(),
+                                boxShadow: selectedColor === color ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
+                              }}
+                            ></span>
+                            <span className="sr-only">{color}</span>
+                            {selectedColor === color && (
+                              <Check className="absolute inset-0 m-auto h-4 w-4 text-white mix-blend-difference" />
+                            )}
                           </button>
                         ))}
                       </div>
                     </div>
                   )}
                 </div>
-              )}
-
-              {/* Quantity and Add to Cart */}
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Quantity</label>
-                  <div className="flex items-center space-x-3">
-                    <button
+              )}              {/* Quantity and Add to Cart */}
+              <div className="space-y-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                  <label className="text-sm font-medium text-gray-900 mb-4 flex items-center">
+                    <span className="w-1 h-6 bg-black rounded-full mr-3"></span>
+                    Quantity
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <motion.button
                       onClick={() => handleQuantityChange(-1)}
                       disabled={quantity <= 1}
-                      className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:border-gray-900 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+                      aria-label="Decrease quantity"
                     >
                       <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="text-lg font-medium min-w-[3rem] text-center">{quantity}</span>
-                    <button
+                    </motion.button>
+                    <div className="w-20 h-12 rounded-full bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200 flex items-center justify-center shadow-inner">
+                      <span className="text-lg font-semibold text-gray-900">{quantity}</span>
+                    </div>
+                    <motion.button
                       onClick={() => handleQuantityChange(1)}
                       disabled={quantity >= (product.stock || 10)}
-                      className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:border-gray-900 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+                      aria-label="Increase quantity"
                     >
                       <Plus className="w-4 h-4" />
-                    </button>
+                    </motion.button>
+                    <div className="flex-1 text-right">
+                      <span className="text-sm text-gray-500">
+                        {product.stock} items available
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex space-x-4">
-                  <button
+                  <motion.button
                     onClick={handleAddToCart}
                     disabled={product.stock === 0}
-                    className="btn-primary flex-1 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="btn-primary flex-1 flex items-center justify-center space-x-3 py-4 rounded-full disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <ShoppingCart className="w-5 h-5" />
-                    <span>Add to Cart</span>
-                  </button>
-                    <motion.button
+                    <span className="font-medium">Add to Cart</span>
+                  </motion.button>
+                  <motion.button
                     onClick={toggleWishlist}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`btn-outline p-3 ${productInWishlist ? 'bg-pink-50 border-pink-300 text-pink-600' : ''}`}
+                    className={`btn-outline p-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 ${
+                      productInWishlist 
+                        ? 'bg-pink-50 border-pink-300 text-pink-600 hover:bg-pink-100' 
+                        : 'hover:bg-gray-50'
+                    }`}
                   >
                     <Heart className={`w-5 h-5 ${productInWishlist ? 'fill-current' : ''}`} />
                   </motion.button>
                   
-                  <button className="btn-outline p-3">
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="btn-outline p-4 rounded-full shadow-md hover:shadow-lg hover:bg-gray-50 transition-all duration-200"
+                  >
                     <Share2 className="w-5 h-5" />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
 

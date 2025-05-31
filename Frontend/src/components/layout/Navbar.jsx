@@ -66,9 +66,7 @@ const Navbar = () => {
               <span className="hidden sm:inline">ClassyShop</span>
               <span className="sm:hidden">CS</span>
             </Link>
-          </motion.div>
-
-          {/* Search Bar - Desktop */}
+          </motion.div>          {/* Search Bar - Desktop */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-8">
             <div className="relative w-full">
               <input
@@ -76,26 +74,27 @@ const Navbar = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products..."
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 bg-gray-50 rounded-full focus:outline-none focus:ring-2 focus:ring-black focus:bg-white focus:border-gray-300 transition-all duration-200 text-gray-900 placeholder-gray-500 shadow-sm"
               />
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
-          </form>          {/* Desktop Navigation */}
+          </form>{/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">            <Link to="/products" className="nav-link">
               Products
             </Link>
-            
-            {/* Cart */}
+              {/* Cart */}
             <Link 
               to="/cart" 
-              className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors duration-200"
+              className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
             >
-              <ShoppingCart className="h-6 w-6" />
-              {getCartItemsCount() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {getCartItemsCount()}
-                </span>
-              )}
+              <div className="relative">
+                <ShoppingCart className="h-6 w-6" />
+                {getCartItemsCount() > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-sm">
+                    {getCartItemsCount()}
+                  </span>
+                )}
+              </div>
             </Link>
 
             {/* User Menu */}
@@ -103,19 +102,19 @@ const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 p-2 text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                  className="flex items-center space-x-2 p-2 text-gray-700 hover:text-black transition-colors duration-200"
                 >
-                  <User className="h-6 w-6" />
+                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    <User className="h-5 w-5" />
+                  </div>
                   <span className="hidden xl:block text-sm font-medium">{user?.name}</span>
-                </button>
-
-                <AnimatePresence>
+                </button>                <AnimatePresence>
                   {isUserMenuOpen && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2"
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden"
                     >
                       <Link
                         to="/profile"

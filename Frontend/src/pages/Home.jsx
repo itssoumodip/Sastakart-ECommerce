@@ -58,7 +58,7 @@ const Home = () => {
             {/* Fashion Category */}
             <Link to="/products?category=Clothing" className="group">
               <div className="rounded-lg overflow-hidden bg-gray-100 aspect-square relative">
-                <img src="https://images.unsplash.com/photo-1609084415979-e38c11583e8b?q=80&w=2034&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt="Sustainable Fashion"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -167,7 +167,7 @@ const Home = () => {
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="aspect-square bg-gray-200 relative">
                 <img
-                  src="https://images.unsplash.com/photo-1602532305019-3dbbd482814d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80"
+                  src="https://solargenerator.guide/wp-content/uploads/2017/12/BernetPow-24000mAh-Solar-Power-Bank.jpg"
                   alt="Solar Powered Charger"
                   className="w-full h-full object-cover"
                 />

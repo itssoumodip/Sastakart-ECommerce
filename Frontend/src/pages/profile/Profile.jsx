@@ -160,8 +160,6 @@ const Profile = () => {
     { id: 'orders', label: 'Orders', icon: Package },
     { id: 'wishlist', label: 'Wishlist', icon: Heart },
     { id: 'security', label: 'Security', icon: Shield },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (
@@ -191,7 +189,7 @@ const Profile = () => {
                 <div className="p-6 border-b border-gray-100">
                   <div className="text-center">
                     <div className="relative inline-block">
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                      <div className="w-20 h-20 rounded-full bg-gray-500 flex items-center justify-center text-white text-2xl font-bold">
                         {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
                       </div>
                       <button className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors">

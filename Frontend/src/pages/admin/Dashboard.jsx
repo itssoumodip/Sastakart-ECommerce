@@ -107,19 +107,34 @@ function Dashboard() {
             </h1>
             <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your store and view analytics.</p>
           </div>
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full sm:w-auto"
-          >
-            <Link 
-              to="/admin/products/new" 
-              className="btn-primary flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+          <div className="flex flex-col sm:flex-row gap-3 items-center"> {/* New flex container for buttons */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full sm:w-auto"
             >
-              <Package className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="whitespace-nowrap">Add Product</span>
-            </Link>
-          </motion.div>
+              <Link
+                to="/admin/products" // Route to view all products
+                className="btn-outline flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto px-4 py-2" // Added padding for consistency
+              >
+                <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="whitespace-nowrap">View Products</span>
+              </Link>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full sm:w-auto"
+            >
+              <Link
+                to="/admin/products/new"
+                className="btn-primary flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto px-4 py-2" // Added padding for consistency
+              >
+                <Package className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="whitespace-nowrap">Add Product</span>
+              </Link>
+            </motion.div>
+          </div>
         </motion.div>        {/* Stats Cards */}
         <motion.div 
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8"

@@ -2,17 +2,17 @@ import { Link } from 'react-router-dom'
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Leaf, Shield, Truck } from 'lucide-react'
 
 const Footer = () => {
-  return (
-    <footer className="bg-gray-900 text-white">
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+  return (    <footer className="bg-gray-900 text-white">
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           
           {/* Company Info */}
-          <div className="space-y-6">            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <span className="text-gray-900 font-bold text-lg">C</span>
+          <div className="space-y-6">
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                <span className="text-gray-900 font-bold text-xl">C</span>
               </div>
-              <span className="text-xl font-medium">ClassyShop</span>
+              <span className="text-2xl font-bold">ClassyShop</span>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
               We're committed to creating products that are better for you and better for the planet. 
