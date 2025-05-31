@@ -40,9 +40,8 @@ const Register = () => {
         data.email, 
         data.phone, 
         data.password
-      )
-      if (result.success) {
-        toast.success('Account created successfully! Welcome to FASCO! 🎉')
+      )      if (result.success) {
+        toast.success('Account created successfully! Welcome to ClassyShop! 🎉')
         navigate('/')
       }
     } catch (error) {
@@ -82,10 +81,9 @@ const Register = () => {
         
         {/* Right Panel - Register Form */}
         <div className="lg:w-1/2 w-full flex flex-col justify-center items-center p-8 lg:p-12">
-          <div className="w-full max-w-md">
-            {/* Logo */}
+          <div className="w-full max-w-md">            {/* Logo */}
             <div className="mb-8 text-center">
-              <h1 className="text-4xl font-bold text-gray-800">FASCO</h1>
+              <h1 className="text-4xl font-bold text-gray-800">ClassyShop</h1>
             </div>
             
             {/* Form Title */}
@@ -277,10 +275,9 @@ const Register = () => {
                   Already have an account? <Link to="/login" className="text-blue-600 hover:text-blue-800 hover:underline">Login</Link>
                 </span>
                 
-                {/* Terms & Conditions */}
-                <div className="mt-6 text-right">
+                {/* Terms & Conditions */}                <div className="mt-6 text-right">
                   <Link to="/terms" className="text-xs text-gray-500">
-                    FASCO Terms & Conditions
+                    ClassyShop Terms & Conditions
                   </Link>
                 </div>
               </div>

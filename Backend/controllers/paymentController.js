@@ -1,24 +1,20 @@
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const Order = require('../models/order');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Create a new payment => /api/payments/create
 exports.createPaymentIntent = catchAsyncErrors(async (req, res, next) => {
   const { amount, currency = 'USD', metadata } = req.body;
 
   try {
-    // In a real application, this would integrate with a payment gateway like Stripe
-    // Here we're just simulating a payment intent creation
-    
-    const paymentIntent = {
-      id: 'pi_' + Math.random().toString(36).substr(2, 9),
-      amount,
+    // Create a PaymentIntent with Stripe
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // Stripe requires the amount in cents
       currency,
-      status: 'requires_payment_method',
-      client_secret: 'cs_test_' + Math.random().toString(36).substr(2, 20),
-      created: Date.now(),
-      metadata
-    };
+      metadata,
+      payment_method_types: ['card'],
+    });
 
     res.status(200).json({
       success: true,
@@ -35,19 +31,22 @@ exports.confirmPayment = catchAsyncErrors(async (req, res, next) => {
   const { paymentIntentId, paymentMethod } = req.body;
 
   try {
-    // In a real application, this would confirm the payment with the payment gateway
-    // Here we're just simulating a payment confirmation
+    // Retrieve the payment intent from Stripe
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     
-    const paymentIntent = {
-      id: paymentIntentId,
-      status: 'succeeded',
-      paymentMethod,
-      updated: Date.now()
-    };
+    // Check if payment intent exists and has succeeded
+    if (!paymentIntent) {
+      return next(new ErrorHandler('Payment not found', 404));
+    }
 
     res.status(200).json({
       success: true,
-      paymentIntent
+      paymentIntent: {
+        id: paymentIntent.id,
+        status: paymentIntent.status,
+        paymentMethod: paymentIntent.payment_method,
+        updated: new Date(paymentIntent.created * 1000)
+      }
     });
   } catch (error) {
     return next(new ErrorHandler(error.message, 500));
@@ -129,6 +128,60 @@ exports.getPaymentMethods = catchAsyncErrors(async (req, res, next) => {
     res.status(200).json({
       success: true,
       paymentMethods: paymentMethods.data
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
+});
+
+// Handle Stripe webhook events => /api/payments/webhook
+exports.stripeWebhook = catchAsyncErrors(async (req, res, next) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    // Verify the webhook signature
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event based on its type
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object;
+      console.log('Payment succeeded:', paymentIntent.id);
+      // Here you can update orders or trigger other actions based on successful payment
+      break;
+    case 'payment_intent.payment_failed':
+      const failedPayment = event.data.object;
+      console.log('Payment failed:', failedPayment.id);
+      // Handle failed payment
+      break;
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+
+  // Return a 200 response to acknowledge receipt of the event
+  res.json({ received: true });
+});
+
+// Get payment status => /api/payments/:paymentId
+exports.getPaymentStatus = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const paymentIntent = await stripe.paymentIntents.retrieve(req.params.paymentId);
+    
+    if (!paymentIntent) {
+      return next(new ErrorHandler('Payment not found', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      status: paymentIntent.status
     });
   } catch (error) {
     return next(new ErrorHandler(error.message, 500));

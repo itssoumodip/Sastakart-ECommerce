@@ -52,8 +52,7 @@ const Navbar = () => {
     }`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <motion.div
+          {/* Logo */}          <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="flex-shrink-0"
@@ -62,8 +61,8 @@ const Navbar = () => {
               to="/" 
               className="text-xl lg:text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors duration-200"
             >
-              <span className="hidden sm:inline">MODERN SHOP</span>
-              <span className="sm:hidden">MS</span>
+              <span className="hidden sm:inline">ClassyShop</span>
+              <span className="sm:hidden">CS</span>
             </Link>
           </motion.div>
 

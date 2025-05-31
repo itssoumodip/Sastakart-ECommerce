@@ -23,8 +23,7 @@
     overflow-x: hidden;
     font-weight: 400;
   }
-
-  /* FASCO Brand Typography - Exact Match */
+  /* ClassyShop Brand Typography - Exact Match */
   .font-brand {
     font-family: 'Playfair Display', serif;
     font-weight: 700;
@@ -36,7 +35,7 @@
     letter-spacing: -0.02em;
   }
 
-  /* Typography Utilities for FASCO */
+  /* Typography Utilities for ClassyShop */
   .text-outline {
     -webkit-text-stroke: 3px #e5e7eb;
     -webkit-text-fill-color: transparent;

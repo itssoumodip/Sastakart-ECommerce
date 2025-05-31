@@ -6,6 +6,8 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import CheckoutPayment from '../components/payment/CheckoutPayment';
 import {
   CreditCard,
   MapPin,
@@ -23,7 +25,9 @@ import {
   Package,
   Clock,
   Heart,
-  ChevronRight
+  ChevronRight,
+  DollarSign,
+  AlertTriangle
 } from 'lucide-react';
 
 const Checkout = () => {
@@ -35,6 +39,8 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
+  const [paymentIntent, setPaymentIntent] = useState(null);
 
   const shippingForm = useForm({
     defaultValues: {
@@ -65,6 +71,7 @@ const Checkout = () => {
   useEffect(() => {
     if (cartItems.length === 0 && !orderPlaced) {
       navigate('/cart');
+      toast.error('Your cart is empty');
     }
   }, [cartItems, navigate, orderPlaced]);
 
@@ -72,6 +79,18 @@ const Checkout = () => {
   const shipping = subtotal > 50 ? 0 : 10;
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
+
+  const calculateTax = () => {
+    return subtotal * 0.08;
+  };
+
+  const calculateShipping = () => {
+    return subtotal > 50 ? 0 : 10;
+  };
+
+  const calculateTotal = () => {
+    return subtotal + calculateShipping() + calculateTax();
+  };
 
   const handleNextStep = () => {
     if (step < 3) {
@@ -90,21 +109,71 @@ const Checkout = () => {
     handleNextStep();
   };
 
-  const handlePaymentSubmit = async (data) => {
+  const handlePaymentSuccess = async (paymentData) => {
+    setPaymentIntent(paymentData);
     setLoading(true);
+    
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const shippingData = shippingForm.getValues();
       
-      setOrderPlaced(true);
-      clearCart();
-      toast.success('Order placed successfully!');
-      navigate('/order-success');
+      const orderData = {
+        orderItems: cartItems.map(item => ({
+          product: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          image: item.image,
+          price: item.price
+        })),
+        shippingInfo: {
+          firstName: shippingData.firstName,
+          lastName: shippingData.lastName,
+          address: shippingData.address,
+          city: shippingData.city,
+          state: shippingData.state,
+          country: shippingData.country,
+          postalCode: shippingData.postalCode,
+          phone: shippingData.phone,
+        },
+        paymentInfo: {
+          id: paymentData.id,
+          status: paymentData.status,
+          method: paymentMethod
+        },
+        itemsPrice: getCartTotal(),
+        taxPrice: calculateTax(),
+        shippingPrice: calculateShipping(),
+        totalPrice: calculateTotal()
+      };
+
+      const response = await axios.post('/api/orders', orderData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.data.success) {
+        clearCart();
+        setOrderPlaced(true);
+        navigate('/order-success', { 
+          state: { 
+            orderId: response.data.order._id,
+            total: calculateTotal()
+          } 
+        });
+      }
     } catch (error) {
-      toast.error('Payment failed. Please try again.');
+      console.error('Order creation failed:', error);
+      setPaymentError(error.message || 'Failed to create order. Please contact support.');
+      toast.error('Order processing failed. Your payment may have been processed.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePaymentError = (error) => {
+    setPaymentError(error.message || 'Payment processing failed');
+    setLoading(false);
   };
 
   const StepIndicator = () => (
@@ -297,7 +366,6 @@ const Checkout = () => {
       </form>
     </motion.div>
   );
-
   const PaymentStep = () => (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -307,120 +375,85 @@ const Checkout = () => {
     >
       <h2 className="text-2xl font-semibold text-gray-900 mb-6">Payment Information</h2>
       
-      <form onSubmit={paymentForm.handleSubmit(handlePaymentSubmit)} className="space-y-6">
-        {/* Payment Method Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">
-            Payment Method
+      {/* Payment Method Selection */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-4">
+          Payment Method
+        </label>
+        <div className="grid grid-cols-1 gap-3">
+          <label className="relative flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="card"
+              checked={paymentMethod === 'card'}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="sr-only"
+            />
+            <div className={`w-4 h-4 border-2 rounded-full mr-3 ${
+              paymentMethod === 'card' ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
+            }`}>
+              {paymentMethod === 'card' && (
+                <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1"></div>
+              )}
+            </div>
+            <CreditCard className="w-5 h-5 mr-3 text-gray-600" />
+            <span className="font-medium">Credit Card</span>
           </label>
-          <div className="grid grid-cols-1 gap-3">
-            <label className="relative flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="card"
-                checked={paymentMethod === 'card'}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="sr-only"
-              />
-              <div className={`w-4 h-4 border-2 rounded-full mr-3 ${
-                paymentMethod === 'card' ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
-              }`}>
-                {paymentMethod === 'card' && (
-                  <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1"></div>
-                )}
-              </div>
-              <CreditCard className="w-5 h-5 mr-3 text-gray-600" />
-              <span className="font-medium">Credit Card</span>
-            </label>
+        </div>
+      </div>
+
+      {/* Payment Error Display */}
+      {paymentError && (
+        <div className="mb-6 bg-red-50 border border-red-200 p-4 rounded-lg">
+          <div className="flex">
+            <AlertTriangle className="h-5 w-5 text-red-400 mr-2" />
+            <p className="text-sm text-red-600">{paymentError}</p>
           </div>
         </div>
+      )}
 
-        {/* Card Details */}
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Card Number *
-            </label>
-            <input
-              {...paymentForm.register('cardNumber', { required: 'Card number is required' })}
-              type="text"
-              className="input w-full"
-              placeholder="1234 5678 9012 3456"
-              maxLength="19"
-            />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Expiry Date *
-              </label>
-              <input
-                {...paymentForm.register('expiryDate', { required: 'Expiry date is required' })}
-                type="text"
-                className="input w-full"
-                placeholder="MM/YY"
-                maxLength="5"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                CVV *
-              </label>
-              <input
-                {...paymentForm.register('cvv', { required: 'CVV is required' })}
-                type="text"
-                className="input w-full"
-                placeholder="123"
-                maxLength="4"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Name on Card *
-            </label>
-            <input
-              {...paymentForm.register('nameOnCard', { required: 'Name on card is required' })}
-              type="text"
-              className="input w-full"
-              placeholder="Enter name as it appears on card"
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-between pt-6">
-          <button
-            type="button"
-            onClick={handlePrevStep}
-            className="btn-outline flex items-center gap-2"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back to Shipping
-          </button>
-          
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary flex items-center gap-2"
-          >
-            {loading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <Lock className="w-4 h-4" />
-                Place Order
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+      {/* Checkout Payment Component */}
+      <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+        <CheckoutPayment 
+          amount={total} 
+          onPaymentSuccess={handlePaymentSuccess}
+          onPaymentError={handlePaymentError}
+          metadata={{
+            customerEmail: shippingForm.getValues('email'),
+            customerName: `${shippingForm.getValues('firstName')} ${shippingForm.getValues('lastName')}`
+          }}
+        />
+      </div>
+      
+      <div className="flex justify-between pt-6">
+        <button
+          type="button"
+          onClick={handlePrevStep}
+          className="btn-outline flex items-center gap-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Shipping
+        </button>
+        
+        <button
+          type="button"
+          disabled={loading}
+          className="btn-primary flex items-center gap-2"
+        >
+          {loading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <Lock className="w-4 h-4" />
+              Continue
+            </>
+          )}
+        </button>
+      </div>
     </motion.div>
   );
 
@@ -499,9 +532,8 @@ const Checkout = () => {
   );
 
   return (
-    <>
-      <Helmet>
-        <title>Checkout - Your Store</title>
+    <>      <Helmet>
+        <title>Checkout - ClassyShop</title>
         <meta name="description" content="Complete your purchase securely with our checkout process." />
       </Helmet>
 

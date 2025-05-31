@@ -88,47 +88,15 @@ const Cart = () => {
       navigate('/checkout');
       setIsLoading(false);
     }, 1000);
-  };
-  // Empty cart state
+  };  // Empty cart state
   if (!cartItems || cartItems.length === 0) {
     return (
-      <>
-        <Helmet>
-          <title>My Bag - FASCO</title>
+      <>        <Helmet>
+          <title>My Bag - ClassyShop</title>
           <meta name="description" content="Your shopping bag is empty. Discover our latest fashion collections." />
         </Helmet>
         
         <div className="min-h-screen bg-white">
-          {/* Header */}
-          <header className="border-b border-gray-100">
-            <div className="max-w-6xl mx-auto px-4 py-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-12">
-                  <Link to="/" className="text-3xl font-bold text-black tracking-tight">
-                    FASCO
-                  </Link>
-                  <nav className="hidden lg:flex space-x-8">
-                    <Link to="/" className="text-gray-600 hover:text-black font-medium">Home</Link>
-                    <Link to="/products" className="text-gray-600 hover:text-black font-medium">Shop</Link>
-                    <Link to="/products" className="text-gray-600 hover:text-black font-medium">New Arrivals</Link>
-                    <Link to="/products" className="text-gray-600 hover:text-black font-medium">Packages</Link>
-                  </nav>
-                </div>
-                <div className="flex items-center space-x-6">
-                  <Search className="w-5 h-5 text-gray-600 cursor-pointer hover:text-black" />
-                  <User className="w-5 h-5 text-gray-600 cursor-pointer hover:text-black" />
-                  <ShoppingBag className="w-5 h-5 text-gray-600 cursor-pointer hover:text-black" />
-                  <Link 
-                    to="/auth/register" 
-                    className="bg-black text-white px-6 py-2.5 text-sm font-semibold hover:bg-gray-800 transition-colors"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </header>
-
           {/* Empty Bag Content */}
           <div className="max-w-6xl mx-auto px-4 py-20">
             <motion.div 
@@ -158,49 +126,13 @@ const Cart = () => {
       </>
     );
   }
-
   return (
-    <>
-      <Helmet>
-        <title>My Bag ({getCartItemsCount()}) - FASCO</title>
+    <>      <Helmet>
+        <title>My Bag ({getCartItemsCount()}) - ClassyShop</title>
         <meta name="description" content={`${getCartItemsCount()} items in your shopping bag.`} />
       </Helmet>
 
       <div className="min-h-screen bg-white">
-        {/* Header */}
-        <header className="border-b border-gray-100">
-          <div className="max-w-6xl mx-auto px-4 py-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-12">
-                <Link to="/" className="text-3xl font-bold text-black tracking-tight">
-                  FASCO
-                </Link>
-                <nav className="hidden lg:flex space-x-8">
-                  <Link to="/" className="text-gray-600 hover:text-black font-medium">Home</Link>
-                  <Link to="/products" className="text-gray-600 hover:text-black font-medium">Shop</Link>
-                  <Link to="/products" className="text-gray-600 hover:text-black font-medium">New Arrivals</Link>
-                  <Link to="/products" className="text-gray-600 hover:text-black font-medium">Packages</Link>
-                </nav>
-              </div>
-              <div className="flex items-center space-x-6">
-                <Search className="w-5 h-5 text-gray-600 cursor-pointer hover:text-black" />
-                <User className="w-5 h-5 text-gray-600 cursor-pointer hover:text-black" />
-                <div className="relative">
-                  <ShoppingBag className="w-5 h-5 text-black" />
-                  <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {getCartItemsCount()}
-                  </span>
-                </div>
-                <Link 
-                  to="/auth/register" 
-                  className="bg-black text-white px-6 py-2.5 text-sm font-semibold hover:bg-gray-800 transition-colors"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            </div>
-          </div>
-        </header>
 
         {/* Main Content */}
         <div className="max-w-6xl mx-auto px-4 py-12">

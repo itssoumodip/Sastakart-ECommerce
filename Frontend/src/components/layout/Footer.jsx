@@ -8,12 +8,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           
           {/* Company Info */}
-          <div className="space-y-6">
-            <div className="flex items-center space-x-2">
+          <div className="space-y-6">            <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <span className="text-gray-900 font-bold text-lg">E</span>
+                <span className="text-gray-900 font-bold text-lg">C</span>
               </div>
-              <span className="text-xl font-medium">EcoShop</span>
+              <span className="text-xl font-medium">ClassyShop</span>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
               We're committed to creating products that are better for you and better for the planet. 

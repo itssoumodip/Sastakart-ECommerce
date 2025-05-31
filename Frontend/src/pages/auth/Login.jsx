@@ -79,14 +79,13 @@ const Login = () => {
           
         {/* Right Panel - Login Form */}
         <div className="lg:w-1/2 w-full flex flex-col justify-center items-center p-8 lg:p-12">
-          <div className="w-full max-w-md">
-            {/* Logo */}
+          <div className="w-full max-w-md">            {/* Logo */}
             <div className="mb-8 text-center">
-              <h1 className="text-4xl font-bold text-gray-800">FASCO</h1>
+              <h1 className="text-4xl font-bold text-gray-800">ClassyShop</h1>
             </div>
             
             {/* Form Title */}
-            <h2 className="text-3xl font-medium mb-8">Sign In To FASCO</h2>
+            <h2 className="text-3xl font-medium mb-8">Sign In To ClassyShop</h2>
             
             {/* Social Login Buttons */}
             <div className="flex gap-4 mb-6">
@@ -207,10 +206,9 @@ const Login = () => {
                   </span>
                 </div>
                 
-                {/* Terms & Conditions */}
-                <div className="mt-6 text-right">
+                {/* Terms & Conditions */}                <div className="mt-6 text-right">
                   <Link to="/terms" className="text-xs text-gray-500">
-                    FASCO Terms & Conditions
+                    ClassyShop Terms & Conditions
                   </Link>
                 </div>
               </div>
