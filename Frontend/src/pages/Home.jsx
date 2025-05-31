@@ -8,10 +8,11 @@ const Home = () => {
       <section className="bg-gray-50">
         <div className="container mt-10 mx-auto px-4 py-16 md:py-24">
           <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8">              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              India's Premier Eco-Friendly Marketplace
-            </h1>              <p className="text-lg text-gray-600 mb-8">                Discover locally-sourced products that blend traditional Indian craftsmanship with modern eco-friendly innovation.
-              Supporting sustainable businesses across India with every purchase.
+            <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                India's Premier Eco-Friendly Marketplace
+              </h1>              <p className="text-lg text-gray-600 mb-8">                Discover locally-sourced products that blend traditional Indian craftsmanship with modern eco-friendly innovation.
+                Supporting sustainable businesses across India with every purchase.
               </p>
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                 <Link

@@ -98,16 +98,16 @@ function Dashboard() {
         ) : (
           <>
         <motion.div 
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-6 sm:mb-8"
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 mb-6 sm:mb-8"
           variants={itemVariants}
         >
-          <div className="text-center sm:text-left">
+          <div className="text-center">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
               Dashboard
             </h1>
             <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your store and view analytics.</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 items-center"> {/* New flex container for buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-center sm:ml-6"> 
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

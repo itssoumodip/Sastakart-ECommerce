@@ -37,6 +37,7 @@ const Cart = () => {
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [appliedPromo, setAppliedPromo] = useState('');
+  const [isAdmin, setIsAdmin] = useState(true); // Temporary admin state, replace with actual auth logic
 
   const promoCodes = {
     'SAVE10': 10,
@@ -375,35 +376,140 @@ const Cart = () => {
                   )}
                 </div>
 
-                {/* Trust Badges */}
-                <div className="mt-8 space-y-4 text-sm text-gray-600 bg-white p-6 border border-gray-100 rounded-2xl shadow-sm">
-                  <h3 className="font-medium text-gray-900 mb-4">Shop with Confidence</h3>
-                  <div className="flex items-center gap-3 py-2">
-                    <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-                      <Shield className="w-4 h-4 text-blue-500" />
-                    </div>
-                    <span>Secure & encrypted checkout</span>
+                {/* Trust Badges - Horizontally aligned */}
+                <div className="mt-8 bg-white p-6 border border-gray-100 rounded-2xl shadow-sm">
+                  <div className="flex justify-between items-center mb-5">
+                    <h3 className="font-medium text-gray-900">Shop with Confidence</h3>
+                    <div className="px-2 py-1 bg-green-50 rounded-full text-xs text-green-700 font-medium">TRUSTED</div>
                   </div>
-                  <div className="flex items-center gap-3 py-2">
-                    <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center">
-                      <RefreshCw className="w-4 h-4 text-green-500" />
+                  
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                          <Shield className="w-4 h-4 text-blue-500" />
+                        </div>
+                        <span className="text-sm text-gray-600">Secure checkout</span>
+                      </div>
+                      <Check className="w-4 h-4 text-green-500" />
                     </div>
-                    <span>Free returns within 30 days</span>
-                  </div>
-                  <div className="flex items-center gap-3 py-2">
-                    <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center">
-                      <Truck className="w-4 h-4 text-purple-500" />
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center">
+                          <RefreshCw className="w-4 h-4 text-green-500" />
+                        </div>
+                        <span className="text-sm text-gray-600">30-day returns</span>
+                      </div>
+                      <Check className="w-4 h-4 text-green-500" />
                     </div>
-                    <span>Free shipping on orders over $50</span>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center">
+                          <Truck className="w-4 h-4 text-purple-500" />
+                        </div>
+                        <span className="text-sm text-gray-600">Free shipping over $50</span>
+                      </div>
+                      <Check className="w-4 h-4 text-green-500" />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        
+        {/* Admin Quick Access Panel - only visible for admin users */}
+        {isAdmin && (
+          <div className="max-w-6xl mx-auto px-4 py-8 mb-12">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 shadow-xl text-white border border-gray-700"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold flex items-center">
+                  <Shield className="w-6 h-6 mr-3 text-blue-400" />
+                  Admin Control Panel
+                </h3>
+                <div className="px-3 py-1 bg-blue-500 bg-opacity-20 rounded-full text-xs font-semibold text-blue-300">
+                  ADMIN ACCESS
+                </div>
+              </div>
+              
+              <p className="text-gray-300 mb-8 max-w-2xl">
+                Manage your store's products, orders, and settings from these quick access links. For more advanced options, visit the full admin dashboard.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Link
+                  to="/admin/products"
+                  className="group flex flex-col justify-between bg-gray-800 hover:bg-gray-700 p-6 rounded-xl transition-all duration-300 border border-gray-700 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-900/20 h-[180px]"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-blue-500 bg-opacity-20 flex items-center justify-center mb-4">
+                    <Tag className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-semibold mb-2">Product Management</h4>
+                    <p className="text-gray-400 text-sm mb-4">Add, edit, or remove products from your inventory</p>
+                    <div className="flex items-center text-blue-400 font-medium">
+                      <span>Manage Products</span>
+                      <ArrowLeft className="w-4 h-4 ml-2 rotate-180 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </Link>
+                
+                <Link
+                  to="/admin/orders"
+                  className="group flex flex-col justify-between bg-gray-800 hover:bg-gray-700 p-6 rounded-xl transition-all duration-300 border border-gray-700 hover:border-green-500 hover:shadow-lg hover:shadow-green-900/20 h-[180px]"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-green-500 bg-opacity-20 flex items-center justify-center mb-4">
+                    <ShoppingBag className="w-6 h-6 text-green-400 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-semibold mb-2">Order Management</h4>
+                    <p className="text-gray-400 text-sm mb-4">View and process customer orders and shipments</p>
+                    <div className="flex items-center text-green-400 font-medium">
+                      <span>Manage Orders</span>
+                      <ArrowLeft className="w-4 h-4 ml-2 rotate-180 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </Link>
+                
+                <Link
+                  to="/admin/dashboard"
+                  className="group flex flex-col justify-between bg-gray-800 hover:bg-gray-700 p-6 rounded-xl transition-all duration-300 border border-gray-700 hover:border-purple-500 hover:shadow-lg hover:shadow-purple-900/20 h-[180px]"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-purple-500 bg-opacity-20 flex items-center justify-center mb-4">
+                    <User className="w-6 h-6 text-purple-400 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-semibold mb-2">Admin Dashboard</h4>
+                    <p className="text-gray-400 text-sm mb-4">Access analytics, reports and store settings</p>
+                    <div className="flex items-center text-purple-400 font-medium">
+                      <span>Go to Dashboard</span>
+                      <ArrowLeft className="w-4 h-4 ml-2 rotate-180 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </Link>
+              </div>
+              
+              <div className="mt-8 pt-6 border-t border-gray-700 flex justify-between items-center">
+                <p className="text-gray-400 text-sm">
+                  Logged in as <span className="text-white font-medium">Admin User</span>
+                </p>
+                <button className="px-4 py-2 bg-red-500 bg-opacity-20 text-red-300 hover:bg-opacity-30 rounded-lg text-sm font-medium transition-colors">
+                  Exit Admin Mode
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
     </>
   );
 };
 
-export default Cart; 
+export default Cart;

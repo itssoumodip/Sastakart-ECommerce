@@ -227,7 +227,7 @@ const Products = () => {
   return (
     <>
       <Helmet>
-        <title>Products - EcoShop</title>
+        <title>Products - ClassyShop</title>
         <meta name="description" content="Browse our extensive collection of quality products at competitive prices." />
       </Helmet>
 
