@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
 import {
   Star,
   ShoppingCart,
@@ -23,11 +24,12 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-const ProductDetail = () => {
-  const { id } = useParams();
+const ProductDetail = () => {  const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -110,21 +112,68 @@ const ProductDetail = () => {
         category: product.category,
         brand: product.brand
       });
-      toast.success('Added to wishlist!');
-    }
+      toast.success('Added to wishlist!');    }
   };
-  
+
   // Submit review handler
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     
+    if (!user) {
+      toast.error('Please login to submit a review');
+      navigate('/login');
+      return;
+    }
+
     try {
-      // Implementation would connect to your backend
-      toast.success('Review submitted successfully!');
-      setIsReviewFormVisible(false);
-      setReviewInput({ rating: 5, comment: '' });
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      };
+      
+      const reviewData = {
+        rating: reviewInput.rating,
+        comment: reviewInput.comment,
+        productId: id
+      };
+      
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/products/${id}/reviews`, reviewData, config);
+      
+      if (response.data.success) {
+        const newReview = {
+          rating: reviewInput.rating,
+          comment: reviewInput.comment,
+          name: `${user.firstName} ${user.lastName}`,
+          user: user._id,
+          createdAt: new Date().toISOString()
+        };
+        
+        // Update the product in the cache with the new review
+        queryClient.setQueryData(['product', id], (oldData) => {
+          if (!oldData) return oldData;
+          
+          return {
+            ...oldData,
+            reviews: [...(oldData.reviews || []), newReview],
+            rating: response.data.rating,
+            numReviews: (oldData.numReviews || 0) + 1
+          };
+        });
+
+        // Force a refetch of the reviews
+        await queryClient.invalidateQueries(['product', id]);
+        await queryClient.invalidateQueries(['reviews', id]);
+        
+        toast.success('Review submitted successfully!');
+        setIsReviewFormVisible(false);
+        setReviewInput({ rating: 5, comment: '' });
+      }
     } catch (error) {
-      toast.error('Failed to submit review');
+      console.error('Review submission error:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to submit review';
+      toast.error(errorMessage);
     }
   };
   
@@ -180,9 +229,8 @@ const ProductDetail = () => {
   }
   
   return (
-    <>
-      <Helmet>
-        <title>{product?.title ? `${product.title} - IndiaBazaar` : 'IndiaBazaar'}</title>
+    <>      <Helmet>
+        <title>{product?.title ? `${product.title} - SastaKart` : 'SastaKart'}</title>
         <meta name="description" content={product?.description || 'Product details'} />
       </Helmet>
       
@@ -316,7 +364,7 @@ const ProductDetail = () => {
                       </Link>
                     </div>
                     
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wr  ap gap-3">
                       {product.sizes.map((size) => (
                         <button
                           key={size}
@@ -365,7 +413,7 @@ const ProductDetail = () => {
                 {/* Quantity */}
                 <div>
                   <h3 className="text-base font-medium text-gray-900 mb-3">Quantity</h3>
-                  <div className="flex items-center border border-gray-300 rounded-lg inline-flex">
+                  <div className="inline-flex items-center border border-gray-300 rounded-lg">
                     <button
                       onClick={() => handleQuantityChange(-1)}
                       disabled={quantity <= 1}
@@ -550,11 +598,21 @@ const ProductDetail = () => {
                     </form>
                   </div>
                 )}
-                
-                {product.reviews && product.reviews.length > 0 ? (
-                  <div className="space-y-6">
+                  {product.reviews && product.reviews.length > 0 ? (
+                  <motion.div 
+                    className="space-y-6"
+                    initial={false}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.4 }}
+                  >
                     {product.reviews.map((review, index) => (
-                      <div key={index} className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: index * 0.1 }}
+                        className="p-6 bg-white rounded-xl shadow-sm border border-gray-100"
+                      >
                         <div className="flex justify-between mb-4">
                           <div>
                             <p className="font-medium text-gray-900">{review.name || 'Customer'}</p>
@@ -572,10 +630,9 @@ const ProductDetail = () => {
                             </span>
                           )}
                         </div>
-                        <p className="text-gray-700">{review.comment}</p>
-                      </div>
+                        <p className="text-gray-700">{review.comment}</p>                      </motion.div>
                     ))}
-                  </div>
+                  </motion.div>
                 ) : (
                   <div className="text-center py-10">
                     <p className="text-gray-500 mb-4">No reviews yet</p>
