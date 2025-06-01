@@ -1,41 +1,114 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    {
+      image: "https://images.unsplash.com/photo-1618886614638-80e3c103d31a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+      alt: "Fashion model in black suit"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+      alt: "Fashion model shopping"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+      alt: "Fashion model in formal wear"
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="bg-gray-50">
-        <div className="container mt-10 mx-auto px-4 py-16 md:py-24">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                India's Premier Eco-Friendly Marketplace
-              </h1>              <p className="text-lg text-gray-600 mb-8">                Discover locally-sourced products that blend traditional Indian craftsmanship with modern eco-friendly innovation.
-                Supporting sustainable businesses across India with every purchase.
-              </p>
-              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                <Link
-                  to="/products"
-                  className="bg-emerald-600 text-white px-6 py-3 rounded-md font-medium hover:bg-emerald-700 transition-colors inline-flex justify-center"
-                >
-                  Shop Now
-                </Link>
-                <Link
-                  to="/about"
-                  className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-md font-medium hover:bg-gray-50 transition-colors inline-flex justify-center"
-                >
-                  Learn More
-                </Link>
-              </div>
-            </div>
-            <div className="md:w-1/2">
-              <img src="https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80"
-                alt="EcoShop Featured Products"
-                className="rounded-lg shadow-lg w-full h-auto"
+      <section className="bg-[#f9a945] h-[90vh] overflow-hidden relative">
+        {/* Slides */}
+        <div className="absolute inset-0">
+          {slides.map((slide, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-1000 ${
+                index === currentSlide ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <img
+                src={slide.image}
+                alt={slide.alt}
+                className="w-full h-full object-cover"
               />
+              <div className="absolute inset-0 bg-black/30" /> {/* Dark overlay */}
+            </div>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="container mx-auto px-4 py-16 md:py-20 relative">
+          <div className="flex flex-col md:flex-row items-center">
+            <div className="w-full md:w-1/2 mb-8 md:mb-0 md:pr-8 text-white">
+              <h1 className="text-4xl md:text-5xl flg:text-6xl font-light mb-4">
+                We Picked Every Item With Care
+              </h1>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+                You Must Try
+              </h2>
+              <p className="text-lg mb-8">
+                Use this code to receive 50% discount off all products
+              </p>
+              <Link
+                to="/products"
+                className="bg-white text-gray-900 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition-colors inline-flex items-center justify-center"
+              >
+                Go To Collection
+                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                </svg>
+              </Link>
             </div>
           </div>
+        </div>
+        
+        {/* Navigation Arrows */}
+        <button 
+          onClick={() => goToSlide((currentSlide - 1 + slides.length) % slides.length)}
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        <button 
+          onClick={() => goToSlide((currentSlide + 1) % slides.length)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+
+        {/* Slide Indicators */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`w-2 h-2 rounded-full transition-colors ${
+                index === currentSlide ? 'bg-white' : 'bg-white/50'
+              }`}
+            />
+          ))}
         </div>
       </section>
 
