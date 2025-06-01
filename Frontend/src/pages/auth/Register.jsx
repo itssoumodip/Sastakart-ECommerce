@@ -66,7 +66,7 @@ const Register = () => {
   return (
     <>
       <Helmet>
-        <title>Create Account - EcoShop</title>
+        <title>Create Account - SastaKart</title>
         <meta name="description" content="Create your account to start shopping and enjoy exclusive deals and personalized recommendations." />
       </Helmet>
 
@@ -84,11 +84,8 @@ const Register = () => {
         <div className="lg:w-1/2 w-full flex flex-col justify-center items-center p-8 lg:p-12">
           <div className="w-full max-w-md">            {/* Logo */}
             <div className="mb-8 text-center">
-              <h1 className="text-4xl font-bold text-gray-800">ClassyShop</h1>
+              <h1 className="text-4xl font-medium text-gray-800">Create Account</h1>
             </div>
-            
-            {/* Form Title */}
-            <h2 className="text-3xl font-medium mb-8">Create Account</h2>
             
             {/* Social Login Buttons */}
             <div className="flex gap-4 mb-6">

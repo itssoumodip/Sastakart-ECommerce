@@ -24,7 +24,7 @@ function ProductsManagement() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:5000${API_ENDPOINTS.PRODUCTS}`);
+      const response = await axios.get(API_ENDPOINTS.PRODUCTS);
       
       if (response.data.success) {
         // Transform backend data to match frontend structure
@@ -45,11 +45,10 @@ function ProductsManagement() {
     } finally {
       setLoading(false);
     }
-  };
-  const deleteProduct = async (productId) => {
+  };  const deleteProduct = async (productId) => {
     try {
       const token = getAuthToken();
-      const response = await axios.delete(`http://localhost:5000${API_ENDPOINTS.PRODUCTS}/${productId}`, {
+      const response = await axios.delete(`${API_ENDPOINTS.PRODUCTS}/${productId}`, {
         headers: {
           ...getAuthHeaders()
         }

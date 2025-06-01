@@ -81,11 +81,8 @@ const Login = () => {
         <div className="lg:w-1/2 w-full flex flex-col justify-center items-center p-8 lg:p-12">
           <div className="w-full max-w-md">            {/* Logo */}
             <div className="mb-8 text-center">
-              <h1 className="text-4xl font-bold text-gray-800">ClassyShop</h1>
+              <h1 className="text-4xl font-medium text-gray-800">Sign In To SastaKart</h1>
             </div>
-            
-            {/* Form Title */}
-            <h2 className="text-3xl font-medium mb-8">Sign In To ClassyShop</h2>
             
             {/* Social Login Buttons */}
             <div className="flex gap-4 mb-6">
@@ -208,7 +205,7 @@ const Login = () => {
                 
                 {/* Terms & Conditions */}                <div className="mt-6 text-right">
                   <Link to="/terms" className="text-xs text-gray-500">
-                    ClassyShop Terms & Conditions
+                    SastaKart Terms & Conditions
                   </Link>
                 </div>
               </div>

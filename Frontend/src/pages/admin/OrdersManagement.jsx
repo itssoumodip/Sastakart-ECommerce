@@ -24,11 +24,13 @@ function OrdersManagement() {
 
   const fetchOrders = async () => {
     try {
-      setLoading(true);
-      const response = await fetch(`http://localhost:5000${API_ENDPOINTS.ADMIN_ORDERS || '/api/orders/admin/orders'}`, {
+      setLoading(true);      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/admin/orders`, {
         method: 'GET',
         credentials: 'include',
-        headers: getAuthHeaders(), // Updated to use getAuthHeaders
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        }
       });
 
       if (!response.ok) {

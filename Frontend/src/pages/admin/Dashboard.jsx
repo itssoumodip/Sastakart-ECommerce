@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart3, Users, ShoppingBag, Package, DollarSign, TrendingUp, Eye } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
+import { getAuthHeaders } from '../../utils/auth';
 
 function Dashboard() {
   const [stats, setStats] = useState({
@@ -22,12 +23,12 @@ function Dashboard() {
 
   const fetchDashboardStats = async () => {
     try {
-      setLoading(true);
-      const response = await fetch(`http://localhost:5000${API_ENDPOINTS.DASHBOARD_STATS}`, {
+      setLoading(true);      const response = await fetch(`${import.meta.env.VITE_API_URL}${API_ENDPOINTS.DASHBOARD_STATS}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          ...getAuthHeaders(),
         },
       });
 

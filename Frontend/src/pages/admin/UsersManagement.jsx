@@ -30,8 +30,7 @@ function UsersManagement() {
   // API Functions
   const fetchUsers = async () => {
     try {
-      setLoading(true);
-      const response = await axios.get(`http://localhost:5000${API_ENDPOINTS.ADMIN_USERS}`, {
+      setLoading(true);      const response = await axios.get(API_ENDPOINTS.ADMIN_USERS, {
         headers: {
           ...getAuthHeaders()
         }
@@ -59,8 +58,7 @@ function UsersManagement() {
   };
 
   const createUser = async (userData) => {
-    try {
-      const response = await axios.post(`http://localhost:5000${API_ENDPOINTS.ADMIN_CREATE_USER}`, userData, {
+    try {      const response = await axios.post(API_ENDPOINTS.ADMIN_CREATE_USER, userData, {
         headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
@@ -80,8 +78,7 @@ function UsersManagement() {
   };
 
   const updateUser = async (userId, userData) => {
-    try {
-      const response = await axios.put(`http://localhost:5000${API_ENDPOINTS.ADMIN_UPDATE_USER(userId)}`, userData, {
+    try {      const response = await axios.put(API_ENDPOINTS.ADMIN_UPDATE_USER(userId), userData, {
         headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
@@ -102,8 +99,7 @@ function UsersManagement() {
   };
 
   const deleteUserAPI = async (userId) => {
-    try {
-      const response = await axios.delete(`http://localhost:5000${API_ENDPOINTS.ADMIN_DELETE_USER(userId)}`, {
+    try {      const response = await axios.delete(API_ENDPOINTS.ADMIN_DELETE_USER(userId), {
         headers: {
           ...getAuthHeaders()
         }
