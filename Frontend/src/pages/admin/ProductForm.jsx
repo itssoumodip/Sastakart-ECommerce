@@ -524,9 +524,7 @@ function ProductForm() {
                     />
                   </div>
                 </div>
-              </div>
-
-              {/* SEO */}
+              </div>              {/* SEO */}
               <div className="card p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">
                   SEO
@@ -559,44 +557,20 @@ function ProductForm() {
                 </div>
               </div>
 
-              {/* Quick Actions */}
-              <div className="card p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
-                  Quick Actions
-                </h2>
-                
-                <div className="space-y-3">
+              {/* Delete button for edit mode */}
+              {isEditMode && (
+                <div className="card p-6">
                   <motion.button
                     type="button"
-                    className="w-full btn-outline text-sm"
+                    className="w-full text-red-600 border border-red-200 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Duplicate Product
+                    <Trash2 className="h-4 w-4 inline mr-2" />
+                    Delete Product
                   </motion.button>
-                  
-                  <motion.button
-                    type="button"
-                    className="w-full btn-outline text-sm"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Export Data
-                  </motion.button>
-                  
-                  {isEditMode && (
-                    <motion.button
-                      type="button"
-                      className="w-full text-red-600 border border-red-200 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Trash2 className="h-4 w-4 inline mr-2" />
-                      Delete Product
-                    </motion.button>
-                  )}
                 </div>
-              </div>
+              )}
             </motion.div>
           </div>
         </form>

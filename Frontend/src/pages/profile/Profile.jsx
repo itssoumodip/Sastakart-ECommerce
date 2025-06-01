@@ -214,7 +214,7 @@ const Profile = () => {
                             onClick={() => setActiveTab(item.id)}
                             className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                               activeTab === item.id
-                                ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-500'
+                                ? 'bg-gray-300/50 text-gray-700 border-r-2 border-black'
                                 : 'text-gray-700 hover:bg-gray-50'
                             }`}
                           >
@@ -262,7 +262,7 @@ const Profile = () => {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setIsEditing(true)}
-                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            className="flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-blue-700 transition-colors"
                           >
                             <Edit3 className="w-4 h-4 mr-2" />
                             Edit Profile
@@ -496,7 +496,7 @@ const Profile = () => {
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                               onClick={() => setIsChangingPassword(true)}
-                              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                              className="flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
                               <Edit3 className="w-4 h-4 mr-2" />
                               Change Password
@@ -605,7 +605,7 @@ const Profile = () => {
                         <p className="text-gray-600 mb-6">View and track your order history</p>
                         <Link
                           to="/profile/orders"
-                          className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          className="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
                           View Orders
                         </Link>
@@ -628,7 +628,7 @@ const Profile = () => {
                         <p className="text-gray-600 mb-6">Manage your saved items and favorites</p>
                         <Link
                           to="/wishlist"
-                          className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          className="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
                           View Wishlist
                         </Link>

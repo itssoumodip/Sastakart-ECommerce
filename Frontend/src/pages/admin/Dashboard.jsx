@@ -6,8 +6,7 @@ import { Users, ShoppingBag, Package, IndianRupee, TrendingUp, Eye, Store, UserC
 import { API_ENDPOINTS } from '../../config/api';
 import { getAuthHeaders } from '../../utils/auth';
 
-function Dashboard() {
-  const [stats, setStats] = useState({
+function Dashboard() {  const defaultStats = {
     totalSales: 0,
     totalOrders: 0,
     totalProducts: 0,
@@ -25,7 +24,8 @@ function Dashboard() {
       exemptOrders: 0,
       growth: 0
     }
-  });
+  };
+  const [stats, setStats] = useState(defaultStats);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -47,10 +47,16 @@ function Dashboard() {
 
       if (!response.ok) {
         throw new Error('Failed to fetch dashboard stats');
-      }
-
-      const data = await response.json();
-      setStats(data.stats);
+      }      const data = await response.json();
+      // Merge received data with default values to ensure all properties exist
+      setStats({
+        ...defaultStats,
+        ...data.stats,
+        gstStats: {
+          ...defaultStats.gstStats,
+          ...(data.stats?.gstStats || {})
+        }
+      });
     } catch (err) {
       console.error('Error fetching dashboard stats:', err);
       setError(err.message);
@@ -217,11 +223,10 @@ function Dashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-indigo-100 rounded-lg">
                     <Store className="h-6 w-6 text-indigo-600" />
-                  </div>
-                  {stats.gstStats.growth > 0 && (
+                  </div>                  {(stats.gstStats?.growth || 0) > 0 && (
                     <div className="flex items-center text-indigo-600 text-sm">
                       <TrendingUp className="h-4 w-4 mr-1" />
-                      +{stats.gstStats.growth}%
+                      +{stats.gstStats?.growth || 0}%
                     </div>
                   )}
                 </div>
@@ -320,10 +325,9 @@ function Dashboard() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                           {formatCurrency(order.total)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                            order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
+                        <td className="px-6 py-4 whitespace-nowrap text-right">                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            (order.status || '').toLowerCase() === 'delivered' ? 'bg-green-100 text-green-800' :
+                            (order.status || '').toLowerCase() === 'processing' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {order.status}

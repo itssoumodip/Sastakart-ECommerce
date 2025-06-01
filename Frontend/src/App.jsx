@@ -31,8 +31,8 @@ import OrdersManagement from './pages/admin/OrdersManagement'
 import OrderDetail from './pages/admin/OrderDetail'
 import UsersManagement from './pages/admin/UsersManagement'
 import CODManagement from './pages/admin/CODManagement'
-import PincodeManagement from './pages/admin/PincodeManagement'
 import GSTManagement from './pages/admin/GSTManagement'
+import PincodeOrders from './pages/admin/PincodeOrders'
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
@@ -102,8 +102,8 @@ function App() {
             <Route path="orders/:id" element={<OrderDetail />} />
             <Route path="users" element={<UsersManagement />} />
             <Route path="cod-management" element={<CODManagement />} />
-            <Route path="pincode-management" element={<PincodeManagement />} />
             <Route path="gst-management" element={<GSTManagement />} />
+            <Route path="orders/pincode" element={<PincodeOrders />} /> {/* New route for Pincode Orders */}
           </Route>
         </Routes>      </main>
 

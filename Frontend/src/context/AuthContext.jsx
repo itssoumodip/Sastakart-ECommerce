@@ -60,8 +60,7 @@ const initialState = {
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
-  
-  // Configure axios defaults
+    // Configure axios defaults
   useEffect(() => {
     const token = Cookies.get('token')
     
@@ -71,12 +70,19 @@ export const AuthProvider = ({ children }) => {
     
     // Set Authorization header if token exists
     if (token) {
-      // Add both cookie and Authorization header for maximum compatibility 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      Cookies.set('token', token, { path: '/' })
+      axios.defaults.headers.common['Cookie'] = `token=${token}`
+      // Refresh cookie to extend expiration
+      Cookies.set('token', token, { 
+        path: '/',
+        expires: 7,
+        secure: window.location.protocol === 'https:',
+        sameSite: 'Lax'
+      })
     } else {
       delete axios.defaults.headers.common['Authorization']
-      Cookies.remove('token')
+      delete axios.defaults.headers.common['Cookie']
+      Cookies.remove('token', { path: '/' })
     }
   }, [state.isAuthenticated]) // Re-run when auth state changes
 
@@ -131,12 +137,17 @@ export const AuthProvider = ({ children }) => {
           'Content-Type': 'application/json',
         },
       }
-      
-      const { data } = await axios.post(API_ENDPOINTS.LOGIN, { email, password }, config)
+        const { data } = await axios.post(API_ENDPOINTS.LOGIN, { email, password }, config)
       
       if (data.token) {
-        Cookies.set('token', data.token, { expires: 7 })
+        Cookies.set('token', data.token, { 
+          expires: 7,
+          path: '/',
+          secure: window.location.protocol === 'https:',
+          sameSite: 'Lax'
+        })
         axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
+        axios.defaults.headers.common['Cookie'] = `token=${data.token}`
       }
       
       dispatch({

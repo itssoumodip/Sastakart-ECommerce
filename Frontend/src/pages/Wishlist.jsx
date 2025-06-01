@@ -133,20 +133,25 @@ const Wishlist = () => {
         <meta name="description" content="View and manage your saved items in your wishlist." />
       </Helmet>
 
-      <div className="min-h-screen bg-white pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-white pt-8 lg:pt-12 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8"
+          >
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
-                  <Heart className="h-8 w-8" fill="currentColor" />
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+                  <Heart className="h-8 w-8 text-gray-800" />
                   My Wishlist
-                  <span className="text-gray-500 text-xl font-medium">
+                  <span className="text-xl font-medium text-gray-500">
                     ({wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'})
                   </span>
                 </h1>
-                <p className="mt-2 text-gray-600">Items you've saved for later</p>
+                <p className="text-gray-600">Items you've saved for later</p>
               </div>
               
               <div className="flex items-center gap-4">
@@ -161,95 +166,111 @@ const Wishlist = () => {
             </div>
 
             {wishlistItems.length > 0 && (
-              <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    placeholder="Search in wishlist..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                  />
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                </div>
+              <motion.div 
+                className="bg-white border border-gray-200 rounded-2xl p-4 lg:p-6 shadow-sm"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="Search in wishlist..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  </div>
 
-                <div className="flex items-center gap-3">
-                  <button 
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2.5 rounded-lg ${
-                      viewMode === 'grid' 
-                        ? 'bg-black text-white' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    <Grid className="h-5 w-5" />
-                  </button>
-                  <button 
-                    onClick={() => setViewMode('list')}
-                    className={`p-2.5 rounded-lg ${
-                      viewMode === 'list' 
-                        ? 'bg-black text-white' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    <List className="h-5 w-5" />
-                  </button>
-
-                  <select
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value)}
-                    className="px-4 py-2.5 bg-white border border-gray-300 rounded-lg appearance-none hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                  >
-                    <option value="default">Sort by</option>
-                    <option value="price_low">Price: Low to High</option>
-                    <option value="price_high">Price: High to Low</option>
-                    <option value="name_asc">Name: A-Z</option>
-                    <option value="name_desc">Name: Z-A</option>
-                  </select>
-
-                  {categories.length > 1 && (
-                    <div className="relative">
-                      <button
-                        onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-                        className="px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent inline-flex items-center"
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center border border-gray-300 rounded-lg p-1">
+                      <motion.button 
+                        onClick={() => setViewMode('grid')}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`p-2.5 rounded-lg ${
+                          viewMode === 'grid' 
+                            ? 'bg-black text-white' 
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
                       >
-                        <SlidersHorizontal className="h-5 w-5 mr-2" />
-                        {filterCategory === 'all' ? 'All Categories' : filterCategory}
-                      </button>
-
-                      <AnimatePresence>
-                        {isFilterMenuOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 8 }}
-                            className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10"
-                          >
-                            {categories.map((category) => (
-                              <button
-                                key={category}
-                                onClick={() => {
-                                  setFilterCategory(category);
-                                  setIsFilterMenuOpen(false);
-                                }}
-                                className={`w-full px-4 py-2 text-left text-sm ${
-                                  category === filterCategory
-                                    ? 'bg-gray-100 text-gray-900 font-medium'
-                                    : 'text-gray-700 hover:bg-gray-50'
-                                }`}
-                              >
-                                {category === 'all' ? 'All Categories' : category}
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                        <Grid className="h-5 w-5" />
+                      </motion.button>
+                      <motion.button 
+                        onClick={() => setViewMode('list')}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`p-2.5 rounded-lg ${
+                          viewMode === 'list' 
+                            ? 'bg-black text-white' 
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        <List className="h-5 w-5" />
+                      </motion.button>
                     </div>
-                  )}
+
+                    <select
+                      value={sortOption}
+                      onChange={(e) => setSortOption(e.target.value)}
+                      className="px-4 py-2.5 bg-white border border-gray-300 rounded-lg appearance-none hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    >
+                      <option value="default">Sort by</option>
+                      <option value="price_low">Price: Low to High</option>
+                      <option value="price_high">Price: High to Low</option>
+                      <option value="name_asc">Name: A-Z</option>
+                      <option value="name_desc">Name: Z-A</option>
+                    </select>
+
+                    {categories.length > 1 && (
+                      <div className="relative">
+                        <motion.button
+                          onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent inline-flex items-center"
+                        >
+                          <SlidersHorizontal className="h-5 w-5 mr-2" />
+                          {filterCategory === 'all' ? 'All Categories' : filterCategory}
+                        </motion.button>
+
+                        <AnimatePresence>
+                          {isFilterMenuOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 8 }}
+                              className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10"
+                            >
+                              {categories.map((category) => (
+                                <motion.button
+                                  key={category}
+                                  onClick={() => {
+                                    setFilterCategory(category);
+                                    setIsFilterMenuOpen(false);
+                                  }}
+                                  whileHover={{ backgroundColor: '#F3F4F6' }}
+                                  className={`w-full px-4 py-2 text-left text-sm ${
+                                    category === filterCategory
+                                      ? 'bg-gray-100 text-gray-900 font-medium'
+                                      : 'text-gray-700 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  {category === 'all' ? 'All Categories' : category}
+                                </motion.button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
 
           {/* Content */}
           {loading ? (
@@ -264,29 +285,31 @@ const Wishlist = () => {
             </div>
           ) : wishlistItems.length === 0 ? (
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-16"
-            >
-              <div className="max-w-md mx-auto">
-                <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Heart className="h-10 w-10 text-gray-400" />
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-center py-16 px-4"
+              >
+                <div className="max-w-md mx-auto">
+                  <div className="w-32 h-32 mx-auto mb-8 bg-white rounded-full shadow-sm flex items-center justify-center">
+                    <Heart className="h-16 w-16 text-gray-400" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                    Your wishlist is empty
+                  </h2>
+                  <p className="text-lg text-gray-600 mb-8">
+                    Browse our products and save your favorites here to find them easily later.
+                    We'll notify you if they go on sale!
+                  </p>
+                  <Link 
+                    to="/products"
+                    className="inline-flex items-center justify-center bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 font-medium transition-colors"
+                  >
+                    Browse Products
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                  Your wishlist is empty
-                </h2>
-                <p className="text-gray-600 mb-8">
-                  Browse our products and save your favorites here to find them easily later
-                </p>
-                <Link 
-                  to="/products"
-                  className="inline-flex items-center justify-center bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 font-medium transition-colors"
-                >
-                  Start Shopping
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </div>
-            </motion.div>
+              </motion.div>
           ) : (
             <>
               {filteredItems.length === 0 ? (
@@ -295,11 +318,25 @@ const Wishlist = () => {
                   animate={{ opacity: 1 }}
                   className="text-center py-16 bg-white rounded-2xl border border-gray-100"
                 >
-                  <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-xl font-medium text-gray-900 mb-2">No items found</h3>
-                  <p className="text-gray-600">
-                    Try adjusting your search or filter to find what you're looking for.
-                  </p>
+                  <div className="max-w-sm mx-auto">
+                    <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">No items found</h3>
+                    <p className="text-gray-600 mb-6">
+                      Try adjusting your search or filter to find what you're looking for.
+                    </p>
+                    <motion.button
+                      onClick={() => {
+                        setSearchQuery('');
+                        setFilterCategory('all');
+                        setSortOption('default');
+                      }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-flex items-center justify-center px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Clear Filters
+                    </motion.button>
+                  </div>
                 </motion.div>
               ) : (
                 <motion.div 
@@ -316,31 +353,45 @@ const Wishlist = () => {
                     <motion.div
                       key={item.id}
                       variants={itemVariants}
+                      layout
                       className={`bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden group hover:shadow-md transition-all ${
                         viewMode === 'list' ? 'flex' : ''
                       }`}
                     >
                       {/* Product Image */}
-                      <div className={`relative ${viewMode === 'list' ? 'w-48 shrink-0' : ''}`}>
+                      <div className={`relative ${viewMode === 'list' ? 'w-48 h-48 shrink-0' : 'aspect-square'}`}>
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                        <div className="absolute top-3 right-3 flex gap-2">
-                          <button
+                        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        
+                        {/* Quick Actions */}
+                        <div className="absolute top-3 right-3 flex flex-col gap-2 transform translate-x-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                          <motion.button
                             onClick={() => removeFromWishlist(item.id)}
-                            className="p-2 bg-white/90 backdrop-blur-sm rounded-full text-gray-600 hover:text-red-500 hover:bg-white transition-all"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-red-500 shadow-md hover:shadow-lg transition-all"
                           >
                             <Trash2 className="h-5 w-5" />
-                          </button>
+                          </motion.button>
+                          <motion.button
+                            onClick={() => handleViewProduct(item.id)}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-gray-900 shadow-md hover:shadow-lg transition-all"
+                          >
+                            <Eye className="h-5 w-5" />
+                          </motion.button>
                         </div>
                       </div>
 
                       {/* Product Info */}
                       <div className="p-4 flex-1 flex flex-col">
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">
+                          <h3 className="font-medium text-gray-900 mb-1 line-clamp-2 group-hover:text-black/70 transition-colors">
                             {item.name}
                           </h3>
                           <p className="text-sm text-gray-500 mb-2">{item.category}</p>
@@ -349,21 +400,15 @@ const Wishlist = () => {
                           </p>
                         </div>
 
-                        <div className="flex gap-3 mt-auto">
-                          <button
-                            onClick={() => handleAddToCart(item)}
-                            className="flex-1 bg-black text-white font-medium py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-                          >
-                            <ShoppingCart className="h-4 w-4" />
-                            Add to Cart
-                          </button>
-                          <button
-                            onClick={() => handleViewProduct(item.id)}
-                            className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
-                          >
-                            <Eye className="h-5 w-5" />
-                          </button>
-                        </div>
+                        <motion.button
+                          onClick={() => handleAddToCart(item)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full bg-black text-white font-medium py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <ShoppingCart className="h-4 w-4" />
+                          Add to Cart
+                        </motion.button>
                       </div>
                     </motion.div>
                   ))}
