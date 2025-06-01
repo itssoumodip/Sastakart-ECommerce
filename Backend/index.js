@@ -52,12 +52,17 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
-// Routes
+// Root route
+app.get('/', (req, res) => {
+  res.json({ message: 'Welcome to E-Commerce API' });
+});
+
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/api/payment', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
