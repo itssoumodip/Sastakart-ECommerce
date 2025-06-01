@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
+import { Leaf, Shield, Truck, Heart } from 'lucide-react';
+import ProductCard from '../components/ProductCard';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 
 // Add this to your CSS file or add it inline in the component
 const textShadowStyle = {
@@ -8,6 +14,9 @@ const textShadowStyle = {
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [bestsellingProducts, setBestsellingProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const slides = [
     {
@@ -52,6 +61,26 @@ const Home = () => {
 
     return () => clearInterval(timer);
   }, [slides.length]);
+
+  useEffect(() => {
+    // Fetch bestselling products from the API
+    const fetchBestsellingProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${API_ENDPOINTS.PRODUCTS}?sort=popular&limit=4`);
+        if (response.data.success) {
+          setBestsellingProducts(response.data.products);
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching bestselling products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBestsellingProducts();
+  }, []);
 
   const goToSlide = (index) => {
     setCurrentSlide(index);
@@ -202,103 +231,34 @@ const Home = () => {
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Bestselling Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Product 1 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-              <div className="aspect-square bg-gray-200 relative">
-                <img
-                  src="https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80"
-                  alt="Bamboo Water Bottle"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 left-2 bg-emerald-500 text-white text-xs px-2 py-1 rounded">
-                  Eco-friendly
+          {loading ? (
+            // Loading skeleton
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+                  <div className="aspect-square bg-gray-200"></div>
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3 mb-4"></div>
+                    <div className="flex justify-between items-center">
+                      <div className="h-6 bg-gray-200 rounded w-20"></div>
+                      <div className="h-8 w-24 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="p-4">
-                <div className="text-sm text-gray-500 mb-1">Essentials</div>
-                <h3 className="font-medium mb-2">Tablet</h3>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold">₹1,899</span>
-                  <button className="text-sm text-emerald-600 hover:text-emerald-800 font-medium">
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
-
-            {/* Product 2 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-              <div className="aspect-square bg-gray-200 relative">
-                <img
-                  src="https://images.unsplash.com/photo-1556227702-d1e4e7b5c232?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80"
-                  alt="Organic Cotton Shirt"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 left-2 bg-emerald-500 text-white text-xs px-2 py-1 rounded">
-                  Organic Cotton
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="text-sm text-gray-500 mb-1">Fashion</div>
-                <h3 className="font-medium mb-2">Organic Cotton Shirt</h3>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold">₹2,499</span>
-                  <button className="text-sm text-emerald-600 hover:text-emerald-800 font-medium">
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Unable to load bestselling products. Please try again later.</p>
             </div>
-            
-            {/* Product 3 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-              <div className="aspect-square bg-gray-200 relative">
-                <img
-                  src="https://images.unsplash.com/photo-1585821569331-f071db2abd8d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80"
-                  alt="Bamboo Toothbrush Set"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 left-2 bg-emerald-500 text-white text-xs px-2 py-1 rounded">
-                  Eco-friendly
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="text-sm text-gray-500 mb-1">Home</div>
-                <h3 className="font-medium mb-2">Modern Bed Frame</h3>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold">₹18,999</span>
-                  <button className="text-sm text-emerald-600 hover:text-emerald-800 font-medium">
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {bestsellingProducts.map((product, index) => (
+                <ProductCard key={product._id} product={product} index={index} />
+              ))}
             </div>
-
-            {/* Product 4 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-              <div className="aspect-square bg-gray-200 relative">
-                <img
-                  src="https://solargenerator.guide/wp-content/uploads/2017/12/BernetPow-24000mAh-Solar-Power-Bank.jpg"
-                  alt="Solar Powered Charger"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 left-2 bg-emerald-500 text-white text-xs px-2 py-1 rounded">
-                  Eco-friendly
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="text-sm text-gray-500 mb-1">Electronics</div>
-                <h3 className="font-medium mb-2">Solar Powered Charger</h3>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold">₹3,499</span>
-                  <button className="text-sm text-emerald-600 hover:text-emerald-800 font-medium">
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
           <div className="text-center mt-10">
             <Link to="/products" className="inline-block border border-gray-300 bg-white text-gray-700 px-6 py-3 rounded-md font-medium hover:bg-gray-50 transition-colors">
               View All Products
