@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
                 <span className="text-gray-900 font-bold text-xl">C</span>
               </div>
-              <span className="text-2xl font-bold">ClassyShop</span>
+              <span className="text-2xl font-bold">IndiaBazaar</span>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
               We're committed to creating products that are better for you and better for the planet. 

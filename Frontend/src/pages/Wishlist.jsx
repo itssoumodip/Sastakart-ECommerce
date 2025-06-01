@@ -328,10 +328,9 @@ const Wishlist = () => {
                               </div>
                             </div>
 
-                            <div className="p-6">
-                              <div className="flex justify-between items-start mb-2">
+                            <div className="p-6">                              <div className="flex justify-between items-start mb-2">
                                 <h3 className="font-semibold text-lg text-gray-900 line-clamp-2">{item.name}</h3>
-                                <span className="font-bold text-lg text-gray-900">${item.price.toFixed(2)}</span>
+                                <span className="font-bold text-lg text-gray-900">₹{item.price.toFixed(2)}</span>
                               </div>
                               <p className="text-gray-500 text-sm mb-4">{item.category}</p>
                               

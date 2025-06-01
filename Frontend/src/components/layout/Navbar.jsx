@@ -58,13 +58,11 @@ const Navbar = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="flex-shrink-0"
-          >
-            <Link 
+          >            <Link 
               to="/" 
               className="text-xl lg:text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors duration-200"
             >
-              <span className="hidden sm:inline">ClassyShop</span>
-              <span className="sm:hidden">CS</span>
+              <span className="">IndiaBazaar</span>
             </Link>
           </motion.div>          {/* Search Bar - Desktop */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-8">

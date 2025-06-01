@@ -73,10 +73,9 @@ const Cart = () => {
     setAppliedPromo('');
     toast.success('Promo code removed');
   };
-
   const subtotal = getCartTotal();
   const discountAmount = (subtotal * discount) / 100;
-  const shipping = subtotal > 50 ? 0 : 10;
+  const shipping = subtotal > 3500 ? 0 : 299;
   const total = subtotal - discountAmount + shipping;
   
   const handleCheckout = () => {
@@ -119,7 +118,7 @@ const Cart = () => {
                 </p>
                 <Link 
                   to="/products" 
-                  className="inline-block bg-black text-white px-8 py-4 text-sm font-semibold hover:bg-gray-800 transition-colors"
+                  className="inline-block rounded-sm bg-black text-white px-8 py-4 text-sm font-semibold hover:bg-gray-800 transition-colors"
                 >
                   Start Shopping
                 </Link>
@@ -239,13 +238,12 @@ const Cart = () => {
                                 </button>
                               </div>
                               {/* Price */}
-                              <div className="text-right">
-                                <p className="text-xl font-semibold text-black">
-                                  ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                              <div className="text-right">                                <p className="text-xl font-semibold text-black">
+                                  ₹{((item.price || 0) * (item.quantity || 1)).toFixed(2)}
                                 </p>
                                 {item.quantity > 1 && (
                                   <p className="text-sm text-gray-500">
-                                    ${(item.price || 0).toFixed(2)} each
+                                    ₹{(item.price || 0).toFixed(2)} each
                                   </p>
                                 )}
                               </div>
@@ -303,10 +301,9 @@ const Cart = () => {
                   </div>
 
                   {/* Price Breakdown */}
-                  <div className="space-y-4 mb-8">
-                    <div className="flex justify-between text-gray-600 items-center py-1">
+                  <div className="space-y-4 mb-8">                    <div className="flex justify-between text-gray-600 items-center py-1">
                       <span>Subtotal</span>
-                      <span className="font-medium">${subtotal.toFixed(2)}</span>
+                      <span className="font-medium">₹{subtotal.toFixed(2)}</span>
                     </div>
                     
                     {discount > 0 && (
@@ -315,7 +312,7 @@ const Cart = () => {
                           <Tag className="w-4 h-4" /> 
                           Discount ({discount}%)
                         </span>
-                        <span className="font-medium">-${discountAmount.toFixed(2)}</span>
+                        <span className="font-medium">-₹{discountAmount.toFixed(2)}</span>
                       </div>
                     )}
                     
@@ -323,16 +320,15 @@ const Cart = () => {
                       <span className="flex items-center gap-2">
                         <Truck className="w-4 h-4" />
                         Shipping
-                      </span>
-                      <span className={`font-medium ${shipping === 0 ? 'text-green-600' : ''}`}>
-                        {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
+                      </span>                      <span className={`font-medium ${shipping === 0 ? 'text-green-600' : ''}`}>
+                        {shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}
                       </span>
                     </div>
                     
                     <div className="border-t border-gray-100 pt-4 mt-2">
                       <div className="flex justify-between text-xl font-semibold text-black">
                         <span>Total</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>₹{total.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -362,16 +358,13 @@ const Cart = () => {
                       <ArrowLeft className="w-4 h-4 mr-1" />
                       Continue Shopping
                     </Link>
-                  </div>
-
-                  {/* Shipping Info */}
-                  {subtotal < 50 && (
+                  </div>                  {/* Shipping Info */}
+                  {subtotal < 3500 && (
                     <div className="text-sm bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
                       <div className="flex items-center gap-2 mb-2 text-blue-700">
                         <Truck className="w-4 h-4" />
                         <span className="font-medium">Free shipping available!</span>
-                      </div>
-                      <p className="text-blue-600">Add <span className="font-semibold">${(50 - subtotal).toFixed(2)}</span> more to qualify for free shipping</p>
+                      </div>                      <p className="text-blue-600">Add <span className="font-semibold">₹{(3500 - subtotal).toFixed(2)}</span> more to qualify for free shipping</p>
                     </div>
                   )}
                 </div>
@@ -408,8 +401,7 @@ const Cart = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center">
                           <Truck className="w-4 h-4 text-purple-500" />
-                        </div>
-                        <span className="text-sm text-gray-600">Free shipping over $50</span>
+                        </div>                        <span className="text-sm text-gray-600">Free shipping over ₹3,500</span>
                       </div>
                       <Check className="w-4 h-4 text-green-500" />
                     </div>

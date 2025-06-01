@@ -74,18 +74,16 @@ const Checkout = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderPlaced]);
-
   const subtotal = getCartTotal();
-  const shipping = subtotal > 50 ? 0 : 10;
-  const tax = subtotal * 0.08;
+  const shipping = subtotal > 3500 ? 0 : 299;
+  const tax = subtotal * 0.18;
   const total = subtotal + shipping + tax;
-
   const calculateTax = () => {
-    return subtotal * 0.08;
+    return subtotal * 0.18;
   };
 
   const calculateShipping = () => {
-    return subtotal > 50 ? 0 : 10;
+    return subtotal > 3500 ? 0 : 299;
   };
 
   const calculateTotal = () => {
@@ -495,9 +493,8 @@ const Checkout = () => {
             </div>
             <div className="flex-1">
               <h4 className="font-medium text-gray-900 text-sm">{item.name}</h4>
-              <p className="text-xs text-gray-500">{item.brand}</p>
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-sm font-semibold text-gray-900">${(item.price * item.quantity).toFixed(2)}</p>
+              <p className="text-xs text-gray-500">{item.brand}</p>              <div className="flex items-center justify-between mt-1">
+                <p className="text-sm font-semibold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
                 {item.selectedSize && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                     {item.selectedSize}
@@ -507,12 +504,10 @@ const Checkout = () => {
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="border-t border-gray-200 pt-4 space-y-3">
+      </div>      <div className="border-t border-gray-200 pt-4 space-y-3">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Subtotal</span>
-          <span className="font-medium">${subtotal.toFixed(2)}</span>
+          <span className="font-medium">₹{subtotal.toFixed(2)}</span>
         </div>
         
         <div className="flex justify-between text-sm">
@@ -521,21 +516,20 @@ const Checkout = () => {
             {shipping === 0 ? (
               <span className="text-green-600">Free</span>
             ) : (
-              `$${shipping.toFixed(2)}`
+              `₹${shipping.toFixed(2)}`
             )}
           </span>
         </div>
-        
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Tax</span>
-          <span className="font-medium">${tax.toFixed(2)}</span>
+          <div className="flex justify-between text-sm">
+          <span className="text-gray-600">GST (18%)</span>
+          <span className="font-medium">₹{tax.toFixed(2)}</span>
         </div>
         
         <div className="border-t border-dashed border-gray-200 my-4 pt-4"></div>
         
         <div className="flex justify-between text-lg font-semibold">
           <span>Total</span>
-          <span>${total.toFixed(2)}</span>
+          <span>₹{total.toFixed(2)}</span>
         </div>
       </div>
 
