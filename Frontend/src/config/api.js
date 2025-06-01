@@ -5,8 +5,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 import axios from 'axios';
 import { getAuthHeaders } from '../utils/auth';
 
-// Set default base URL
-axios.defaults.baseURL = API_BASE_URL;
+// Set default base URL and remove any trailing slashes
+axios.defaults.baseURL = API_BASE_URL.replace(/\/+$/, '');
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 

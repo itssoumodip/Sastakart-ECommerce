@@ -50,7 +50,11 @@ function App() {
   }  return (
     <div className="min-h-screen flex flex-col bg-white">
       <ScrollToTop />
-      <Navbar />
+      {/* Only show Navbar on non-admin routes */}
+      <Routes>
+        <Route path="/admin/*" element={null} />
+        <Route path="*" element={<Navbar />} />
+      </Routes>
 
       <main className="flex-1">
         <Routes>
@@ -101,10 +105,13 @@ function App() {
             <Route path="pincode-management" element={<PincodeManagement />} />
             <Route path="gst-management" element={<GSTManagement />} />
           </Route>
-        </Routes>
-      </main>
+        </Routes>      </main>
 
-      <Footer />
+      {/* Only show Footer on non-admin routes */}
+      <Routes>
+        <Route path="/admin/*" element={null} />
+        <Route path="*" element={<Footer />} />
+      </Routes>
     </div>
   )
 }

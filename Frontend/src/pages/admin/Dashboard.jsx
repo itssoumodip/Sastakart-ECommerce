@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, ShoppingBag, Package, IndianRupee, TrendingUp, Eye, Store, UserCheck } from 'lucide-react';
+import { Users, ShoppingBag, Package, IndianRupee, TrendingUp, Eye, Store, UserCheck, Calendar } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
 import { getAuthHeaders } from '../../utils/auth';
 
@@ -12,9 +12,21 @@ function Dashboard() {
     totalOrders: 0,
     totalProducts: 0,
     totalCustomers: 0,
+    salesGrowth: 0,
+    ordersGrowth: 0,
+    productsGrowth: 0,
+    customersGrowth: 0,
     recentOrders: [],
-    topProducts: []
-  });  const [loading, setLoading] = useState(true);
+    topProducts: [],
+    gstStats: {
+      totalCollected: 0,
+      monthlyCollected: 0,
+      yearlyCollected: 0,
+      exemptOrders: 0,
+      growth: 0
+    }
+  });
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -23,7 +35,8 @@ function Dashboard() {
 
   const fetchDashboardStats = async () => {
     try {
-      setLoading(true);      const response = await fetch(`${import.meta.env.VITE_API_URL}${API_ENDPOINTS.DASHBOARD_STATS}`, {
+      setLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}${API_ENDPOINTS.DASHBOARD_STATS}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -41,18 +54,17 @@ function Dashboard() {
     } catch (err) {
       console.error('Error fetching dashboard stats:', err);
       setError(err.message);
-      // Set default values on error
-      setStats({
-        totalSales: 0,
-        totalOrders: 0,
-        totalProducts: 0,
-        totalCustomers: 0,
-        recentOrders: [],
-        topProducts: []
-      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount);
   };
 
   const containerVariants = {
@@ -70,7 +82,9 @@ function Dashboard() {
       y: 0,
       transition: { duration: 0.5 }
     }
-  };  return (
+  };
+
+  return (
     <motion.div 
       className="min-h-screen bg-white"
       initial="hidden"
@@ -79,7 +93,7 @@ function Dashboard() {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <Helmet>
-          <title>Admin Dashboard | E-Commerce Store</title>
+          <title>Admin Dashboard | SastaKart</title>
         </Helmet>
 
         {loading ? (
@@ -97,304 +111,230 @@ function Dashboard() {
             </button>
           </div>
         ) : (
-          <>        <motion.div
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 mb-6 sm:mb-8"
-          variants={itemVariants}
-        >
-          <div className="text-center flex flex-col items-center sm:items-start"> 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-              SastaKart Admin Dashboard
-            </h1>
-            <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your Indian e-commerce store efficiently.</p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 items-center justify-center sm:ml-6"> 
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full sm:w-auto"
+          <>
+            {/* Header */}
+            <motion.div 
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8"
+              variants={itemVariants}
             >
-              <Link
-                to="/admin/products"
-                className="btn-outline flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto px-4 py-2"
-              >
-                <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="whitespace-nowrap">View Products</span>
-              </Link>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
+                <p className="text-gray-600 mt-2">Welcome to your admin dashboard</p>
+              </div>
+              <div className="mt-4 sm:mt-0">
+                <Link 
+                  to="/admin/products/new" 
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Package className="h-5 w-5" />
+                  Add New Product
+                </Link>
+              </div>
             </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full sm:w-auto"
+
+            {/* Stats Grid */}
+            <motion.div 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+              variants={itemVariants}
             >
-              <Link
-                to="/admin/products/new"
-                className="btn-primary flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto px-4 py-2"
-              >
-                <Package className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="whitespace-nowrap">Add Product</span>
-              </Link>
+              {/* Total Sales */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <IndianRupee className="h-6 w-6 text-green-600" />
+                  </div>
+                  {stats.salesGrowth > 0 && (
+                    <div className="flex items-center text-green-600 text-sm">
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      +{stats.salesGrowth}%
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium">Total Sales</h3>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {formatCurrency(stats.totalSales)}
+                </p>
+              </div>
+
+              {/* Total Orders */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <ShoppingBag className="h-6 w-6 text-blue-600" />
+                  </div>
+                  {stats.ordersGrowth > 0 && (
+                    <div className="flex items-center text-blue-600 text-sm">
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      +{stats.ordersGrowth}%
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium">Total Orders</h3>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalOrders}</p>
+              </div>
+
+              {/* Total Products */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <Package className="h-6 w-6 text-purple-600" />
+                  </div>
+                  {stats.productsGrowth > 0 && (
+                    <div className="flex items-center text-purple-600 text-sm">
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      +{stats.productsGrowth}%
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium">Total Products</h3>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalProducts}</p>
+              </div>
+
+              {/* Total Customers */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-orange-100 rounded-lg">
+                    <Users className="h-6 w-6 text-orange-600" />
+                  </div>
+                  {stats.customersGrowth > 0 && (
+                    <div className="flex items-center text-orange-600 text-sm">
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      +{stats.customersGrowth}%
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium">Total Customers</h3>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalCustomers}</p>
+              </div>
             </motion.div>
-          </div>
-        </motion.div>        {/* Stats Cards */}
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8"
-          variants={itemVariants}
-        >
-          <motion.div 
-            className="card p-4 sm:p-6 hover:shadow-lg transition-all duration-300"
-            whileHover={{ scale: 1.02, y: -2 }}
-          >
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="p-2 sm:p-3 bg-green-100 rounded-lg">
-                <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
-              </div>
-              <div className="flex items-center text-green-600 text-xs sm:text-sm font-medium">
-                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                +12%
-              </div>
-            </div>
-            <h3 className="text-gray-600 text-xs sm:text-sm font-medium uppercase mb-1">Total Sales</h3>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">₹{stats.totalSales.toLocaleString('en-IN')}</p>
-            <p className="text-xs sm:text-sm text-gray-500 mt-2">+12% from last month</p>
-          </motion.div>
 
-          <motion.div 
-            className="card p-4 sm:p-6 hover:shadow-lg transition-all duration-300"
-            whileHover={{ scale: 1.02, y: -2 }}
-          >
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="p-2 sm:p-3 bg-blue-100 rounded-lg">
-                <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+            {/* GST Overview */}
+            <motion.div 
+              className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8"
+              variants={itemVariants}
+            >
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-indigo-100 rounded-lg">
+                    <Store className="h-6 w-6 text-indigo-600" />
+                  </div>
+                  {stats.gstStats.growth > 0 && (
+                    <div className="flex items-center text-indigo-600 text-sm">
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      +{stats.gstStats.growth}%
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium">Total GST Collected</h3>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {formatCurrency(stats.gstStats.totalCollected)}
+                </p>
               </div>
-              <div className="flex items-center text-blue-600 text-xs sm:text-sm font-medium">
-                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                +5%
-              </div>
-            </div>
-            <h3 className="text-gray-600 text-xs sm:text-sm font-medium uppercase mb-1">Total Orders</h3>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.totalOrders}</p>
-            <p className="text-xs sm:text-sm text-gray-500 mt-2">+5% from last month</p>
-          </motion.div>
 
-          <motion.div 
-            className="card p-4 sm:p-6 hover:shadow-lg transition-all duration-300"
-            whileHover={{ scale: 1.02, y: -2 }}
-          >
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="p-2 sm:p-3 bg-purple-100 rounded-lg">
-                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-pink-100 rounded-lg">
+                    <Calendar className="h-6 w-6 text-pink-600" />
+                  </div>
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium">Monthly GST</h3>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {formatCurrency(stats.gstStats.monthlyCollected)}
+                </p>
               </div>
-              <div className="flex items-center text-purple-600 text-xs sm:text-sm font-medium">
-                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                +3
-              </div>
-            </div>
-            <h3 className="text-gray-600 text-xs sm:text-sm font-medium uppercase mb-1">Total Products</h3>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.totalProducts}</p>
-            <p className="text-xs sm:text-sm text-gray-500 mt-2">+3 new this week</p>
-          </motion.div>
 
-          <motion.div 
-            className="card p-4 sm:p-6 hover:shadow-lg transition-all duration-300"
-            whileHover={{ scale: 1.02, y: -2 }}
-          >
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="p-2 sm:p-3 bg-orange-100 rounded-lg">
-                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-yellow-100 rounded-lg">
+                    <Calendar className="h-6 w-6 text-yellow-600" />
+                  </div>
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium">Yearly GST</h3>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {formatCurrency(stats.gstStats.yearlyCollected)}
+                </p>
               </div>
-              <div className="flex items-center text-orange-600 text-xs sm:text-sm font-medium">
-                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                +8
-              </div>
-            </div>
-            <h3 className="text-gray-600 text-xs sm:text-sm font-medium uppercase mb-1">Active Customers</h3>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.totalCustomers}</p>            <p className="text-xs sm:text-sm text-gray-500 mt-2">+8 new this week</p>
-          </motion.div>
-        </motion.div>
 
-        {/* Indian E-commerce Features */}
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
-          variants={itemVariants}
-        >
-          {/* GST Management */}
-          <motion.div 
-            className="card p-6 hover:shadow-lg transition-all duration-300"
-            whileHover={{ scale: 1.02, y: -2 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-indigo-100 rounded-lg">
-                <Store className="h-6 w-6 text-indigo-600" />
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-gray-100 rounded-lg">
+                    <Package className="h-6 w-6 text-gray-600" />
+                  </div>
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium">Exempt Orders</h3>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {stats.gstStats.exemptOrders}
+                </p>
               </div>
-              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">GST Ready</span>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">GST Management</h3>
-            <p className="text-gray-600 text-sm mb-4">Manage GST rates, generate GST reports, and handle tax compliance for Indian market.</p>
-            <div className="flex items-center text-indigo-600 font-medium text-sm">
-              <span>18% GST Applied</span>
-            </div>
-          </motion.div>
-
-          {/* COD Management */}
-          <motion.div 
-            className="card p-6 hover:shadow-lg transition-all duration-300"
-            whileHover={{ scale: 1.02, y: -2 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <Package className="h-6 w-6 text-yellow-600" />
-              </div>
-              <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">Active</span>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Cash on Delivery</h3>
-            <p className="text-gray-600 text-sm mb-4">Manage COD orders, delivery charges, and payment collection tracking.</p>
-            <div className="flex items-center text-yellow-600 font-medium text-sm">
-              <span>₹50 COD Charges</span>
-            </div>
-          </motion.div>
-
-          {/* Pincode Service */}
-          <motion.div 
-            className="card p-6 hover:shadow-lg transition-all duration-300"
-            whileHover={{ scale: 1.02, y: -2 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <UserCheck className="h-6 w-6 text-blue-600" />
-              </div>
-              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">All India</span>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Pincode Coverage</h3>
-            <p className="text-gray-600 text-sm mb-4">Manage delivery pincodes, check serviceability, and update delivery zones.</p>
-            <div className="flex items-center text-blue-600 font-medium text-sm">
-              <span>20,000+ Pincodes</span>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* Recent Orders */}
-        <motion.div 
-          className="card mb-6 sm:mb-8 overflow-hidden"
-          variants={itemVariants}
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-6 border-b border-gray-200">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2">
-              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
-              Recent Orders
-            </h2>
-            <motion.div whileHover={{ scale: 1.05 }}>
-              <Link 
-                to="/admin/orders" 
-                className="btn-outline flex items-center gap-1 text-sm"
-              >
-                <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
-                View all
-              </Link>
             </motion.div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs sm:text-sm">
-              <thead className="hidden sm:table-header-group">
-                <tr className="border-b border-gray-200">
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Order ID</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Date</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Customer</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Total</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                <AnimatePresence>
-                  {stats.recentOrders.map((order, index) => (
-                    <motion.tr 
-                      key={order.id} 
-                      className="hover:bg-gray-50 transition-all duration-200 block sm:table-row border-b border-gray-200 sm:border-0 mb-4 sm:mb-0"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.01 }}
-                    >
-                      <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap font-medium block sm:table-cell">
-                        <span className="sm:hidden font-semibold text-gray-700">Order: </span>
-                        {order.id}
-                      </td>                      <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-gray-600 block sm:table-cell">
-                        <span className="sm:hidden font-semibold text-gray-700">Date: </span>
-                        {new Date(order.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap font-medium text-gray-900 block sm:table-cell">
-                        <span className="sm:hidden font-semibold text-gray-700">Customer: </span>                        {order.customer}
-                      </td>                      <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-left sm:text-right font-semibold block sm:table-cell">
-                        <span className="sm:hidden font-semibold text-gray-700">Total: </span>
-                        ₹{order.total}
-                      </td>
-                      <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap block sm:table-cell">
-                        <span className="sm:hidden font-semibold text-gray-700">Status: </span>
-                        <span className={`px-2 sm:px-3 py-1 text-xs font-medium uppercase rounded-full ${
-                          order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                          order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
-                          order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
 
-        {/* Top Products */}
-        <motion.div 
-          className="card overflow-hidden"
-          variants={itemVariants}
-        >
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-              <Package className="h-5 w-5 text-gray-600" />
-              Top Selling Products
-            </h2>
-            <motion.div whileHover={{ scale: 1.05 }}>
-              <Link 
-                to="/admin/products" 
-                className="btn-outline flex items-center gap-1"
-              >
-                <Eye className="h-4 w-4" />
-                View all
-              </Link>
+            {/* Recent Orders */}
+            <motion.div 
+              className="mt-8 bg-white rounded-lg shadow"
+              variants={itemVariants}
+            >
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+                  <Link 
+                    to="/admin/orders" 
+                    className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                  >
+                    View all
+                  </Link>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Order ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Customer
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Amount
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {stats.recentOrders.map((order) => (
+                      <tr key={order.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {order.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {order.customer}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(order.date).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                          {formatCurrency(order.total)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                            order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {order.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </motion.div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Product</th>
-                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Units Sold</th>
-                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Revenue</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                <AnimatePresence>
-                  {stats.topProducts.map((product, index) => (
-                    <motion.tr 
-                      key={product.id} 
-                      className="hover:bg-gray-50 transition-all duration-200"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.01 }}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{product.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-gray-900">{product.sold}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-gray-900">₹{product.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              </tbody>            </table>
-          </div>
-        </motion.div>
           </>
         )}
       </div>
