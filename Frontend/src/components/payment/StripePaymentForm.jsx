@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { toast } from 'react-hot-toast';
-import { Lock, CreditCard, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
+import { Lock, CreditCard, AlertTriangle } from 'lucide-react';
 
 const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata = {} }) => {
   const stripe = useStripe();
@@ -32,14 +31,13 @@ const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata 
         console.error('Error creating payment intent:', error);
         setPaymentError(error.response?.data?.message || error.message);
         onPaymentError && onPaymentError(error);
-        toast.error('Could not initialize payment system. Please try again later.');
       }
     };
     
     if (amount > 0) {
       createIntent();
     }
-  }, [amount, metadata]);
+  }, [amount, metadata, onPaymentError]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -63,20 +61,16 @@ const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata 
       if (error) {
         setPaymentError(error.message);
         onPaymentError && onPaymentError(error);
-        toast.error(error.message || 'Payment failed. Please try again.');
       } else if (paymentIntent.status === 'succeeded') {
         onPaymentSuccess && onPaymentSuccess(paymentIntent);
-        toast.success('Payment successful!');
       } else {
-        // Handle other payment intent statuses
-        setPaymentError(`Payment status: ${paymentIntent.status}. Please try again.`);
-        onPaymentError && onPaymentError(new Error(`Payment status: ${paymentIntent.status}`));
-        toast.error(`Payment issue: ${paymentIntent.status}`);
+        const statusError = new Error(`Payment status: ${paymentIntent.status}`);
+        setPaymentError(statusError.message);
+        onPaymentError && onPaymentError(statusError);
       }
     } catch (error) {
       setPaymentError(error.message);
       onPaymentError && onPaymentError(error);
-      toast.error('Payment processing error. Please try again.');
     } finally {
       setIsProcessing(false);
     }
