@@ -154,17 +154,16 @@ const ProductCard = forwardRef(({ product, index = 0 }, ref) => {
               ({product.numReviews})
             </span>
           )}
-        </div>
-          {/* Price and Add to Cart */}
+        </div>          {/* Price and Add to Cart */}
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             {product.discountPrice && product.discountPrice < product.price ? (
               <>
-                <span className="font-semibold text-xl text-gray-900">${product.discountPrice.toFixed(2)}</span>
-                <span className="text-sm text-gray-500 line-through">${product.price.toFixed(2)}</span>
+                <span className="font-semibold text-xl text-gray-900">₹{product.discountPrice.toFixed(2)}</span>
+                <span className="text-sm text-gray-500 line-through">₹{product.price.toFixed(2)}</span>
               </>
             ) : (
-              <span className="font-semibold text-xl text-gray-900">${(product.price || 0).toFixed(2)}</span>
+              <span className="font-semibold text-xl text-gray-900">₹{(product.price || 0).toFixed(2)}</span>
             )}
           </div>
           
