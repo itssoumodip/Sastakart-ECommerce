@@ -50,19 +50,18 @@ const Cart = () => {
   const handleQuantityChange = (id, newQuantity) => {
     if (newQuantity < 1) return;
     updateQuantity(id, newQuantity);
-    toast.success('Quantity updated');
   };
 
   const handleRemoveItem = (id) => {
     removeFromCart(id);
-    toast.success('Item removed from cart');
   };
 
   const handleApplyPromo = () => {
-    if (promoCodes[promoCode.toUpperCase()]) {
-      setDiscount(promoCodes[promoCode.toUpperCase()]);
-      setAppliedPromo(promoCode.toUpperCase());
-      toast.success(`Promo code applied! ${promoCodes[promoCode.toUpperCase()]}% off`);
+    const upperPromo = promoCode.toUpperCase();
+    if (promoCodes[upperPromo]) {
+      setDiscount(promoCodes[upperPromo]);
+      setAppliedPromo(upperPromo);
+      toast.success(`Promo code applied! ${promoCodes[upperPromo]}% off`);
       setPromoCode('');
     } else {
       toast.error('Invalid promo code');

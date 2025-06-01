@@ -156,12 +156,10 @@ const Checkout = () => {
         state: shippingData.state,
         country: shippingData.country,
         postalCode: shippingData.postalCode,
-        phone: shippingData.phone,
+        phoneNo: shippingData.phone, // Changed from phone to phoneNo to match backend schema
       },
       paymentInfo: {
-        id: paymentData.id,
-        status: paymentData.status,
-        method: paymentMethod
+        ...paymentData
       },
       paymentMethod: paymentMethod,
       itemsPrice: getCartTotal(),

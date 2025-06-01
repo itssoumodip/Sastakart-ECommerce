@@ -35,12 +35,25 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 <App />
                 <Toaster
                   position="top-right"
+                  reverseOrder={false}
+                  gutter={8}
+                  containerClassName=""
+                  containerStyle={{}}
                   toastOptions={{
+                    // Default options for all toasts
                     duration: 4000,
                     style: {
                       background: '#363636',
                       color: '#fff',
                     },
+                    // Prevent duplicate toasts
+                    id: (id) => id, // This helps in preventing duplicates
+                    success: {
+                      duration: 3000,
+                    },
+                    error: {
+                      duration: 4000,
+                    }
                   }}
                 />
               </WishlistProvider>

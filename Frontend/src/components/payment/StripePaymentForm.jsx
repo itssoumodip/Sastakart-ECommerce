@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { toast } from 'react-hot-toast';
 import { Lock, CreditCard, AlertTriangle } from 'lucide-react';
+import axios from 'axios';
 
 const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata = {} }) => {
   const stripe = useStripe();
@@ -14,29 +15,22 @@ const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata 
   useEffect(() => {
     const createIntent = async () => {
       try {
-        const response = await fetch('/api/payments/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify({ 
-            amount, 
-            currency: 'INR',
-            metadata
-          }),
+        const response = await axios.post('/api/payment/create', {
+          amount,
+          currency: 'INR',
+          metadata
         });
         
-        const data = await response.json();
+        const { data } = response;
         
-        if (!response.ok) {
+        if (data.success) {
+          setClientSecret(data.clientSecret);
+        } else {
           throw new Error(data.message || 'Failed to create payment intent');
         }
-        
-        setClientSecret(data.clientSecret);
       } catch (error) {
         console.error('Error creating payment intent:', error);
-        setPaymentError(error.message);
+        setPaymentError(error.response?.data?.message || error.message);
         onPaymentError && onPaymentError(error);
         toast.error('Could not initialize payment system. Please try again later.');
       }

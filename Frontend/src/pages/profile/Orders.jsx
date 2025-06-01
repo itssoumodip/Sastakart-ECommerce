@@ -280,7 +280,7 @@ const Orders = () => {
               </p>
               <Link
                 to="/products"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-700"
               >
                 <ShoppingBag className="w-4 h-4 mr-2" />
                 Shop Now
@@ -377,13 +377,6 @@ const Orders = () => {
                         >
                           <Download className="w-4 h-4 mr-2" />
                           Invoice
-                        </button>
-                        <button
-                          onClick={() => handleReorder(order)}
-                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                        >
-                          <RefreshCw className="w-4 h-4 mr-2" />
-                          Buy Again
                         </button>
                       </div>
                     </div>

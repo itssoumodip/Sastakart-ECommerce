@@ -59,10 +59,9 @@ export const API_ENDPOINTS = {
   
   // Dashboard endpoints
   DASHBOARD_STATS: '/api/dashboard/stats',
-  
-  // Payment endpoints
-  PAYMENTS: '/api/payments',
-  PROCESS_PAYMENT: '/api/payments/process',
+    // Payment endpoints
+  PAYMENTS: '/api/payment',
+  PROCESS_PAYMENT: '/api/payment/create',
 };
 
 export default API_BASE_URL;
