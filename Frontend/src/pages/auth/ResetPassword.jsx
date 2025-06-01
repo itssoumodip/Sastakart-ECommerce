@@ -38,133 +38,124 @@ const ResetPassword = () => {
   return (
     <>
       <Helmet>
-        <title>Reset Password - RETRO-SHOP</title>
+        <title>Reset Password - SastaKart</title>
         <meta name="description" content="Create a new password for your account." />
       </Helmet>
       
-      <div className="min-h-screen flex items-center justify-center bg-black py-12 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(white_1px,transparent_1px)] [background-size:16px_16px]"></div>
+      <div className="min-h-screen flex lg:flex-row flex-col bg-white">
+        {/* Left Panel - Hero Image */}
+        <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
+          <img 
+            src="https://images.unsplash.com/photo-1555421689-491a97ff2040?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0" 
+            className="object-cover h-full w-full"
+            alt="Reset password illustration"
+          />
+        </div>
         
-        <motion.div
-          className="max-w-md w-full space-y-8 relative z-10"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div>
-            <div className="flex justify-center">
-              <motion.div
-                className="w-14 h-14 border-2 border-white flex items-center justify-center"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              >
-                <Eye className="w-8 h-8 text-white" />
-              </motion.div>
+        {/* Right Panel - Reset Password Form */}
+        <div className="lg:w-1/2 w-full flex flex-col justify-center items-center p-8 lg:p-12">
+          <div className="w-full max-w-md">
+            {/* Title */}
+            <div className="mb-8 text-center">
+              <h1 className="text-4xl font-medium text-gray-800">Reset Password</h1>
+              <p className="mt-2 text-gray-600">
+                Create a new secure password for your account
+              </p>
             </div>
-            <h2 className="mt-6 text-center text-3xl font-mono font-bold text-white uppercase tracking-widest">
-              Reset Password
-            </h2>
-            <p className="mt-2 text-center text-sm text-white font-mono uppercase tracking-wide">
-              Enter your new password below
-            </p>
-          </div>
-          
-          <motion.form
-            className="mt-8 space-y-6 bg-black border-2 border-white p-8"
-            onSubmit={handleSubmit(onSubmit)}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="password" className="block text-sm font-mono font-semibold text-white uppercase tracking-wide">
-                  New Password
-                </label>
-                <div className="mt-1 relative">
+            
+            <motion.form 
+              className="space-y-6"
+              onSubmit={handleSubmit(onSubmit)}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Password Field */}
+              <div className="space-y-2">
+                <div className="relative">
                   <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="New Password"
+                    className={`w-full px-4 py-3 rounded border ${
+                      errors.password ? 'border-red-500' : 'border-gray-300'
+                    } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition`}
                     {...register('password', {
                       required: 'Password is required',
                       minLength: {
                         value: 6,
-                        message: 'Password must be at least 6 characters'
+                        message: 'Password must be at least 6 characters long',
                       },
-                      pattern: {
-                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                        message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
-                      }
                     })}
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    className="bg-black text-white border-2 border-white focus:ring-0 focus:border-white pr-10 w-full h-12 font-mono"
-                    placeholder="ENTER NEW PASSWORD"
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-white/70 hover:text-white" />
+                      <EyeOff className="h-5 w-5" />
                     ) : (
-                      <Eye className="h-5 w-5 text-white/70 hover:text-white" />
+                      <Eye className="h-5 w-5" />
                     )}
                   </button>
                 </div>
                 {errors.password && (
-                  <motion.p className="mt-1 text-sm text-white font-mono" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{errors.password.message}</motion.p>
+                  <p className="text-red-500 text-sm">{errors.password.message}</p>
                 )}
-                <p className="mt-1 text-xs text-white/70 font-mono uppercase tracking-wide">
-                  Password must contain uppercase, lowercase, and number
-                </p>
               </div>
               
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-mono font-semibold text-white uppercase tracking-wide">
-                  Confirm New Password
-                </label>
-                <div className="mt-1 relative">
+              {/* Confirm Password Field */}
+              <div className="space-y-2">
+                <div className="relative">
                   <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirm Password"
+                    className={`w-full px-4 py-3 rounded border ${
+                      errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                    } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition`}
                     {...register('confirmPassword', {
                       required: 'Please confirm your password',
-                      validate: value => value === password || 'Passwords do not match'
+                      validate: value => value === password || 'Passwords do not match',
                     })}
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    className="bg-black text-white border-2 border-white focus:ring-0 focus:border-white pr-10 w-full h-12 font-mono"
-                    placeholder="CONFIRM NEW PASSWORD"
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5 text-white/70 hover:text-white" />
+                      <EyeOff className="h-5 w-5" />
                     ) : (
-                      <Eye className="h-5 w-5 text-white/70 hover:text-white" />
+                      <Eye className="h-5 w-5" />
                     )}
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <motion.p className="mt-1 text-sm text-white font-mono" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{errors.confirmPassword.message}</motion.p>
+                  <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
                 )}
               </div>
-            </div>
-            
-            <motion.button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-white text-black border-2 border-white w-full py-3 font-mono font-bold uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {isSubmitting ? 'RESETTING...' : 'RESET PASSWORD'}
-            </motion.button>
-          </motion.form>
-        </motion.div>
+
+              {/* Reset Password Button */}
+              <button
+                type="submit"
+                className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Resetting...
+                  </span>
+                ) : (
+                  'Reset Password'
+                )}
+              </button>
+            </motion.form>
+          </div>
+        </div>
       </div>
     </>
   )

@@ -211,15 +211,27 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: message }
     }
   }
-
   const logout = async () => {
     try {
       await axios.get(API_ENDPOINTS.LOGOUT)
     } catch (error) {
       console.log(error)
     } finally {
-      Cookies.remove('token')
+      // Clear token from cookies with same options as when setting
+      Cookies.remove('token', { 
+        path: '/',
+        secure: window.location.protocol === 'https:',
+        sameSite: 'Lax'
+      })
+      
+      // Remove from local storage
+      localStorage.removeItem('user')
+      
+      // Remove from headers
       delete axios.defaults.headers.common['Authorization']
+      delete axios.defaults.headers.common['Cookie']
+      
+      // Update state
       dispatch({ type: 'LOGOUT_SUCCESS' })
       toast.success('Logged out successfully')
     }

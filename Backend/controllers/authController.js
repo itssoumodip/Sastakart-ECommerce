@@ -50,9 +50,13 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
 
 // Logout user => /api/auth/logout
 exports.logoutUser = catchAsyncErrors(async (req, res, next) => {
+  // Use the same cookie options as when setting it, but with immediate expiration
   res.cookie('token', null, {
     expires: new Date(Date.now()),
-    httpOnly: true
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
   });
 
   res.status(200).json({
