@@ -13,13 +13,9 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
     shippingPrice,
     totalPrice,
     paymentInfo,
-    paymentMethod = 'card'
-  } = req.body;
+    paymentMethod = 'card'  } = req.body;
 
-  // Add pincode from shippingInfo to create reference
-  shippingInfo.pincode = shippingInfo.postalCode;
-
-  // Handle COD orders differently  
+  // Handle COD orders differently
   const orderData = {
     orderItems,
     shippingInfo,
@@ -91,47 +87,6 @@ exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
     totalAmount,
     orders
   }); 
-});
-
-// Get orders by pincode - ADMIN => /api/admin/orders/pincode/:pincode
-exports.getOrdersByPincode = catchAsyncErrors(async (req, res, next) => {
-  const { pincode } = req.params;
-  
-  // Validate pincode format
-  if (!pincode || pincode.length !== 6 || isNaN(pincode)) {
-    return next(new ErrorHandler('Please provide a valid 6-digit pincode', 400));
-  }
-
-  // Find all orders for the given pincode
-  const orders = await Order.find({
-    'shippingInfo.pincode': pincode
-  })
-  .populate('user', 'name email')
-  .sort({ createdAt: -1 });
-
-  // Calculate analytics
-  const analytics = {
-    totalOrders: orders.length,
-    totalAmount: orders.reduce((sum, order) => sum + order.totalPrice, 0),
-    ordersByStatus: {
-      processing: orders.filter(o => o.orderStatus === 'Processing').length,
-      shipped: orders.filter(o => o.orderStatus === 'Shipped').length,
-      delivered: orders.filter(o => o.orderStatus === 'Delivered').length,
-      cancelled: orders.filter(o => o.orderStatus === 'Cancelled').length,
-      codPending: orders.filter(o => o.orderStatus === 'COD Pending').length,
-      codCollected: orders.filter(o => o.orderStatus === 'COD Collected').length,
-    },
-    paymentMethods: {
-      cod: orders.filter(o => o.paymentMethod === 'cod').length,
-      card: orders.filter(o => o.paymentMethod === 'card').length
-    }
-  };
-
-  res.status(200).json({
-    success: true,
-    orders,
-    analytics
-  });
 });
 
 // Update / Process order - ADMIN => /api/admin/order/:id

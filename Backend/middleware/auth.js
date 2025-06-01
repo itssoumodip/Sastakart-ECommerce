@@ -12,15 +12,28 @@ exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
     token = req.headers.authorization.replace('Bearer ', '');
   }
   
+  console.log('Token found:', !!token);
+  console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+  
   if (!token) {
     return next(new ErrorHandler('Login first to access this resource.', 401));
   }
   
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Token decoded successfully:', decoded.id);
+    
     req.user = await User.findById(decoded.id);
+    
+    if (!req.user) {
+      console.log('User not found with token ID:', decoded.id);
+      return next(new ErrorHandler('User not found with this token.', 401));
+    }
+    
+    console.log('User authenticated:', req.user.email);
     next();
   } catch (error) {
+    console.error('JWT Verification Error:', error.message);
     return next(new ErrorHandler('Invalid token. Please login again.', 401));
   }
 });

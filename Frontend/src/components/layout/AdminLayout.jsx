@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Package, ShoppingBag, Users, LogOut, Menu, X, ChevronDown, BarChart3, Sparkles, IndianRupee, FileText, MapPin } from 'lucide-react';
+import { Home, Package, ShoppingBag, Users, LogOut, Menu, X, ChevronDown, BarChart3, Sparkles, IndianRupee, FileText } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -57,7 +57,6 @@ function AdminLayout() {
     { to: '/admin', icon: BarChart3, label: 'Dashboard', exact: true },
     { to: '/admin/products', icon: Package, label: 'Products' },
     { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
-    { to: '/admin/orders/pincode', icon: MapPin, label: 'Pincode Orders' },
     { to: '/admin/users', icon: Users, label: 'Users' },
     { to: '/admin/cod-management', icon: IndianRupee, label: 'COD Management' },
     { to: '/admin/gst-management', icon: FileText, label: 'GST Management' },

@@ -9,15 +9,13 @@ const orderSchema = new mongoose.Schema({
     city: {
       type: String,
       required: true
-    },
-    state: {
+    },    state: {
       type: String,
       required: true
     },
-    pincode: {
+    postalCode: {
       type: String,
-      required: true,
-      ref: 'Pincode'
+      required: true
     },
     country: {
       type: String,

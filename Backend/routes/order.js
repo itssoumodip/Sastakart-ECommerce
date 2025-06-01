@@ -7,17 +7,16 @@ const {
   getAllOrders, 
   updateOrder, 
   deleteOrder,
-  collectCOD,
-  getCODAnalytics,
-  getOrdersByPincode
+  collectCOD,  getCODAnalytics
 } = require('../controllers/orderController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 
 router.route('/').post(isAuthenticatedUser, newOrder);
 router.route('/me').get(isAuthenticatedUser, myOrders);
 router.route('/:id').get(isAuthenticatedUser, getSingleOrder);
+
+// Admin routes
 router.route('/admin/orders').get(isAuthenticatedUser, authorizeRoles('admin'), getAllOrders);
-router.route('/admin/orders/pincode/:pincode').get(isAuthenticatedUser, authorizeRoles('admin'), getOrdersByPincode);
 router.route('/admin/orders/cod-analytics').get(isAuthenticatedUser, authorizeRoles('admin'), getCODAnalytics);
 router.route('/admin/order/:id')
   .put(isAuthenticatedUser, authorizeRoles('admin'), updateOrder)

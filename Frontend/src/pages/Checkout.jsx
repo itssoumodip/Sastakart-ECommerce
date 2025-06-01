@@ -27,10 +27,7 @@ import {
   Heart,
   ChevronRight,  DollarSign,
   AlertTriangle,
-  Banknote,
-  CheckCircle,
-  XCircle,
-  Loader
+  Banknote
 } from 'lucide-react';
 
 const Checkout = () => {
@@ -43,12 +40,6 @@ const Checkout = () => {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [paymentIntent, setPaymentIntent] = useState(null);
-  const [pincodeCheck, setPincodeCheck] = useState({
-    loading: false,
-    checked: false,
-    serviceable: false,
-    estimatedDays: null
-  });
 
   const shippingForm = useForm({
     defaultValues: {
@@ -97,37 +88,6 @@ const Checkout = () => {
     return subtotal + calculateShipping() + calculateTax() + codCharge;
   };
 
-  const checkPincodeServiceability = async (pincode) => {
-    if (!pincode || pincode.length < 6) {
-      setPincodeCheck({ loading: false, checked: false, serviceable: false, estimatedDays: null });
-      return;
-    }
-
-    setPincodeCheck({ loading: true, checked: false, serviceable: false, estimatedDays: null });
-
-    try {
-      const response = await axios.get(`/api/pincode/check/${pincode}`);
-      
-      if (response.data.success) {
-        setPincodeCheck({
-          loading: false,
-          checked: true,
-          serviceable: response.data.serviceable,
-          estimatedDays: response.data.estimatedDays || null
-        });
-        
-        if (!response.data.serviceable) {
-          toast.error('Sorry, we do not deliver to this pincode yet.');
-        } else {
-          toast.success(`Delivery available! Estimated: ${response.data.estimatedDays || '5-7'} days`);
-        }
-      }
-    } catch (error) {
-      console.error('Pincode check failed:', error);
-      setPincodeCheck({ loading: false, checked: true, serviceable: false, estimatedDays: null });
-      toast.error('Unable to check serviceability. Please try again.');
-    }
-  };
 
   const handleNextStep = () => {
     if (step < 3) {
@@ -139,19 +99,7 @@ const Checkout = () => {
     if (step > 1) {
       setStep(step - 1);
     }
-  };
-  const handleShippingSubmit = (data) => {
-    // Check if pincode is serviceable
-    if (!pincodeCheck.checked) {
-      toast.error('Please enter a valid pincode to check delivery availability.');
-      return;
-    }
-    
-    if (!pincodeCheck.serviceable) {
-      toast.error('We cannot deliver to this pincode. Please enter a different pincode.');
-      return;
-    }
-    
+  };  const handleShippingSubmit = (data) => {
     console.log('Shipping data:', data);
     handleNextStep();
   };
@@ -427,71 +375,22 @@ const Checkout = () => {
               <option value="WB">West Bengal</option>
               {/* Add more states */}
             </select>
-          </div>
-            <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">              Pincode *
+          </div>            <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">              Postal Code *
             </label>
             <div className="relative">
               <input              {...shippingForm.register('postalCode', { 
-                  required: 'Pincode is required',
+                  required: 'Postal code is required',
                   pattern: {
                     value: /^[1-9][0-9]{5}$/,
-                    message: 'Please enter a valid 6-digit pincode'
-                  },
-                  onChange: (e) => {
-                    const pincode = e.target.value;
-                    if (pincode.length === 6) {
-                      checkPincodeServiceability(pincode);
-                    } else {
-                      setPincodeCheck({ loading: false, checked: false, serviceable: false, estimatedDays: null });
-                    }
+                    message: 'Please enter a valid 6-digit postal code'
                   }
                 })}
                 type="text"
                 maxLength="6"
-                className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 pr-12"
-                placeholder="Enter Pincode"
-              />
-              
-              {/* Pincode check status indicator */}
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                {pincodeCheck.loading && (
-                  <Loader className="w-5 h-5 text-gray-400 animate-spin" />
-                )}
-                {pincodeCheck.checked && !pincodeCheck.loading && (
-                  <>
-                    {pincodeCheck.serviceable ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                    ) : (
-                      <XCircle className="w-5 h-5 text-red-500" />
-                    )}
-                  </>
-                )}
-              </div>
+                className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200"
+                placeholder="Enter Postal Code"              />
             </div>
-            
-            {/* Pincode check result */}
-            {pincodeCheck.checked && !pincodeCheck.loading && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="mt-2"
-              >
-                {pincodeCheck.serviceable ? (
-                  <div className="flex items-center text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    <span>
-                      Delivery available! Estimated: {pincodeCheck.estimatedDays || '5-7'} days
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                    <XCircle className="w-4 h-4 mr-2" />
-                    <span>Sorry, we do not deliver to this pincode yet.</span>
-                  </div>
-                )}
-              </motion.div>
-            )}
           </div>
         </div>
 
