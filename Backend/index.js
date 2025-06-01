@@ -21,10 +21,11 @@ const app = express();
 app.use(cors({
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'http://localhost:5173',  // Vite dev server
-      'http://localhost:5000',  // Backend URL
-      process.env.FRONTEND_URL, // Production URL
-      /\.vercel\.app$/         // All Vercel deployments
+      'http://localhost:5173',     // Vite dev server
+      'http://localhost:5000',     // Backend URL
+      'https://sastakart.vercel.app', // Production frontend URL
+      'https://sastakart-backend.vercel.app', // Production backend URL
+      /\.vercel\.app$/            // All Vercel deployments
     ].filter(Boolean);
     
     // Allow requests with no origin (like mobile apps or curl requests)
