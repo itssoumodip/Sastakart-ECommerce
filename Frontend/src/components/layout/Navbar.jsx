@@ -62,7 +62,7 @@ const Navbar = () => {
               to="/" 
               className="text-xl lg:text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors duration-200"
             >
-              <span className="">IndiaBazaar</span>
+              <span className="">SastaKart</span>
             </Link>
           </motion.div>          {/* Search Bar - Desktop */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-8">
@@ -76,9 +76,22 @@ const Navbar = () => {
               />
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
-          </form>{/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">            <Link to="/products" className="nav-link">
+          </form>{/* Desktop Navigation */}          <div className="hidden lg:flex items-center space-x-8">            <Link to="/products" className="nav-link">
               Products
+            </Link>
+            {/* Wishlist */}
+            <Link 
+              to="/wishlist" 
+              className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
+            >
+              <div className="relative">
+                <Heart className="h-6 w-6" />
+                {getWishlistCount() > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-sm">
+                    {getWishlistCount()}
+                  </span>
+                )}
+              </div>
             </Link>
               {/* Cart */}
             <Link 

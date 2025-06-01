@@ -101,7 +101,7 @@ function Dashboard() {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 mb-6 sm:mb-8"
           variants={itemVariants}
         >
-          <div className="text-center">
+          <div className="text-center flex flex-col items-center sm:items-start"> 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
               Dashboard
             </h1>
