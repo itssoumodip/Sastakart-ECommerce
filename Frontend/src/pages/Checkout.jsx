@@ -34,7 +34,7 @@ const Checkout = () => {
   const { items: cartItems, getCartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-    const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -102,7 +102,13 @@ const Checkout = () => {
   };  const handleShippingSubmit = (data) => {
     console.log('Shipping data:', data);
     handleNextStep();
+  };  const handlePaymentError = (error) => {
+    console.error('Payment error:', error);
+    setPaymentError(error.message || error?.response?.data?.message || 'Payment processing failed');
+    setLoading(false);
+    toast.error('Payment failed: ' + (error.message || 'Please try again'));
   };
+
   const handlePaymentSuccess = async (paymentData) => {
     setPaymentIntent(paymentData);
     setLoading(true);
@@ -113,18 +119,10 @@ const Checkout = () => {
       toast.success('Payment successful! Redirecting to order confirmation...');
     } catch (error) {
       console.error('Order creation failed:', error);
-      setPaymentError(error.message || 'Failed to create order. Please contact support.');
-      toast.error('Order processing failed. Please check your payment status and contact support if needed.');
+      handlePaymentError(error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePaymentError = (error) => {
-    console.error('Payment error:', error);
-    setPaymentError(error.message || 'Payment processing failed');
-    toast.error(error.message || 'Payment failed. Please try again.');
-    setLoading(false);
   };
 
   const handleCODOrder = async () => {
@@ -142,8 +140,7 @@ const Checkout = () => {
       toast.success('Order placed successfully! Redirecting to confirmation...');
     } catch (error) {
       console.error('COD order creation failed:', error);
-      setPaymentError(error.message || 'Failed to create order. Please contact support.');
-      toast.error('Order processing failed. Please try again.');
+      handlePaymentError(error);
     } finally {
       setLoading(false);
     }
@@ -198,10 +195,6 @@ const Checkout = () => {
     }
   };
 
-  const handlePaymentError = (error) => {
-    setPaymentError(error.message || 'Payment processing failed');
-    setLoading(false);
-  };
   const StepIndicator = () => (
     <div className="flex items-center justify-center mb-12">
       <div className="flex items-center space-x-4 md:space-x-8">

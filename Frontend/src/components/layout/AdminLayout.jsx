@@ -53,7 +53,9 @@ function AdminLayout() {
         duration: 0.5
       }
     })
-  };  const navigationItems = [
+  };
+
+  const navigationItems = [
     { to: '/admin', icon: BarChart3, label: 'Dashboard', exact: true },
     { to: '/admin/products', icon: Package, label: 'Products' },
     { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
@@ -91,6 +93,25 @@ function AdminLayout() {
             {/* Navigation */}
             <nav className="mt-5 flex-1 flex flex-col divide-y divide-gray-800 overflow-y-auto">
               <div className="px-2 space-y-1">
+                {/* Return to Shop Button */}
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={menuItemVariants}
+                  custom={-1}
+                >
+                  <button
+                    onClick={() => navigate('/')}
+                    className="w-full group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white transition-all duration-200"
+                  >
+                    <Home className="mr-3 flex-shrink-0 h-6 w-6 transition-transform duration-200 group-hover:scale-110" />
+                    Return to Shop
+                  </button>
+                </motion.div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-700 my-2"></div>
+
                 {navigationItems.map((item, index) => {
                   const Icon = item.icon;
                   return (
@@ -203,6 +224,21 @@ function AdminLayout() {
                     <span className="text-xl font-bold text-white">SastaKart</span>
                   </div>
                   <nav className="mt-5 px-2 space-y-1">
+                    {/* Return to Shop Button - Mobile */}
+                    <button
+                      onClick={() => {
+                        navigate('/');
+                        closeSidebar();
+                      }}
+                      className="w-full group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white transition-all duration-200"
+                    >
+                      <Home className="mr-4 flex-shrink-0 h-6 w-6" />
+                      Return to Shop
+                    </button>
+
+                    {/* Divider */}
+                    <div className="border-t border-gray-700 my-2"></div>
+
                     {navigationItems.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -226,13 +262,41 @@ function AdminLayout() {
                     })}
                   </nav>
                 </div>
+
+                <div className="flex-shrink-0 flex bg-gray-700 p-4">
+                  <div className="flex items-center">
+                    <div>
+                      <img
+                        className="inline-block h-9 w-9 rounded-full"
+                        src={`https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=6366f1&color=fff`}
+                        alt=""
+                      />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-white">
+                        {user?.firstName} {user?.lastName}
+                      </p>
+                      <p className="text-xs font-medium text-gray-300">
+                        Administrator
+                      </p>
+                    </div>
+                    <motion.button
+                      onClick={handleLogout}
+                      className="ml-auto flex-shrink-0 p-1 text-gray-400 hover:text-white transition-colors duration-200"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <LogOut className="h-5 w-5" />
+                    </motion.button>
+                  </div>
+                </div>
               </motion.div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* Main content */}
+      {/* Page content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top navigation */}
         <motion.div 

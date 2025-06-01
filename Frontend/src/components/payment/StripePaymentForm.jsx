@@ -9,8 +9,7 @@ const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata 
   const [isProcessing, setIsProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
   const [paymentError, setPaymentError] = useState(null);
-  
-  // Create payment intent when component loads
+    // Create payment intent when component loads
   useEffect(() => {
     const createIntent = async () => {
       try {
@@ -25,13 +24,15 @@ const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata 
         if (data.success) {
           setClientSecret(data.clientSecret);
         } else {
-          throw new Error(data.message || 'Failed to create payment intent');
+          const error = new Error(data.message || 'Failed to create payment intent');
+          setPaymentError(error.message);
+          onPaymentError(error);
         }
       } catch (error) {
         console.error('Error creating payment intent:', error);
         setPaymentError(error.response?.data?.message || error.message);
         onPaymentError && onPaymentError(error);
-      }
+      } 
     };
     
     if (amount > 0) {
@@ -57,22 +58,22 @@ const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata 
           card: cardElement,
         },
       });
-      
-      if (error) {
+        if (error) {
         setPaymentError(error.message);
-        onPaymentError && onPaymentError(error);
+        onPaymentError(error);
       } else if (paymentIntent.status === 'succeeded') {
-        onPaymentSuccess && onPaymentSuccess(paymentIntent);
+        onPaymentSuccess(paymentIntent);
       } else {
         const statusError = new Error(`Payment status: ${paymentIntent.status}`);
         setPaymentError(statusError.message);
-        onPaymentError && onPaymentError(statusError);
+        onPaymentError(statusError);
       }
-    } catch (error) {
-      setPaymentError(error.message);
-      onPaymentError && onPaymentError(error);
-    } finally {
-      setIsProcessing(false);
+  } catch (error) {
+        const formattedError = error.response?.data?.message || error.message;
+        setPaymentError(formattedError);
+        onPaymentError(error);
+      } finally {
+        setIsProcessing(false);
     }
   };
   
