@@ -8,6 +8,7 @@ import { getAuthHeaders } from '../utils/auth';
 // Set default base URL
 axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 // Add a request interceptor to add auth headers
 axios.interceptors.request.use(
