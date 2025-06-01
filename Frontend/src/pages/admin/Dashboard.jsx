@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BarChart3, Users, ShoppingBag, Package, DollarSign, TrendingUp, Eye } from 'lucide-react';
+import { Users, ShoppingBag, Package, IndianRupee, TrendingUp, Eye, Store, UserCheck } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
 import { getAuthHeaders } from '../../utils/auth';
 
@@ -97,16 +97,15 @@ function Dashboard() {
             </button>
           </div>
         ) : (
-          <>
-        <motion.div 
+          <>        <motion.div
           className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 mb-6 sm:mb-8"
           variants={itemVariants}
         >
           <div className="text-center flex flex-col items-center sm:items-start"> 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-              Dashboard
+              SastaKart Admin Dashboard
             </h1>
-            <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your store and view analytics.</p>
+            <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your Indian e-commerce store efficiently.</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 items-center justify-center sm:ml-6"> 
             <motion.div
@@ -115,8 +114,8 @@ function Dashboard() {
               className="w-full sm:w-auto"
             >
               <Link
-                to="/admin/products" // Route to view all products
-                className="btn-outline flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto px-4 py-2" // Added padding for consistency
+                to="/admin/products"
+                className="btn-outline flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto px-4 py-2"
               >
                 <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="whitespace-nowrap">View Products</span>
@@ -129,7 +128,7 @@ function Dashboard() {
             >
               <Link
                 to="/admin/products/new"
-                className="btn-primary flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto px-4 py-2" // Added padding for consistency
+                className="btn-primary flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto px-4 py-2"
               >
                 <Package className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="whitespace-nowrap">Add Product</span>
@@ -147,7 +146,7 @@ function Dashboard() {
           >
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="p-2 sm:p-3 bg-green-100 rounded-lg">
-                <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
               <div className="flex items-center text-green-600 text-xs sm:text-sm font-medium">
                 <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
@@ -155,12 +154,13 @@ function Dashboard() {
               </div>
             </div>
             <h3 className="text-gray-600 text-xs sm:text-sm font-medium uppercase mb-1">Total Sales</h3>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">${stats.totalSales.toLocaleString()}</p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">₹{stats.totalSales.toLocaleString('en-IN')}</p>
             <p className="text-xs sm:text-sm text-gray-500 mt-2">+12% from last month</p>
           </motion.div>
 
           <motion.div 
-            className="card p-4 sm:p-6 hover:shadow-lg transition-all duration-300"            whileHover={{ scale: 1.02, y: -2 }}
+            className="card p-4 sm:p-6 hover:shadow-lg transition-all duration-300"
+            whileHover={{ scale: 1.02, y: -2 }}
           >
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="p-2 sm:p-3 bg-blue-100 rounded-lg">
@@ -207,11 +207,72 @@ function Dashboard() {
                 +8
               </div>
             </div>
-            <h3 className="text-gray-600 text-xs sm:text-sm font-medium uppercase mb-1">Total Customers</h3>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.totalCustomers}</p>
-            <p className="text-xs sm:text-sm text-gray-500 mt-2">+8 new this week</p>
+            <h3 className="text-gray-600 text-xs sm:text-sm font-medium uppercase mb-1">Active Customers</h3>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.totalCustomers}</p>            <p className="text-xs sm:text-sm text-gray-500 mt-2">+8 new this week</p>
           </motion.div>
-        </motion.div>        {/* Recent Orders */}
+        </motion.div>
+
+        {/* Indian E-commerce Features */}
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          variants={itemVariants}
+        >
+          {/* GST Management */}
+          <motion.div 
+            className="card p-6 hover:shadow-lg transition-all duration-300"
+            whileHover={{ scale: 1.02, y: -2 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-indigo-100 rounded-lg">
+                <Store className="h-6 w-6 text-indigo-600" />
+              </div>
+              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">GST Ready</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">GST Management</h3>
+            <p className="text-gray-600 text-sm mb-4">Manage GST rates, generate GST reports, and handle tax compliance for Indian market.</p>
+            <div className="flex items-center text-indigo-600 font-medium text-sm">
+              <span>18% GST Applied</span>
+            </div>
+          </motion.div>
+
+          {/* COD Management */}
+          <motion.div 
+            className="card p-6 hover:shadow-lg transition-all duration-300"
+            whileHover={{ scale: 1.02, y: -2 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-yellow-100 rounded-lg">
+                <Package className="h-6 w-6 text-yellow-600" />
+              </div>
+              <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">Active</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Cash on Delivery</h3>
+            <p className="text-gray-600 text-sm mb-4">Manage COD orders, delivery charges, and payment collection tracking.</p>
+            <div className="flex items-center text-yellow-600 font-medium text-sm">
+              <span>₹50 COD Charges</span>
+            </div>
+          </motion.div>
+
+          {/* Pincode Service */}
+          <motion.div 
+            className="card p-6 hover:shadow-lg transition-all duration-300"
+            whileHover={{ scale: 1.02, y: -2 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <UserCheck className="h-6 w-6 text-blue-600" />
+              </div>
+              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">All India</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Pincode Coverage</h3>
+            <p className="text-gray-600 text-sm mb-4">Manage delivery pincodes, check serviceability, and update delivery zones.</p>
+            <div className="flex items-center text-blue-600 font-medium text-sm">
+              <span>20,000+ Pincodes</span>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Recent Orders */}
         <motion.div 
           className="card mb-6 sm:mb-8 overflow-hidden"
           variants={itemVariants}
@@ -262,10 +323,9 @@ function Dashboard() {
                       </td>
                       <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap font-medium text-gray-900 block sm:table-cell">
                         <span className="sm:hidden font-semibold text-gray-700">Customer: </span>                        {order.customer}
-                      </td>
-                      <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-left sm:text-right font-semibold block sm:table-cell">
+                      </td>                      <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-left sm:text-right font-semibold block sm:table-cell">
                         <span className="sm:hidden font-semibold text-gray-700">Total: </span>
-                        ${order.total}
+                        ₹{order.total}
                       </td>
                       <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap block sm:table-cell">
                         <span className="sm:hidden font-semibold text-gray-700">Status: </span>
@@ -328,7 +388,7 @@ function Dashboard() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{product.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-gray-900">{product.sold}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-gray-900">${product.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-gray-900">₹{product.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     </motion.tr>
                   ))}
                 </AnimatePresence>

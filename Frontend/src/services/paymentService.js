@@ -24,11 +24,11 @@ api.interceptors.request.use(
 /**
  * Create a payment intent with Stripe
  * @param {number} amount - The payment amount
- * @param {string} currency - The currency code (default: USD)
+ * @param {string} currency - The currency code (default: INR)
  * @param {object} metadata - Additional metadata for the payment
  * @returns {Promise<{clientSecret: string, paymentIntentId: string}>} - Client secret and payment intent ID
  */
-export const createPaymentIntent = async (amount, currency = 'USD', metadata = {}) => {
+export const createPaymentIntent = async (amount, currency = 'INR', metadata = {}) => {
   try {
     const response = await api.post(API_ENDPOINTS.PROCESS_PAYMENT, {
       amount,

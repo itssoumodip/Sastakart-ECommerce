@@ -12,20 +12,37 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
     taxPrice,
     shippingPrice,
     totalPrice,
-    paymentInfo
+    paymentInfo,
+    paymentMethod = 'card'
   } = req.body;
 
-  const order = await Order.create({
+  // Handle COD orders differently
+  const orderData = {
     orderItems,
     shippingInfo,
     itemsPrice,
     taxPrice,
     shippingPrice,
     totalPrice,
-    paymentInfo,
-    paidAt: Date.now(),
+    paymentMethod,
     user: req.user._id
-  });
+  };
+
+  if (paymentMethod === 'cod') {
+    orderData.paymentInfo = {
+      id: 'COD_' + Date.now(),
+      status: 'pending'
+    };
+    orderData.orderStatus = 'COD Pending';
+    orderData.codAmount = totalPrice;
+    // Don't set paidAt for COD orders
+  } else {
+    orderData.paymentInfo = paymentInfo;
+    orderData.paidAt = Date.now();
+    orderData.orderStatus = 'Processing';
+  }
+
+  const order = await Order.create(orderData);
 
   res.status(200).json({
     success: true,
@@ -123,5 +140,56 @@ exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
 
   res.status(200).json({
     success: true
+  });
+});
+
+// Collect COD payment - ADMIN => /api/admin/order/:id/collect-cod
+exports.collectCOD = catchAsyncErrors(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return next(new ErrorHandler('No order found with this ID', 404));
+  }
+
+  if (order.paymentMethod !== 'cod') {
+    return next(new ErrorHandler('This is not a COD order', 400));
+  }
+
+  if (order.orderStatus === 'COD Collected') {
+    return next(new ErrorHandler('COD has already been collected for this order', 400));
+  }
+
+  order.orderStatus = 'COD Collected';
+  order.codCollectedAt = Date.now();
+  order.paymentInfo.status = 'succeeded';
+
+  await order.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
+    message: 'COD payment collected successfully'
+  });
+});
+
+// Get COD analytics - ADMIN => /api/admin/orders/cod-analytics
+exports.getCODAnalytics = catchAsyncErrors(async (req, res, next) => {
+  const codOrders = await Order.find({ paymentMethod: 'cod' });
+  
+  const analytics = {
+    totalCODOrders: codOrders.length,
+    pendingCOD: codOrders.filter(order => order.orderStatus === 'COD Pending').length,
+    collectedCOD: codOrders.filter(order => order.orderStatus === 'COD Collected').length,
+    totalCODAmount: codOrders.reduce((sum, order) => sum + order.totalPrice, 0),
+    collectedCODAmount: codOrders
+      .filter(order => order.orderStatus === 'COD Collected')
+      .reduce((sum, order) => sum + order.totalPrice, 0),
+    pendingCODAmount: codOrders
+      .filter(order => order.orderStatus === 'COD Pending')
+      .reduce((sum, order) => sum + order.totalPrice, 0)
+  };
+
+  res.status(200).json({
+    success: true,
+    analytics
   });
 });

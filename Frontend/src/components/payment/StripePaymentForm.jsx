@@ -22,7 +22,7 @@ const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata 
           },
           body: JSON.stringify({ 
             amount, 
-            currency: 'USD',
+            currency: 'INR',
             metadata
           }),
         });
@@ -148,7 +148,7 @@ const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata 
               Processing...
             </>
           ) : (
-            `Pay $${amount.toFixed(2)}`
+            `Pay ₹${amount.toFixed(2)}`
           )}
         </button>
       </form>

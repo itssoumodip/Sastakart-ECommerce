@@ -48,32 +48,31 @@ function OrderDetail() {
           trackingNumber: 'TRK123456789',
           estimatedDelivery: '2023-12-02',
           status: 'Delivered'
-        },
-        items: [
+        },        items: [
           {
             id: 1,
             name: 'Wireless Headphones',
             sku: 'PRD-0001',
-            price: 99.99,
+            price: 8299,
             quantity: 1,
-            total: 99.99,
+            total: 8299,
             image: 'https://placehold.co/60x60'
           },
           {
             id: 2,
             name: 'Bluetooth Speaker',
             sku: 'PRD-0003',
-            price: 79.99,
+            price: 6639,
             quantity: 1,
-            total: 79.99,
+            total: 6639,
             image: 'https://placehold.co/60x60'
           }        ],
         status: 'Delivered',
-        subtotal: 179.98,
-        shippingCost: 5.99,
-        tax: 14.40,
-        discount: 17.99,
-        total: 182.38
+        subtotal: 14938,
+        shippingCost: 299,
+        tax: 2689,
+        discount: 1494,
+        total: 16432
       });
       setLoading(false);
     }, 800);
@@ -172,10 +171,9 @@ function OrderDetail() {
                   <div className="ml-4 flex-1">
                     <h3 className="font-medium text-gray-900">{item.name}</h3>
                     <p className="text-sm text-gray-600">SKU: {item.sku}</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-gray-600">${item.price.toFixed(2)} × {item.quantity}</div>
-                    <div className="font-semibold text-gray-900">${item.total.toFixed(2)}</div>
+                  </div>                  <div className="text-right">
+                    <div className="text-gray-600">₹{item.price.toFixed(2)} × {item.quantity}</div>
+                    <div className="font-semibold text-gray-900">₹{item.total.toFixed(2)}</div>
                   </div>
                 </div>
               ))}
@@ -187,30 +185,29 @@ function OrderDetail() {
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">Order Summary</h2>
             </div>
-            <div className="p-6">
-              <div className="space-y-3 text-sm">
+            <div className="p-6">              <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900">${order.subtotal.toFixed(2)}</span>
+                  <span className="text-gray-900">₹{order.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
-                  <span className="text-gray-900">${order.shippingCost.toFixed(2)}</span>
+                  <span className="text-gray-900">₹{order.shippingCost.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-900">${order.tax.toFixed(2)}</span>
+                  <span className="text-gray-600">GST (18%)</span>
+                  <span className="text-gray-900">₹{order.tax.toFixed(2)}</span>
                 </div>
                 {order.discount > 0 && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Discount</span>
-                    <span className="text-green-600">-${order.discount.toFixed(2)}</span>
+                    <span className="text-green-600">-₹{order.discount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="border-t border-gray-200 pt-3 mt-3">
                   <div className="flex justify-between font-semibold text-base">
                     <span className="text-gray-900">Total</span>
-                    <span className="text-gray-900">${order.total.toFixed(2)}</span>
+                    <span className="text-gray-900">₹{order.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

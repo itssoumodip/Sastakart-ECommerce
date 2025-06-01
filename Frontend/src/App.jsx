@@ -30,6 +30,9 @@ import ProductForm from './pages/admin/ProductForm'
 import OrdersManagement from './pages/admin/OrdersManagement'
 import OrderDetail from './pages/admin/OrderDetail'
 import UsersManagement from './pages/admin/UsersManagement'
+import CODManagement from './pages/admin/CODManagement'
+import PincodeManagement from './pages/admin/PincodeManagement'
+import GSTManagement from './pages/admin/GSTManagement'
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
@@ -44,13 +47,12 @@ function App() {
         <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-200 border-t-black"></div>
       </div>
     )
-  }
-  return (
-    <div className="min-h-screen bg-white">
+  }  return (
+    <div className="min-h-screen flex flex-col bg-white">
       <ScrollToTop />
       <Navbar />
 
-      <main className="min-h-screen mt-20">
+      <main className="flex-1">
         <Routes>
           {/* Public Routes */}          
           <Route path="/" element={<Home />} />
@@ -82,9 +84,7 @@ function App() {
             <ProtectedRoute>
               <Orders />
             </ProtectedRoute>
-          } />
-
-          {/* Admin Routes */}
+          } />          {/* Admin Routes */}
           <Route path="/admin" element={
             <AdminRoute>
               <AdminLayout />
@@ -97,6 +97,9 @@ function App() {
             <Route path="orders" element={<OrdersManagement />} />
             <Route path="orders/:id" element={<OrderDetail />} />
             <Route path="users" element={<UsersManagement />} />
+            <Route path="cod-management" element={<CODManagement />} />
+            <Route path="pincode-management" element={<PincodeManagement />} />
+            <Route path="gst-management" element={<GSTManagement />} />
           </Route>
         </Routes>
       </main>

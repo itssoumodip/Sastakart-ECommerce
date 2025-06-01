@@ -74,7 +74,8 @@ const Register = () => {
         {/* Left Panel - Hero Image */}
         <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
           <img 
-            src="https://images.unsplash.com/photo-1618721405821-80ebc4b63d26?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=90" 
+            src="https://images.unsplash.com/photo-1713693210081-e89bfe711df6?w=2800&h=1800&fit=crop&crop=entropy&auto=format
+" 
             alt="Fashion model" 
             className="object-cover h-full w-full"
           />

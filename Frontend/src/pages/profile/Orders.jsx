@@ -340,11 +340,11 @@ const Orders = () => {
                           <h4 className="text-sm font-medium text-gray-900 mb-1">{item.name}</h4>
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
                             <span>Qty: {item.quantity}</span>
-                            <span>Price: ${item.price.toFixed(2)}</span>
+                            <span>Price: ₹{item.price.toFixed(2)}</span>
                           </div>
                         </div>
                         <div className="mt-4 sm:mt-0 text-right">
-                          <p className="font-medium text-gray-900">${(item.price * item.quantity).toFixed(2)}</p>
+                          <p className="font-medium text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
                         </div>
                       </div>
                     ))}
@@ -356,7 +356,7 @@ const Orders = () => {
                       <div>
                         <div className="flex items-baseline">
                           <span className="text-gray-500 mr-2">Total:</span>
-                          <span className="text-xl font-bold text-gray-900">${order.totalPrice.toFixed(2)}</span>
+                          <span className="text-xl font-bold text-gray-900">₹{order.totalPrice.toFixed(2)}</span>
                         </div>
                         <div className="flex items-center mt-1">
                           <CreditCard className="h-4 w-4 text-gray-400 mr-1" />

@@ -14,6 +14,7 @@ const orderRoutes = require('./routes/order');
 const paymentRoutes = require('./routes/payment');
 const uploadRoutes = require('./routes/upload');
 const dashboardRoutes = require('./routes/dashboard');
+const pincodeRoutes = require('./routes/pincode');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/pincode', pincodeRoutes);
 
 // Database connection
 mongoose

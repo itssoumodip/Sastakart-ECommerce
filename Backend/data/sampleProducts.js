@@ -1,9 +1,8 @@
-const sampleProducts = [
-  {
+const sampleProducts = [  {
     title: "Wireless Bluetooth Headphones",
     description: "Premium noise-cancelling wireless headphones with 30-hour battery life. Experience crystal-clear audio with deep bass and comfortable over-ear design perfect for music lovers and professionals.",
-    price: 199.99,
-    discountPrice: 149.99,
+    price: 16599,
+    discountPrice: 12449,
     images: [
       "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&h=600&fit=crop",
@@ -33,8 +32,8 @@ const sampleProducts = [
   {
     title: "Smart Fitness Watch",
     description: "Advanced fitness tracker with heart rate monitoring, GPS tracking, and 7-day battery life. Track your workouts, monitor your health, and stay connected with smart notifications.",
-    price: 299.99,
-    discountPrice: 249.99,
+    price: 24899,
+    discountPrice: 20739,
     images: [
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1544117519-31a4b719223d?w=600&h=600&fit=crop",
@@ -61,11 +60,10 @@ const sampleProducts = [
     tags: ["smartwatch", "fitness", "health", "gps"],
     reviews: []
   },
-  {
-    title: "Vintage Leather Jacket",
+  {    title: "Vintage Leather Jacket",
     description: "Classic genuine leather jacket with vintage styling. Crafted from premium cowhide leather with attention to detail. Perfect for casual and formal occasions.",
-    price: 399.99,
-    discountPrice: 299.99,
+    price: 33199,
+    discountPrice: 24899,
     images: [
       "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=600&fit=crop",
@@ -94,9 +92,8 @@ const sampleProducts = [
   },
   {
     title: "Portable Bluetooth Speaker",
-    description: "Compact wireless speaker with 360-degree sound and 12-hour battery. Perfect for outdoor adventures, parties, and home entertainment with rich, full sound.",
-    price: 79.99,
-    discountPrice: 59.99,
+    description: "Compact wireless speaker with 360-degree sound and 12-hour battery. Perfect for outdoor adventures, parties, and home entertainment with rich, full sound.",    price: 6639,
+    discountPrice: 4979,
     images: [
       "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1558756520-22cfe5d382ca?w=600&h=600&fit=crop",
@@ -123,11 +120,10 @@ const sampleProducts = [
     tags: ["speaker", "bluetooth", "portable", "waterproof"],
     reviews: []
   },
-  {
-    title: "Organic Cotton T-Shirt",
+  {    title: "Organic Cotton T-Shirt",
     description: "Comfortable organic cotton t-shirt with premium quality fabric. Soft, breathable, and sustainably made. Available in multiple colors and sizes.",
-    price: 29.99,
-    discountPrice: 19.99,
+    price: 2489,
+    discountPrice: 1659,
     images: [
       "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1583743814966-8936f37f4fg3?w=600&h=600&fit=crop",
@@ -154,11 +150,10 @@ const sampleProducts = [
     tags: ["t-shirt", "organic", "cotton", "sustainable"],
     reviews: []
   },
-  {
-    title: "Professional Camera Lens",
+  {    title: "Professional Camera Lens",
     description: "High-quality 50mm prime lens for professional photography. Sharp images, beautiful bokeh, and exceptional low-light performance for portrait and street photography.",
-    price: 599.99,
-    discountPrice: 499.99,
+    price: 49799,
+    discountPrice: 41459,
     images: [
       "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1500634245200-e5814f60a7c4?w=600&h=600&fit=crop",
@@ -185,11 +180,10 @@ const sampleProducts = [
     tags: ["camera", "lens", "photography", "professional"],
     reviews: []
   },
-  {
-    title: "Ceramic Coffee Mug Set",
+  {    title: "Ceramic Coffee Mug Set",
     description: "Elegant set of 4 ceramic coffee mugs with modern design. Perfect for your morning coffee or tea. Dishwasher and microwave safe with comfortable handle design.",
-    price: 49.99,
-    discountPrice: 34.99,
+    price: 4149,
+    discountPrice: 2904,
     images: [
       "https://images.unsplash.com/photo-1514228742587-6b1558fcf93a?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=600&h=600&fit=crop",
@@ -215,12 +209,11 @@ const sampleProducts = [
     },
     tags: ["coffee", "mug", "ceramic", "kitchen"],
     reviews: []
-  },
-  {
+  },  {
     title: "Gaming Mechanical Keyboard",
     description: "RGB backlit mechanical gaming keyboard with tactile switches. Features customizable lighting, anti-ghosting technology, and durable construction for competitive gaming.",
-    price: 159.99,
-    discountPrice: 119.99,
+    price: 13279,
+    discountPrice: 9959,
     images: [
       "https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1595044426077-d36d9236d54a?w=600&h=600&fit=crop",
@@ -246,12 +239,11 @@ const sampleProducts = [
     },
     tags: ["keyboard", "gaming", "mechanical", "rgb"],
     reviews: []
-  },
-  {
+  },  {
     title: "Luxury Skincare Set",
     description: "Complete skincare routine with premium natural ingredients. Includes cleanser, toner, serum, and moisturizer. Suitable for all skin types and dermatologist tested.",
-    price: 129.99,
-    discountPrice: 89.99,
+    price: 10789,
+    discountPrice: 7469,
     images: [
       "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1556760544-74068565f05c?w=600&h=600&fit=crop",
@@ -277,12 +269,11 @@ const sampleProducts = [
     },
     tags: ["skincare", "beauty", "natural", "luxury"],
     reviews: []
-  },
-  {
+  },  {
     title: "Fitness Resistance Bands Set",
     description: "Complete set of resistance bands for full-body workouts. Includes multiple resistance levels, door anchor, and exercise guide. Perfect for home fitness routines.",
-    price: 39.99,
-    discountPrice: 24.99,
+    price: 3319,
+    discountPrice: 2074,
     images: [
       "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=600&h=600&fit=crop",

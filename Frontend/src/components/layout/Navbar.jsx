@@ -45,10 +45,8 @@ const Navbar = () => {
     setIsUserMenuOpen(false)
     navigate('/')
   }
-
-  return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled 
+  return (    <nav className={`sticky top-0 left-0 right-0 z-40 transition-all duration-300 ${
+      isScrolled
         ? 'bg-white shadow-md border-b border-gray-200' 
         : 'bg-white/95 backdrop-blur-sm'
     }`}>
@@ -62,7 +60,7 @@ const Navbar = () => {
               to="/" 
               className="text-xl lg:text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors duration-200"
             >
-              <span className="">SastaKart</span>
+              <span className="font-medium">SastaKart</span>
             </Link>
           </motion.div>          {/* Search Bar - Desktop */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-8">

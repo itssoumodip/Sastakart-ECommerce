@@ -5,7 +5,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Create a new payment => /api/payments/create
 exports.createPaymentIntent = catchAsyncErrors(async (req, res, next) => {
-  const { amount, currency = 'USD', metadata } = req.body;
+  const { amount, currency = 'INR', metadata } = req.body;
 
   try {
     // Create a PaymentIntent with Stripe

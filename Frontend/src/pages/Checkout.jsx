@@ -25,22 +25,30 @@ import {
   Package,
   Clock,
   Heart,
-  ChevronRight,
-  DollarSign,
-  AlertTriangle
+  ChevronRight,  DollarSign,
+  AlertTriangle,
+  Banknote,
+  CheckCircle,
+  XCircle,
+  Loader
 } from 'lucide-react';
 
 const Checkout = () => {
   const { items: cartItems, getCartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-  
-  const [step, setStep] = useState(1);
+    const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [paymentIntent, setPaymentIntent] = useState(null);
+  const [pincodeCheck, setPincodeCheck] = useState({
+    loading: false,
+    checked: false,
+    serviceable: false,
+    estimatedDays: null
+  });
 
   const shippingForm = useForm({
     defaultValues: {
@@ -51,7 +59,7 @@ const Checkout = () => {
       address: '',
       apartment: '',
       city: '',
-      country: 'United States',
+      country: 'India',
       state: '',
       postalCode: '',
       phone: ''
@@ -84,10 +92,41 @@ const Checkout = () => {
 
   const calculateShipping = () => {
     return subtotal > 3500 ? 0 : 299;
+  };  const calculateTotal = () => {
+    const codCharge = paymentMethod === 'cod' ? 50 : 0;
+    return subtotal + calculateShipping() + calculateTax() + codCharge;
   };
 
-  const calculateTotal = () => {
-    return subtotal + calculateShipping() + calculateTax();
+  const checkPincodeServiceability = async (pincode) => {
+    if (!pincode || pincode.length < 6) {
+      setPincodeCheck({ loading: false, checked: false, serviceable: false, estimatedDays: null });
+      return;
+    }
+
+    setPincodeCheck({ loading: true, checked: false, serviceable: false, estimatedDays: null });
+
+    try {
+      const response = await axios.get(`/api/pincode/check/${pincode}`);
+      
+      if (response.data.success) {
+        setPincodeCheck({
+          loading: false,
+          checked: true,
+          serviceable: response.data.serviceable,
+          estimatedDays: response.data.estimatedDays || null
+        });
+        
+        if (!response.data.serviceable) {
+          toast.error('Sorry, we do not deliver to this pincode yet.');
+        } else {
+          toast.success(`Delivery available! Estimated: ${response.data.estimatedDays || '5-7'} days`);
+        }
+      }
+    } catch (error) {
+      console.error('Pincode check failed:', error);
+      setPincodeCheck({ loading: false, checked: true, serviceable: false, estimatedDays: null });
+      toast.error('Unable to check serviceability. Please try again.');
+    }
   };
 
   const handleNextStep = () => {
@@ -101,70 +140,105 @@ const Checkout = () => {
       setStep(step - 1);
     }
   };
-
   const handleShippingSubmit = (data) => {
+    // Check if pincode is serviceable
+    if (!pincodeCheck.checked) {
+      toast.error('Please enter a valid pincode to check delivery availability.');
+      return;
+    }
+    
+    if (!pincodeCheck.serviceable) {
+      toast.error('We cannot deliver to this pincode. Please enter a different pincode.');
+      return;
+    }
+    
     console.log('Shipping data:', data);
     handleNextStep();
   };
-
   const handlePaymentSuccess = async (paymentData) => {
     setPaymentIntent(paymentData);
     setLoading(true);
     
     try {
       const shippingData = shippingForm.getValues();
-        const orderData = {
-        orderItems: (cartItems || []).map(item => ({
-          product: item.id,
-          name: item.name,
-          quantity: item.quantity,
-          image: item.image,
-          price: item.price
-        })),
-        shippingInfo: {
-          firstName: shippingData.firstName,
-          lastName: shippingData.lastName,
-          address: shippingData.address,
-          city: shippingData.city,
-          state: shippingData.state,
-          country: shippingData.country,
-          postalCode: shippingData.postalCode,
-          phone: shippingData.phone,
-        },
-        paymentInfo: {
-          id: paymentData.id,
-          status: paymentData.status,
-          method: paymentMethod
-        },
-        itemsPrice: getCartTotal(),
-        taxPrice: calculateTax(),
-        shippingPrice: calculateShipping(),
-        totalPrice: calculateTotal()
-      };
-
-      const response = await axios.post('/api/orders', orderData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.data.success) {
-        clearCart();
-        setOrderPlaced(true);
-        navigate('/order-success', { 
-          state: { 
-            orderId: response.data.order._id,
-            total: calculateTotal()
-          } 
-        });
-      }
+      await createOrder(shippingData, paymentData);
     } catch (error) {
       console.error('Order creation failed:', error);
       setPaymentError(error.message || 'Failed to create order. Please contact support.');
       toast.error('Order processing failed. Your payment may have been processed.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCODOrder = async () => {
+    setLoading(true);
+    
+    try {
+      const shippingData = shippingForm.getValues();
+      const codPaymentData = {
+        id: 'COD_' + Date.now(),
+        status: 'pending',
+        method: 'cod'
+      };
+      await createOrder(shippingData, codPaymentData);
+    } catch (error) {
+      console.error('COD order creation failed:', error);
+      setPaymentError(error.message || 'Failed to create order. Please contact support.');
+      toast.error('Order processing failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createOrder = async (shippingData, paymentData) => {
+    const orderData = {
+      orderItems: (cartItems || []).map(item => ({
+        product: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        image: item.image,
+        price: item.price
+      })),
+      shippingInfo: {
+        firstName: shippingData.firstName,
+        lastName: shippingData.lastName,
+        address: shippingData.address,
+        city: shippingData.city,
+        state: shippingData.state,
+        country: shippingData.country,
+        postalCode: shippingData.postalCode,
+        phone: shippingData.phone,
+      },
+      paymentInfo: {
+        id: paymentData.id,
+        status: paymentData.status,
+        method: paymentMethod
+      },
+      paymentMethod: paymentMethod,
+      itemsPrice: getCartTotal(),
+      taxPrice: calculateTax(),
+      shippingPrice: calculateShipping(),
+      totalPrice: calculateTotal()
+    };
+
+    const response = await axios.post('/api/orders', orderData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+
+    if (response.data.success) {
+      clearCart();
+      setOrderPlaced(true);
+      navigate('/order-success', { 
+        state: { 
+          orderId: response.data.order._id,
+          total: calculateTotal(),
+          paymentMethod: paymentMethod
+        } 
+      });
     }
   };
 
@@ -310,28 +384,114 @@ const Checkout = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               State *
-            </label>
-            <select              {...shippingForm.register('state', { required: 'State is required' })}
+            </label>            <select              {...shippingForm.register('state', { required: 'State is required' })}
               className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white"
             >
               <option value="">Select state</option>
-              <option value="CA">California</option>
-              <option value="NY">New York</option>
-              <option value="TX">Texas</option>
-              <option value="FL">Florida</option>
+              <option value="AN">Andaman and Nicobar Islands</option>
+              <option value="AP">Andhra Pradesh</option>
+              <option value="AR">Arunachal Pradesh</option>
+              <option value="AS">Assam</option>
+              <option value="BR">Bihar</option>
+              <option value="CH">Chandigarh</option>
+              <option value="CT">Chhattisgarh</option>
+              <option value="DN">Dadra and Nagar Haveli</option>
+              <option value="DD">Daman and Diu</option>
+              <option value="DL">Delhi</option>
+              <option value="GA">Goa</option>
+              <option value="GJ">Gujarat</option>
+              <option value="HR">Haryana</option>
+              <option value="HP">Himachal Pradesh</option>
+              <option value="JK">Jammu and Kashmir</option>
+              <option value="JH">Jharkhand</option>
+              <option value="KA">Karnataka</option>
+              <option value="KL">Kerala</option>
+              <option value="LA">Ladakh</option>
+              <option value="LD">Lakshadweep</option>
+              <option value="MP">Madhya Pradesh</option>
+              <option value="MH">Maharashtra</option>
+              <option value="MN">Manipur</option>
+              <option value="ML">Meghalaya</option>
+              <option value="MZ">Mizoram</option>
+              <option value="NL">Nagaland</option>
+              <option value="OR">Odisha</option>
+              <option value="PY">Puducherry</option>
+              <option value="PB">Punjab</option>
+              <option value="RJ">Rajasthan</option>
+              <option value="SK">Sikkim</option>
+              <option value="TN">Tamil Nadu</option>
+              <option value="TG">Telangana</option>
+              <option value="TR">Tripura</option>
+              <option value="UP">Uttar Pradesh</option>
+              <option value="UT">Uttarakhand</option>
+              <option value="WB">West Bengal</option>
               {/* Add more states */}
             </select>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              ZIP Code *
+            <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">              Pincode *
             </label>
-            <input              {...shippingForm.register('postalCode', { required: 'ZIP code is required' })}
-              type="text"
-              className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200"
-              placeholder="Enter ZIP code"
-            />
+            <div className="relative">
+              <input              {...shippingForm.register('postalCode', { 
+                  required: 'Pincode is required',
+                  pattern: {
+                    value: /^[1-9][0-9]{5}$/,
+                    message: 'Please enter a valid 6-digit pincode'
+                  },
+                  onChange: (e) => {
+                    const pincode = e.target.value;
+                    if (pincode.length === 6) {
+                      checkPincodeServiceability(pincode);
+                    } else {
+                      setPincodeCheck({ loading: false, checked: false, serviceable: false, estimatedDays: null });
+                    }
+                  }
+                })}
+                type="text"
+                maxLength="6"
+                className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 pr-12"
+                placeholder="Enter Pincode"
+              />
+              
+              {/* Pincode check status indicator */}
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                {pincodeCheck.loading && (
+                  <Loader className="w-5 h-5 text-gray-400 animate-spin" />
+                )}
+                {pincodeCheck.checked && !pincodeCheck.loading && (
+                  <>
+                    {pincodeCheck.serviceable ? (
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-red-500" />
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+            
+            {/* Pincode check result */}
+            {pincodeCheck.checked && !pincodeCheck.loading && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-2"
+              >
+                {pincodeCheck.serviceable ? (
+                  <div className="flex items-center text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    <span>
+                      Delivery available! Estimated: {pincodeCheck.estimatedDays || '5-7'} days
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+                    <XCircle className="w-4 h-4 mr-2" />
+                    <span>Sorry, we do not deliver to this pincode yet.</span>
+                  </div>
+                )}
+              </motion.div>
+            )}
           </div>
         </div>
 
@@ -388,11 +548,35 @@ const Checkout = () => {
             <div className="flex items-center">
               <CreditCard className="w-5 h-5 mr-3 text-gray-700" />
               <span className="font-medium">Credit Card</span>
-            </div>
-            <div className="ml-auto flex items-center space-x-2">
+            </div>            <div className="ml-auto flex items-center space-x-2">
               <span className="w-8 h-5 bg-blue-600 rounded"></span>
               <span className="w-8 h-5 bg-yellow-500 rounded"></span>
               <span className="w-8 h-5 bg-red-500 rounded"></span>
+            </div>
+          </label>
+          
+          <label className="relative flex items-center p-4 border border-gray-200 bg-white rounded-xl cursor-pointer hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="cod"
+              checked={paymentMethod === 'cod'}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="sr-only"
+            />
+            <div className={`w-5 h-5 border-2 rounded-full mr-3 flex items-center justify-center ${
+              paymentMethod === 'cod' ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
+            }`}>
+              {paymentMethod === 'cod' && (
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+              )}
+            </div>
+            <div className="flex items-center">
+              <Banknote className="w-5 h-5 mr-3 text-gray-700" />
+              <span className="font-medium">Cash on Delivery (COD)</span>
+            </div>
+            <div className="ml-auto">
+              <span className="text-sm text-gray-500">₹50 extra charge</span>
             </div>
           </label>
         </div>
@@ -422,20 +606,43 @@ const Checkout = () => {
             </div>
           </div>
         </div>
-        
-        <CheckoutPayment 
-          paymentMethod={paymentMethod}
-          setPaymentMethod={setPaymentMethod}
-          paymentError={paymentError}
-          calculateTotal={calculateTotal}
-          handlePaymentSuccess={handlePaymentSuccess}
-          handlePaymentError={handlePaymentError}
-          shippingData={{
-            email: shippingForm.getValues('email'),
-            firstName: shippingForm.getValues('firstName'),
-            lastName: shippingForm.getValues('lastName')
-          }}
-        />
+          {/* Conditional Payment Processing */}
+        {paymentMethod === 'card' ? (
+          <CheckoutPayment 
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+            paymentError={paymentError}
+            calculateTotal={calculateTotal}
+            handlePaymentSuccess={handlePaymentSuccess}
+            handlePaymentError={handlePaymentError}
+            shippingData={{
+              email: shippingForm.getValues('email'),
+              firstName: shippingForm.getValues('firstName'),
+              lastName: shippingForm.getValues('lastName')
+            }}
+          />
+        ) : (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-6">
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                <Banknote className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-green-800">Cash on Delivery Selected</h4>
+                <p className="text-sm text-green-600">Pay when your order is delivered to your doorstep</p>
+              </div>
+            </div>
+            <div className="text-sm text-green-700 bg-green-100 p-3 rounded-lg">
+              <strong>COD Terms:</strong>
+              <ul className="mt-2 space-y-1 text-xs">
+                <li>• ₹50 additional charge for COD orders</li>
+                <li>• Payment to be made in cash to delivery agent</li>
+                <li>• Please keep exact change ready</li>
+                <li>• Order will be packed and shipped after confirmation</li>
+              </ul>
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="flex justify-between pt-6">        <button
@@ -446,21 +653,30 @@ const Checkout = () => {
           <ChevronLeft className="w-4 h-4" />
           Back to Shipping
         </button>
-        
-        <button
+          <button
           type="button"
-          disabled={loading}
-          className="bg-gray-900 text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 flex items-center gap-2 shadow-md"
+          onClick={paymentMethod === 'cod' ? handleCODOrder : undefined}
+          disabled={loading || (paymentMethod === 'card')}
+          className={`px-8 py-3 rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-2 shadow-md ${
+            paymentMethod === 'cod' 
+              ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500' 
+              : 'bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-900'
+          } ${(paymentMethod === 'card') ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {loading ? (
             <>
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               Processing...
             </>
+          ) : paymentMethod === 'cod' ? (
+            <>
+              <Banknote className="w-5 h-5" />
+              Place COD Order
+            </>
           ) : (
             <>
               <Lock className="w-5 h-5" />
-              Continue
+              {paymentMethod === 'card' ? 'Complete Payment Above' : 'Continue'}
             </>
           )}
         </button>
@@ -519,17 +735,23 @@ const Checkout = () => {
               `₹${shipping.toFixed(2)}`
             )}
           </span>
-        </div>
-          <div className="flex justify-between text-sm">
+        </div>        <div className="flex justify-between text-sm">
           <span className="text-gray-600">GST (18%)</span>
           <span className="font-medium">₹{tax.toFixed(2)}</span>
         </div>
+        
+        {paymentMethod === 'cod' && (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">COD Charges</span>
+            <span className="font-medium">₹50.00</span>
+          </div>
+        )}
         
         <div className="border-t border-dashed border-gray-200 my-4 pt-4"></div>
         
         <div className="flex justify-between text-lg font-semibold">
           <span>Total</span>
-          <span>₹{total.toFixed(2)}</span>
+          <span>₹{calculateTotal().toFixed(2)}</span>
         </div>
       </div>
 

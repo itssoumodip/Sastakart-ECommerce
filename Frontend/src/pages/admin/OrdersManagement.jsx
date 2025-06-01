@@ -171,12 +171,11 @@ function OrdersManagement() {
         );
     }
   };
-
   const getTotalRevenue = () => {
     return orders
       .filter(order => order.status !== 'Cancelled')
       .reduce((total, order) => total + order.total, 0)
-      .toFixed(2);
+      .toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   return (
@@ -262,7 +261,7 @@ function OrdersManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">${getTotalRevenue()}</p>
+                <p className="text-2xl font-bold text-gray-900">₹{getTotalRevenue()}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
                 <DollarSign className="h-6 w-6 text-green-600" />
@@ -378,7 +377,7 @@ function OrdersManagement() {
                         <div className="text-sm text-gray-900">{order.items} items</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">${order.total.toFixed(2)}</div>
+                        <div className="text-sm font-medium text-gray-900">₹{order.total.toFixed(2)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getStatusBadge(order.status)}

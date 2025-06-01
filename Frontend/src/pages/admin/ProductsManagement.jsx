@@ -403,7 +403,7 @@ function ProductsManagement() {
                     <p className="text-gray-600 text-sm mb-2">{product.category}</p>
                     
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-2xl font-bold text-gray-900">${product.price}</span>
+                      <span className="text-2xl font-bold text-gray-900">₹{product.price}</span>
                       <span className="text-sm text-gray-600">Stock: {product.inventory}</span>
                     </div>
 

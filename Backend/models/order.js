@@ -17,11 +17,10 @@ const orderSchema = new mongoose.Schema({
     postalCode: {
       type: String,
       required: true
-    },
-    country: {
+    },    country: {
       type: String,
       required: true,
-      default: 'USA'
+      default: 'India'
     },
     phoneNo: {
       type: String,
@@ -57,20 +56,37 @@ const orderSchema = new mongoose.Schema({
         ref: 'Product'
       }
     }
-  ],
-  paymentInfo: {
+  ],  paymentInfo: {
     id: {
       type: String,
-      required: true
+      required: function() {
+        return this.paymentMethod !== 'cod';
+      }
     },
     status: {
       type: String,
-      required: true
+      required: true,
+      default: 'pending'
     }
+  },
+  paymentMethod: {
+    type: String,
+    required: true,
+    enum: ['card', 'cod'],
+    default: 'card'
+  },
+  codAmount: {
+    type: Number,
+    default: 0
   },
   paidAt: {
     type: Date,
-    required: true
+    required: function() {
+      return this.paymentMethod !== 'cod';
+    }
+  },
+  codCollectedAt: {
+    type: Date
   },
   itemsPrice: {
     type: Number,
@@ -91,13 +107,12 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true,
     default: 0.0
-  },
-  orderStatus: {
+  },  orderStatus: {
     type: String,
     required: true,
     default: 'Processing',
     enum: {
-      values: ['Processing', 'Shipped', 'Delivered'],
+      values: ['Processing', 'Confirmed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'COD Pending', 'COD Collected'],
       message: 'Please select correct order status'
     }
   },
