@@ -23,6 +23,7 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-react';
+import { toastConfig } from '../utils/toastConfig';
 
 const ProductDetail = () => {  const { id } = useParams();
   const navigate = useNavigate();
@@ -90,7 +91,7 @@ const ProductDetail = () => {  const { id } = useParams();
       });
     } catch (error) {
       console.error('Cart error:', error);
-      toast.error('Failed to add to cart');
+      toast.error('Failed to add to cart', toastConfig.error);
     }
   };
   
@@ -98,7 +99,7 @@ const ProductDetail = () => {  const { id } = useParams();
   const handleWishlistToggle = () => {
     if (productInWishlist) {
       removeFromWishlist(product._id);
-      toast.success('Removed from wishlist');
+      toast.success('Removed from wishlist', toastConfig.success);
     } else {
       addToWishlist({
         id: product._id,
@@ -109,7 +110,8 @@ const ProductDetail = () => {  const { id } = useParams();
         category: product.category,
         brand: product.brand
       });
-      toast.success('Added to wishlist!');    }
+      toast.success('Added to wishlist!', toastConfig.success);
+    }
   };
 
   // Submit review handler

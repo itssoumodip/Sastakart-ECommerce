@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { API_ENDPOINTS } from '../../config/api';
 import { getAuthHeaders } from '../../utils/auth';
 import { useAuth } from '../../context/AuthContext';
+import { toastConfig, formatToastMessage } from '../../utils/toastConfig';
 import axios from 'axios';
 
 function OrdersManagement() {
@@ -50,32 +51,28 @@ function OrdersManagement() {
       });
 
       if (response.data.success) {
-        // Transform backend data to match frontend structure
-        const transformedOrders = response.data.orders?.map(order => {
-          const orderItems = order.orderItems || [];
-          return {
-            id: order._id,
-            date: order.createdAt,
-            customer: order.user?.name || (order.shippingInfo ? 
-              `${order.shippingInfo.firstName || ''} ${order.shippingInfo.lastName || ''}`.trim() : 
-              'Unknown Customer'),
-            email: order.user?.email || order.shippingInfo?.email || 'No email',
-            phone: order.user?.phone || order.shippingInfo?.phoneNo || '',
-            total: order.totalPrice,
-            status: order.orderStatus,
-            itemCount: orderItems.length,
-            paymentMethod: order.paymentMethod || 'online'
-          };
-        }) || [];
+        const transformedOrders = response.data.orders?.map(order => ({
+          id: order._id,
+          date: order.createdAt,
+          customer: order.user?.name || (order.shippingInfo ? 
+            `${order.shippingInfo.firstName || ''} ${order.shippingInfo.lastName || ''}`.trim() : 
+            'Unknown Customer'),
+          email: order.user?.email || order.shippingInfo?.email || 'No email',
+          phone: order.user?.phone || order.shippingInfo?.phoneNo || '',
+          total: order.totalPrice,
+          status: order.orderStatus,
+          itemCount: order.orderItems.length,
+          paymentMethod: order.paymentMethod || 'online'
+        })) || [];
 
         setOrders(transformedOrders);
         setError(null);
       }
     } catch (err) {
       console.error('Error fetching orders:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch orders';
+      const errorMessage = formatToastMessage(err.response?.data?.message || 'Failed to fetch orders');
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(errorMessage, toastConfig.error);
     } finally {
       setLoading(false);
     }

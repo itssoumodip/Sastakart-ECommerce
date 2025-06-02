@@ -31,6 +31,7 @@ import {
   Menu,
   IndianRupee
 } from 'lucide-react';
+import { toastConfig } from '../utils/toastConfig';
 
 const Cart = () => {
   const { items: cartItems, updateQuantity, removeFromCart, getCartTotal, getCartItemsCount } = useCart();
@@ -62,17 +63,17 @@ const Cart = () => {
     if (promoCodes[upperPromo]) {
       setDiscount(promoCodes[upperPromo]);
       setAppliedPromo(upperPromo);
-      toast.success(`${promoCodes[upperPromo]}% discount applied to your order`);
+      toast.success(`${promoCodes[upperPromo]}% discount applied to your order`, toastConfig.success);
       setPromoCode('');
     } else {
-      toast.error('Invalid promo code');
+      toast.error('Invalid promo code', toastConfig.error);
     }
   };
 
   const removePromo = () => {
     setDiscount(0);
     setAppliedPromo('');
-    toast.success('Promo code removed');
+    toast.success('Promo code removed', toastConfig.success);
   };  const subtotal = getCartTotal();
   const { totalGstAmount, categoryWiseGst } = useCart().getCartGstDetails();
   const discountAmount = (subtotal * discount) / 100;
@@ -81,7 +82,7 @@ const Cart = () => {
   
   const handleCheckout = () => {
     if (!cartItems || cartItems.length === 0) {
-      toast.error('Please add items to your cart before proceeding to checkout');
+      toast.error('Please add items to your cart before proceeding to checkout', toastConfig.error);
       return;
     }
     setIsLoading(true);

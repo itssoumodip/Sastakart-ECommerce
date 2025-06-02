@@ -1,6 +1,6 @@
-import { createContext, useContext, useReducer, useEffect, useState } from 'react'
-import toast from 'react-hot-toast'
-import axios from 'axios'
+import { createContext, useContext, useReducer, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { toastConfig, formatToastMessage } from '../utils/toastConfig';
 
 const CartContext = createContext()
 
@@ -114,12 +114,12 @@ export const CartProvider = ({ children }) => {
         selectedColor: product.selectedColor || ''
       };
     }    dispatch({ type: 'ADD_TO_CART', payload: cartItem });
-    toast.success(`${cartItem.name} added to cart`);
+    toast.success('Item added to cart', toastConfig.success);
   }
   const removeFromCart = (id) => {
     const item = state.items.find(item => item.id === id);
     dispatch({ type: 'REMOVE_FROM_CART', payload: id });
-    toast.success(`${item?.name || 'Item'} removed from cart`);
+    toast.success('Item removed from cart', toastConfig.success);
   };
 
   const updateQuantity = (id, quantity) => {
@@ -133,10 +133,15 @@ export const CartProvider = ({ children }) => {
       toast.error(`Only ${item.stock} units available for ${item.name}`);
       return;
     }    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
+    toast.success('Cart updated', toastConfig.success);
   }
-  const clearCart = () => {
+  const clearCart = (reason) => {
     dispatch({ type: 'CLEAR_CART' });
-    toast.success('Cart cleared');
+    if (reason === 'cod-order') {
+      toast.success('Order placed successfully', toastConfig.success);
+    } else {
+      toast.success('Cart cleared', toastConfig.success);
+    }
   };
   const getCartTotal = () => {
     return state.items.reduce((total, item) => total + item.price * item.quantity, 0);

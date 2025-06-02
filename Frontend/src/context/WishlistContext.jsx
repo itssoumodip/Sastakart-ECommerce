@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { toastConfig } from '../utils/toastConfig';
 
 // Create context
 const WishlistContext = createContext();
@@ -109,19 +110,19 @@ export const WishlistProvider = ({ children }) => {
         category: product.category
       }
     });
-    toast.success('Added to wishlist');
+    toast.success('Added to wishlist', toastConfig.success);
   };
   
   // Remove item from wishlist
   const removeFromWishlist = (id) => {
     dispatch({ type: REMOVE_FROM_WISHLIST, payload: id });
-    toast.success('Removed from wishlist');
+    toast.success('Removed from wishlist', toastConfig.success);
   };
   
   // Clear wishlist
   const clearWishlist = () => {
     dispatch({ type: CLEAR_WISHLIST });
-    toast.success('Wishlist cleared');
+    toast.success('Wishlist cleared', toastConfig.success);
   };
   
   // Check if item is in wishlist

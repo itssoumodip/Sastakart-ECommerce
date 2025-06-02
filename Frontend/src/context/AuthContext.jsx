@@ -1,8 +1,9 @@
-import { createContext, useContext, useReducer, useEffect } from 'react'
-import axios from 'axios'
-import Cookies from 'js-cookie'
-import toast from 'react-hot-toast'
-import API_BASE_URL, { API_ENDPOINTS } from '../config/api'
+import { createContext, useContext, useReducer, useEffect } from 'react';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
+import API_BASE_URL, { API_ENDPOINTS } from '../config/api';
+import { toastConfig, formatToastMessage } from '../utils/toastConfig';
 
 const AuthContext = createContext()
 
@@ -129,13 +130,9 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: 'LOGIN_REQUEST' })
       
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-        const { data } = await axios.post(API_ENDPOINTS.LOGIN, { email, password }, config)
-        if (data.token) {
+      const { data } = await axios.post(API_ENDPOINTS.LOGIN, { email, password })
+      
+      if (data.token) {
         Cookies.set('token', data.token, { 
           expires: 7,
           path: '/',
@@ -150,15 +147,15 @@ export const AuthProvider = ({ children }) => {
         payload: data.user,
       })
       
-      toast.success('Logged in successfully')
+      toast.success('Logged in successfully', toastConfig.success)
       return { success: true }
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed'
+      const message = formatToastMessage(error.response?.data?.message || 'Login failed')
       dispatch({
         type: 'LOGIN_FAIL',
         payload: message,
       })
-      toast.error(message)
+      toast.error(message, toastConfig.error)
       return { success: false, error: message }
     }
   }
@@ -166,13 +163,6 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: 'REGISTER_REQUEST' })
       
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-      
-      // Combine first and last name to backward compatible with the backend
       const name = `${firstName} ${lastName}`;
       
       const { data } = await axios.post(API_ENDPOINTS.REGISTER, { 
@@ -182,10 +172,15 @@ export const AuthProvider = ({ children }) => {
         email, 
         phone,
         password 
-      }, config)
+      })
       
       if (data.token) {
-        Cookies.set('token', data.token, { expires: 7 })
+        Cookies.set('token', data.token, { 
+          expires: 7,
+          path: '/',
+          secure: window.location.protocol === 'https:',
+          sameSite: 'Lax'
+        })
         axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
       }
       
@@ -194,15 +189,15 @@ export const AuthProvider = ({ children }) => {
         payload: data.user,
       })
       
-      toast.success('Account created successfully')
+      toast.success('Account created successfully', toastConfig.success)
       return { success: true }
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed'
+      const message = formatToastMessage(error.response?.data?.message || 'Registration failed')
       dispatch({
         type: 'REGISTER_FAIL',
         payload: message,
       })
-      toast.error(message)
+      toast.error(message, toastConfig.error)
       return { success: false, error: message }
     }
   }
@@ -210,23 +205,17 @@ export const AuthProvider = ({ children }) => {
     try {
       await axios.get(API_ENDPOINTS.LOGOUT)
     } catch (error) {
-      console.log(error)
+      console.error('Logout error:', error)
     } finally {
-      // Clear token from cookies with same options as when setting
       Cookies.remove('token', { 
         path: '/',
         secure: window.location.protocol === 'https:',
         sameSite: 'Lax'
       })
-      
-      // Remove from local storage
       localStorage.removeItem('user')
-        // Remove from headers
       delete axios.defaults.headers.common['Authorization']
-      
-      // Update state
       dispatch({ type: 'LOGOUT_SUCCESS' })
-      toast.success('Logged out successfully')
+      toast.success('Logged out successfully', toastConfig.success)
     }
   }
   const clearErrors = () => {

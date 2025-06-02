@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import googleIcon from '../../assets/google-icon.svg'
+import { toastConfig, formatToastMessage } from '../../utils/toastConfig'
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -42,11 +43,11 @@ const Register = () => {
         data.password
       );      
       if (result.success) {
-        toast.success('Account created successfully! Welcome to ClassyShop! 🎉')
+        toast.success('Account created successfully! Welcome to SastaKart', toastConfig.success)
         navigate('/')
       }
     } catch (error) {
-      toast.error('Registration failed. Please try again.')
+      toast.error(formatToastMessage(error?.message) || 'Registration failed. Please try again.', toastConfig.error)
     } finally {
       setIsLoading(false)
     }

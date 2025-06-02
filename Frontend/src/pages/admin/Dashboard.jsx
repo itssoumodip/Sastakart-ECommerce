@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, ShoppingBag, Package, IndianRupee, TrendingUp, Eye, Store, UserCheck, Calendar } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
 import { getAuthHeaders } from '../../utils/auth';
+import { toastConfig, formatToastMessage } from '../../utils/toastConfig';
+import toast from 'react-hot-toast';
 
 function Dashboard() {  const defaultStats = {
     totalSales: 0,
@@ -59,7 +61,9 @@ function Dashboard() {  const defaultStats = {
       });
     } catch (err) {
       console.error('Error fetching dashboard stats:', err);
-      setError(err.message);
+      const errorMessage = formatToastMessage(err.message || 'Failed to fetch dashboard stats');
+      setError(errorMessage);
+      toast.error(errorMessage, toastConfig.error);
     } finally {
       setLoading(false);
     }
