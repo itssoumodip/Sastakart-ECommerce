@@ -175,11 +175,11 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
             <div className="flex flex-col">
               {product.discountPrice && product.discountPrice < product.price ? (
                 <>
-                  <span className="font-semibold text-xl text-gray-900">₹{product.discountPrice.toFixed(2)}</span>
-                  <span className="text-sm text-gray-500 line-through">₹{product.price.toFixed(2)}</span>
+                  <span className="font-semibold text-xl text-gray-900">₹{product.discountPrice}</span>
+                  <span className="text-sm text-gray-500 line-through">₹{product.price}</span>
                 </>
               ) : (
-                <span className="font-semibold text-xl text-gray-900">₹{(product.price || 0).toFixed(2)}</span>
+                <span className="font-semibold text-xl text-gray-900">₹{(product.price || 0)}</span>
               )}
             </div>
             

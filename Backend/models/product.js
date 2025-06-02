@@ -63,6 +63,16 @@ const productSchema = new mongoose.Schema({
     maxLength: [5, 'Stock cannot exceed 5 characters'],
     default: 0
   },
+  status: {
+    type: String,
+    required: true,
+    default: 'Active',
+    enum: ['Active', 'Draft', 'Out of Stock', 'Low Stock']
+  },
+  lowStockAlert: {
+    type: Number,
+    default: 10
+  },
   rating: {
     type: Number,
     default: 0

@@ -135,6 +135,22 @@ exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler('Product not found', 404));
   }
 
+  // Handle stock and status updates
+  if (req.body.stock !== undefined) {
+    const stockLevel = parseInt(req.body.stock);
+    
+    // Only auto-update status if it's not explicitly provided
+    if (!req.body.status) {
+      if (stockLevel === 0) {
+        req.body.status = 'Out of Stock';
+      } else if (stockLevel < (req.body.lowStockAlert || product.lowStockAlert || 10)) {
+        req.body.status = 'Low Stock';
+      } else {
+        req.body.status = 'Active';
+      }
+    }
+  }
+
   product = await Product.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true

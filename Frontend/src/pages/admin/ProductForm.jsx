@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, X, Upload, Package, Save, Eye, Trash2, Edit3, ShoppingCart, Heart } from 'lucide-react';
+import { ArrowLeft, Plus, X, Upload, Package, Save, Eye, Trash2, Edit3, ShoppingCart, Heart, Star } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { getAuthToken, getAuthHeaders } from '../../utils/auth';
@@ -112,10 +112,14 @@ function ProductForm() {
             },
             credentials: 'include'
           });
+          
           if (!response.ok) {
             throw new Error('Failed to fetch product details');
           }
-          const { product } = await response.json();          setValue('title', product.title); // Use 'title' for both edit and submit
+          
+          const { product } = await response.json();
+          
+          setValue('title', product.title);
           setValue('description', product.description);
           setValue('price', product.price);
           setValue('salePrice', product.discountPrice);
@@ -123,8 +127,9 @@ function ProductForm() {
           setValue('subcategory', product.subcategory || '');
           setValue('productType', product.productType || '');
           setValue('brand', product.brand);
-          setValue('stock', product.stock); // Use 'stock' for both edit and submit
-          setValue('status', product.stock > 0 ? (product.stock < 10 ? 'Low Stock' : 'Active') : 'Out of Stock');
+          setValue('stock', product.stock);
+          setValue('status', product.status);
+          setValue('lowStockAlert', product.lowStockAlert || 10);
           setValue('features', product.features?.join(', '));
           setUploadedImages(product.images || []);
         } catch (error) {
@@ -217,34 +222,25 @@ function ProductForm() {
   };
 
   const onSubmit = async (data) => {
-    setLoading(true);
     try {
-      if (uploadedImages.length === 0) {
-        toast.error('Please upload at least one product image');
-        return;
-      }
+      setLoading(true);
       
-      // Ensure all category data is properly formatted
+      // Build productData object with all fields
       const productData = {
         title: data.title,
         description: data.description,
         price: parseFloat(data.price),
         discountPrice: data.salePrice ? parseFloat(data.salePrice) : undefined,
-        images: uploadedImages,
         category: data.category,
         subcategory: data.subcategory || '',
         productType: data.productType || '',
         brand: data.brand || 'Generic',
         stock: parseInt(data.stock) || 0,
-        features: data.features ? data.features.split(',').map(f => f.trim()).filter(f => f) : []
+        status: data.status,
+        lowStockAlert: parseInt(data.lowStockAlert) || 10,
+        features: data.features ? data.features.split(',').map(f => f.trim()).filter(f => f) : [],
+        images: uploadedImages
       };
-      
-      // Log the category data being submitted
-      console.log('Submitting product with categories:', {
-        category: productData.category,
-        subcategory: productData.subcategory,
-        productType: productData.productType
-      });
 
       const url = isEditMode 
         ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}`
@@ -261,11 +257,10 @@ function ProductForm() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to save product');
+        throw new Error('Failed to save product');
       }
 
-      toast.success(isEditMode ? 'Product updated successfully!' : 'Product created successfully!');
+      toast.success(`Product ${isEditMode ? 'updated' : 'created'} successfully`);
       navigate('/admin/products');
     } catch (error) {
       console.error('Error saving product:', error);

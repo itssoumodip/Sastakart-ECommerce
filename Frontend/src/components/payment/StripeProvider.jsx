@@ -8,9 +8,17 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY, {
   betas: undefined,
   locale: 'auto',
   apiVersion: undefined,
-  // Suppress Stripe HTTPS warning in development
-  httpAgent: undefined,
-  apiHost: undefined
+  // Only suppress warnings in development mode
+  ...(import.meta.env.DEV ? {
+    // Development config
+    stripeAccount: undefined,
+    apiVersion: '2020-08-27',
+    // Suppress warnings in development
+    __privateApiUrl: 'http://localhost:5000', // Point to local backend
+    __supportedBrowser: true,
+  } : {
+    // Production config - no special options needed
+  })
 });
 
 const StripeProvider = ({ children }) => {

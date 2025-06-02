@@ -45,7 +45,9 @@ function App() {
         <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-200 border-t-black"></div>
       </div>
     )
-  }  return (
+  }  
+  
+  return (
     <div className="min-h-screen flex flex-col bg-white">
       <ScrollToTop />
       {/* Only show Navbar on non-admin routes */}
@@ -63,7 +65,8 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           {/* Protected User Routes */}
@@ -91,20 +94,28 @@ function App() {
             <ProtectedRoute>
               <OrderDetail />
             </ProtectedRoute>
-          } />          {/* Admin Routes */}
-          <Route path="/admin" element={
-            <AdminRoute>
-              <AdminLayout />
-            </AdminRoute>
-          }>
+          } />
+
+          {/* Admin Routes - Note the proper nesting */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
             <Route index element={<Dashboard />} />
             <Route path="products" element={<ProductsManagement />} />
             <Route path="products/new" element={<ProductForm />} />
-            <Route path="products/:id" element={<ProductForm />} />
-            <Route path="orders" element={<OrdersManagement />} />            <Route path="orders/:id" element={<OrderDetail />} />            <Route path="users" element={<UsersManagement />} />
+            <Route path="products/edit/:id" element={<ProductForm />} /> {/* Fixed the edit route */}
+            <Route path="orders" element={<OrdersManagement />} />
+            <Route path="orders/:id" element={<OrderDetail />} />
+            <Route path="users" element={<UsersManagement />} />
             <Route path="cod-management" element={<CODManagement />} />
           </Route>
-        </Routes>      </main>
+        </Routes>
+      </main>
 
       {/* Only show Footer on non-admin routes */}
       <Routes>
