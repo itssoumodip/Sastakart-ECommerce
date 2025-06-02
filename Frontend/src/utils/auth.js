@@ -23,7 +23,6 @@ export const isAuthenticated = () => {
 export const getAuthHeaders = () => {
   const token = getAuthToken();
   return token ? { 
-    'Authorization': `Bearer ${token}`,
-    'Cookie': `token=${token}`
+    'Authorization': `Bearer ${token}`
   } : {};
 };

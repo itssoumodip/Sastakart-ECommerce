@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, ArrowUpDown, Eye, ShoppingBag, Package, Truck, CheckCircle, Clock, DollarSign, CreditCard, XCircle } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, Eye, ShoppingBag, Package, Truck, CheckCircle, Clock, DollarSign, CreditCard, XCircle, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_ENDPOINTS } from '../../config/api';
 import { getAuthHeaders } from '../../utils/auth'; // Added import
+import axios from 'axios';
 
 function OrdersManagement() {
   const [orders, setOrders] = useState([]);
@@ -13,18 +14,22 @@ function OrdersManagement() {
   const [error, setError] = useState(null);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');  const [sortBy, setSortBy] = useState('date');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 10;
-
+  const [codAnalytics, setCodAnalytics] = useState({});
+  const [showCodSection, setShowCodSection] = useState(false);
   useEffect(() => {
     fetchOrders();
+    fetchCodAnalytics();
   }, []);
 
   const fetchOrders = async () => {
     try {
-      setLoading(true);      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/admin/orders`, {
+      setLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/admin/orders`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -36,20 +41,31 @@ function OrdersManagement() {
       if (!response.ok) {
         throw new Error('Failed to fetch orders');
       }
-
       const data = await response.json();
       
       // Transform backend data to match frontend structure
-      const transformedOrders = data.orders?.map(order => ({
-        id: order._id,
-        date: order.createdAt,
-        customer: order.user?.name || 'Unknown Customer',
-        email: order.user?.email || 'No email',
-        total: order.totalPrice,
-        status: order.orderStatus,
-        items: order.orderItems?.length || 0,
-        paymentMethod: order.paymentInfo?.type || 'Unknown'
-      })) || [];
+      const transformedOrders = data.orders?.map(order => {
+        const orderItems = order.orderItems || [];
+        return {
+          id: order._id,
+          date: order.createdAt,
+          customer: order.user?.name || (order.shippingInfo ? 
+            `${order.shippingInfo.firstName || ''} ${order.shippingInfo.lastName || ''}`.trim() : 
+            'Unknown Customer'),
+          email: order.user?.email || order.shippingInfo?.email || 'No email',
+          phone: order.user?.phone || order.shippingInfo?.phoneNo || '',
+          total: order.totalPrice,
+          status: order.orderStatus,
+          items: orderItems,
+          itemCount: orderItems.length,
+          paymentMethod: order.paymentInfo?.type || 'cod',
+          shippingInfo: order.shippingInfo || {},
+          subtotal: order.subtotal || 0,
+          shippingCost: order.shippingCost || 0,
+          tax: order.tax || 0,
+          discount: order.discount || 0
+        };
+      }) || [];
 
       setOrders(transformedOrders);
     } catch (err) {
@@ -58,6 +74,58 @@ function OrdersManagement() {
       toast.error('Failed to fetch orders');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCodAnalytics = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/orders/admin/orders/cod-analytics`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (response.data.success) {
+        setCodAnalytics(response.data.analytics);
+      }
+    } catch (err) {
+      console.error('Error fetching COD analytics:', err);
+    }
+  };
+
+  const handleCollectCOD = async (orderId) => {
+    // Show confirmation dialog
+    if (!confirm("Confirm COD collection for this order?")) {
+      return;
+    }
+
+    try {
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/orders/admin/order/${orderId}/collect-cod`, 
+        {}, 
+        {
+          headers: getAuthHeaders()
+        }
+      );
+      
+      if (response.data.success) {
+        toast.success('COD payment collected successfully!');
+        
+        // Update local state to reflect the change
+        setOrders(orders.map(order => {
+          if (order.id === orderId) {
+            return {
+              ...order,
+              status: 'COD_Collected'
+            };
+          }
+          return order;
+        }));
+
+        // Refresh analytics
+        fetchCodAnalytics();
+      }
+    } catch (error) {
+      console.error('Error collecting COD payment:', error);
+      toast.error(error.response?.data?.message || 'Failed to collect COD payment');
     }
   };
 
@@ -154,6 +222,26 @@ function OrdersManagement() {
             <Clock className="h-3 w-3 mr-1" />
             Pending
           </span>
+        );      case 'COD_Pending':
+        return (
+          <span className={`${baseClasses} bg-purple-100 text-purple-800`}>
+            <DollarSign className="h-3 w-3 mr-1" />
+            COD Pending
+          </span>
+        );
+      case 'Out_For_Delivery':
+        return (
+          <span className={`${baseClasses} bg-indigo-100 text-indigo-800`}>
+            <Truck className="h-3 w-3 mr-1" />
+            Out For Delivery
+          </span>
+        );
+      case 'COD_Collected':
+        return (
+          <span className={`${baseClasses} bg-teal-100 text-teal-800`}>
+            <CheckCircle className="h-3 w-3 mr-1" />
+            COD Collected
+          </span>
         );
       case 'Cancelled':
         return (
@@ -230,11 +318,11 @@ function OrdersManagement() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm font-medium">Pending Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{orders.filter(o => o.status === 'Pending').length}</p>
+                <p className="text-gray-600 text-sm font-medium">Total COD Orders</p>
+                <p className="text-2xl font-bold text-gray-900">{codAnalytics.totalCODOrders || 0}</p>
               </div>
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <Clock className="h-6 w-6 text-orange-600" />
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <IndianRupee className="h-6 w-6 text-purple-600" />
               </div>
             </div>
           </motion.div>
@@ -245,26 +333,28 @@ function OrdersManagement() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm font-medium">Delivered Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{orders.filter(o => o.status === 'Delivered').length}</p>
+                <p className="text-gray-600 text-sm font-medium">COD Pending</p>
+                <p className="text-2xl font-bold text-gray-900">{codAnalytics.pendingCOD || 0}</p>
+                <p className="text-sm text-gray-500 mt-1">₹{(codAnalytics.pendingAmount || 0).toLocaleString('en-IN')}</p>
+              </div>
+              <div className="p-3 bg-yellow-100 rounded-lg">
+                <Clock className="h-6 w-6 text-yellow-600" />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            className="card p-6 hover:shadow-lg transition-all duration-300"
+            whileHover={{ scale: 1.02, y: -2 }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">COD Collected</p>
+                <p className="text-2xl font-bold text-gray-900">{codAnalytics.collectedCOD || 0}</p>
+                <p className="text-sm text-gray-500 mt-1">₹{(codAnalytics.collectedAmount || 0).toLocaleString('en-IN')}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
                 <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            className="card p-6 hover:shadow-lg transition-all duration-300"
-            whileHover={{ scale: 1.02, y: -2 }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">₹{getTotalRevenue()}</p>
-              </div>
-              <div className="p-3 bg-green-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </motion.div>
@@ -285,9 +375,7 @@ function OrdersManagement() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="input pl-10"
               />
-            </div>
-
-            <select
+            </div>            <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="input"
@@ -298,6 +386,8 @@ function OrdersManagement() {
               <option value="Shipped">Shipped</option>
               <option value="Delivered">Delivered</option>
               <option value="Cancelled">Cancelled</option>
+              <option value="COD_Pending">COD Pending</option>
+              <option value="COD_Collected">COD Collected</option>
             </select>
 
             <motion.button
@@ -359,43 +449,81 @@ function OrdersManagement() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ delay: index * 0.05 }}
-                      className="hover:bg-gray-50 transition-colors duration-200"
+                      className={`hover:bg-gray-50 transition-colors duration-200 ${
+                        order.paymentMethod === 'cod' && order.status === 'COD_Pending' 
+                          ? 'bg-purple-50'
+                          : ''
+                      }`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{order.id}</div>
+                        <div className="text-sm font-medium text-gray-900">#{order.id.slice(-8)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">{order.customer}</div>
-                          <div className="text-sm text-gray-500">{order.email}</div>
+                          <div className="text-sm text-gray-500">
+                            {order.phone && <span className="mr-2">📞 {order.phone}</span>}
+                            {order.email && <span>📧 {order.email}</span>}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{new Date(order.date).toLocaleDateString()}</div>
+                        <div className="text-sm text-gray-900">
+                          {new Date(order.date).toLocaleDateString('en-IN', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{order.items} items</div>
+                        <div className="text-sm text-gray-900">{order.itemCount} items</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">₹{order.total.toFixed(2)}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          ₹{order.total.toLocaleString('en-IN', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          })}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getStatusBadge(order.status)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center text-sm text-gray-500">
-                          <CreditCard className="h-4 w-4 mr-1" />
-                          {order.paymentMethod}
+                          {order.paymentMethod === 'cod' ? (
+                            <span className="inline-flex items-center">
+                              <DollarSign className="h-4 w-4 mr-1" />
+                              COD
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center">
+                              <CreditCard className="h-4 w-4 mr-1" />
+                              Online
+                            </span>
+                          )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link
-                          to={`/admin/orders/${order.id}`}
-                          className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
-                        >
-                          <Eye className="h-4 w-4" />
-                          View
-                        </Link>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center space-x-3">
+                          <Link
+                            to={`/admin/orders/${order.id}`}
+                            className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                          >
+                            <Eye className="h-4 w-4" />
+                            View
+                          </Link>
+                          {order.paymentMethod === 'cod' && order.status !== 'COD_Collected' && (
+                            <button
+                              onClick={() => handleCollectCOD(order.id)}
+                              className="text-green-600 hover:text-green-900 transition-colors duration-200 flex items-center gap-1"
+                            >
+                              <DollarSign className="h-4 w-4" />
+                              Collect
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </motion.tr>
                   ))}

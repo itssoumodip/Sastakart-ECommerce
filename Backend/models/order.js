@@ -112,10 +112,28 @@ const orderSchema = new mongoose.Schema({
     required: true,
     default: 'Processing',
     enum: {
-      values: ['Processing', 'Confirmed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'COD Pending', 'COD Collected'],
+      values: ['Pending', 'Processing', 'Out_For_Delivery', 'Delivered', 'Cancelled', 'COD_Pending', 'COD_Collected'],
       message: 'Please select correct order status'
     }
   },
+  statusHistory: [{
+    status: {
+      type: String,
+      required: true
+    },
+    note: {
+      type: String,
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  }],
   deliveredAt: Date,
   createdAt: {
     type: Date,

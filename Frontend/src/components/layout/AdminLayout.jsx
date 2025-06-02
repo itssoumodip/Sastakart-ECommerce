@@ -54,13 +54,11 @@ function AdminLayout() {
       }
     })
   };
-
   const navigationItems = [
     { to: '/admin', icon: BarChart3, label: 'Dashboard', exact: true },
     { to: '/admin/products', icon: Package, label: 'Products' },
     { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
     { to: '/admin/users', icon: Users, label: 'Users' },
-    { to: '/admin/cod-management', icon: IndianRupee, label: 'COD Management' },
     { to: '/admin/gst-management', icon: FileText, label: 'GST Management' },
   ];
   return (

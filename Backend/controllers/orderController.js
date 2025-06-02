@@ -26,18 +26,29 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
     paymentMethod,
     user: req.user._id
   };
-
   if (paymentMethod === 'cod') {
     orderData.paymentInfo = {
       id: 'COD_' + Date.now(),
       status: 'pending'
     };
-    orderData.orderStatus = 'COD Pending';
+    orderData.orderStatus = 'COD_Pending';
     orderData.codAmount = totalPrice;
+    orderData.statusHistory = [{
+      status: 'COD_Pending',
+      note: 'Order placed with Cash on Delivery payment method',
+      timestamp: new Date(),
+      updatedBy: req.user._id
+    }];
   } else {
     orderData.paymentInfo = paymentInfo;
     orderData.paidAt = Date.now();
     orderData.orderStatus = 'Processing';
+    orderData.statusHistory = [{
+      status: 'Processing',
+      note: 'Order placed and payment confirmed',
+      timestamp: new Date(),
+      updatedBy: req.user._id
+    }];
   }
 
   const order = await Order.create(orderData);
@@ -74,7 +85,7 @@ exports.myOrders = catchAsyncErrors(async (req, res, next) => {
 
 // Get all orders - ADMIN => /api/admin/orders
 exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
-  const orders = await Order.find();
+  const orders = await Order.find().populate('user', 'name email');
 
   let totalAmount = 0;
 
@@ -153,19 +164,28 @@ exports.collectCOD = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler('This is not a COD order', 400));
   }
 
-  if (order.orderStatus === 'COD Collected') {
+  if (order.orderStatus === 'COD_Collected') {
     return next(new ErrorHandler('COD has already been collected for this order', 400));
   }
 
-  order.orderStatus = 'COD Collected';
+  order.orderStatus = 'COD_Collected';
   order.codCollectedAt = Date.now();
   order.paymentInfo.status = 'succeeded';
+
+  // Add to status history
+  order.statusHistory.push({
+    status: 'COD_Collected',
+    note: 'Cash on Delivery payment collected successfully',
+    timestamp: new Date(),
+    updatedBy: req.user._id
+  });
 
   await order.save({ validateBeforeSave: false });
 
   res.status(200).json({
     success: true,
-    message: 'COD payment collected successfully'
+    message: 'COD payment collected successfully',
+    order
   });
 });
 
@@ -175,19 +195,92 @@ exports.getCODAnalytics = catchAsyncErrors(async (req, res, next) => {
   
   const analytics = {
     totalCODOrders: codOrders.length,
-    pendingCOD: codOrders.filter(order => order.orderStatus === 'COD Pending').length,
-    collectedCOD: codOrders.filter(order => order.orderStatus === 'COD Collected').length,
+    pendingCOD: codOrders.filter(order => order.orderStatus === 'COD_Pending').length,
+    collectedCOD: codOrders.filter(order => order.orderStatus === 'COD_Collected').length,
     totalCODAmount: codOrders.reduce((sum, order) => sum + order.totalPrice, 0),
     collectedCODAmount: codOrders
-      .filter(order => order.orderStatus === 'COD Collected')
+      .filter(order => order.orderStatus === 'COD_Collected')
       .reduce((sum, order) => sum + order.totalPrice, 0),
     pendingCODAmount: codOrders
-      .filter(order => order.orderStatus === 'COD Pending')
+      .filter(order => order.orderStatus === 'COD_Pending')
       .reduce((sum, order) => sum + order.totalPrice, 0)
   };
 
   res.status(200).json({
     success: true,
     analytics
+  });
+});
+
+// Get single order for admin with full details => /api/admin/order/:id
+exports.getAdminOrder = catchAsyncErrors(async (req, res, next) => {
+  const order = await Order.findById(req.params.id)
+    .populate('user', 'name email')
+    .populate('orderItems.product', 'name');
+
+  if (!order) {
+    return next(new ErrorHandler('No order found with this ID', 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    order
+  });
+});
+
+// Update order status with history tracking => /api/admin/order/:id/status
+exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
+  const { status, note } = req.body;
+  
+  if (!status || !note) {
+    return next(new ErrorHandler('Status and note are required', 400));
+  }
+
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return next(new ErrorHandler('No order found with this ID', 404));
+  }
+
+  if (order.orderStatus === 'Delivered') {
+    return next(new ErrorHandler('Cannot update status of delivered order', 400));
+  }
+
+  if (order.orderStatus === 'Cancelled') {
+    return next(new ErrorHandler('Cannot update status of cancelled order', 400));
+  }
+
+  // Update order status
+  order.orderStatus = status;
+
+  // Add to status history
+  order.statusHistory.push({
+    status: status,
+    note: note,
+    timestamp: new Date(),
+    updatedBy: req.user._id
+  });
+
+  // Update specific fields based on status
+  if (status === 'Delivered') {
+    order.deliveredAt = Date.now();
+    
+    // Update stock for delivered orders
+    order.orderItems.forEach(async item => {
+      await updateStock(item.product, item.quantity);
+    });
+  }
+
+  if (status === 'COD_Collected') {
+    order.codCollectedAt = Date.now();
+    order.paymentInfo.status = 'succeeded';
+  }
+
+  await order.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
+    message: `Order status updated to ${status}`,
+    order
   });
 });

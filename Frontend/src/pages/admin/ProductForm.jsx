@@ -52,8 +52,7 @@ function ProductForm() {
       y: 0,
       transition: { duration: 0.5 }
     }
-  };
-  useEffect(() => {
+  };  useEffect(() => {
     if (isEditMode) {
       const fetchProductData = async () => {
         try {
@@ -61,26 +60,22 @@ function ProductForm() {
           const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}`, {
             headers: {
               ...getAuthHeaders()
-            }
+            },
+            credentials: 'include'
           });
-          
           if (!response.ok) {
             throw new Error('Failed to fetch product details');
           }
-          
           const { product } = await response.json();
-          
-          // Set form values
-          setValue('name', product.title);
+          setValue('title', product.title); // Use 'title' for both edit and submit
           setValue('description', product.description);
           setValue('price', product.price);
           setValue('salePrice', product.discountPrice);
           setValue('category', product.category);
           setValue('brand', product.brand);
-          setValue('inventory', product.stock);
+          setValue('stock', product.stock); // Use 'stock' for both edit and submit
           setValue('status', product.stock > 0 ? (product.stock < 10 ? 'Low Stock' : 'Active') : 'Out of Stock');
           setValue('features', product.features?.join(', '));
-          
           setUploadedImages(product.images || []);
         } catch (error) {
           console.error('Error fetching product details:', error);
@@ -90,10 +85,9 @@ function ProductForm() {
           setLoading(false);
         }
       };
-
       fetchProductData();
     }
-  }, [isEditMode, id, navigate, setValue]);  const handleImageUpload = async (e) => {
+  }, [isEditMode, id, navigate, setValue]);const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
     
@@ -162,18 +156,20 @@ function ProductForm() {
       if (uploadedImages.length === 0) {
         toast.error('Please upload at least one product image');
         return;
-      }
-
-      const productData = {
-        title: data.name,
+      }      const productData = {
+        title: data.title,
         description: data.description,
         price: parseFloat(data.price),
-        discountPrice: data.salePrice ? parseFloat(data.salePrice) : null,
+        discountPrice: data.salePrice ? parseFloat(data.salePrice) : undefined,
         images: uploadedImages,
         category: data.category,
         brand: data.brand || 'Generic',
-        stock: parseInt(data.inventory) || 0,
-        features: data.features ? data.features.split(',').map(f => f.trim()) : []
+        stock: parseInt(data.stock) || 0,
+        features: data.features ? data.features.split(',').map(f => f.trim()).filter(f => f) : [],
+        meta: {
+          title: data.metaTitle || data.title,
+          description: data.metaDescription || data.description
+        }
       };
 
       const url = isEditMode 
@@ -230,6 +226,35 @@ function ProductForm() {
     } catch (error) {
       console.error('Auth test error:', error);
       toast.error('Auth test failed');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}`, {
+        method: 'DELETE',
+        headers: {
+          ...getAuthHeaders()
+        },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+      
+      toast.success('Product deleted successfully');
+      navigate('/admin/products');
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error(error.message || 'Failed to delete product');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -314,12 +339,12 @@ function ProductForm() {
                     </label>
                     <input
                       type="text"
-                      {...register('name', { required: 'Product name is required' })}
+                      {...register('title', { required: 'Product name is required' })}
                       className="input"
                       placeholder="Enter product name"
                     />
-                    {errors.name && (
-                      <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>
+                    {errors.title && (
+                      <p className="text-red-600 text-sm mt-1">{errors.title.message}</p>
                     )}
                   </div>
 
@@ -354,15 +379,22 @@ function ProductForm() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Sale Price
-                    </label>
-                    <input
+                    </label>                    <input
                       type="number"
                       step="0.01"
-                      {...register('salePrice')}
+                      {...register('salePrice', {
+                        validate: value => {
+                          const price = parseFloat(watch('price') || 0);
+                          return !value || parseFloat(value) < price || 'Sale price must be less than regular price';
+                        }
+                      })}
                       className="input"
                       placeholder="0.00"
                     />
-                  </div>                  <div>
+                    {errors.salePrice && (
+                      <p className="text-red-600 text-sm mt-1">{errors.salePrice.message}</p>
+                    )}
+                  </div><div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Brand *
                     </label>
@@ -393,9 +425,7 @@ function ProductForm() {
                     {errors.category && (
                       <p className="text-red-600 text-sm mt-1">{errors.category.message}</p>
                     )}
-                  </div>
-
-                  <div>
+                  </div>                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Status
                     </label>
@@ -503,12 +533,12 @@ function ProductForm() {
                     </label>
                     <input
                       type="number"
-                      {...register('inventory', { required: 'Stock quantity is required' })}
+                      {...register('stock', { required: 'Inventory is required' })}
                       className="input"
-                      placeholder="0"
+                      placeholder="Enter inventory count"
                     />
-                    {errors.inventory && (
-                      <p className="text-red-600 text-sm mt-1">{errors.inventory.message}</p>
+                    {errors.stock && (
+                      <p className="text-red-600 text-sm mt-1">{errors.stock.message}</p>
                     )}
                   </div>
                   
@@ -562,12 +592,14 @@ function ProductForm() {
                 <div className="card p-6">
                   <motion.button
                     type="button"
-                    className="w-full text-red-600 border border-red-200 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                    onClick={handleDelete}
+                    disabled={loading}
+                    className="w-full text-red-600 border border-red-200 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <Trash2 className="h-4 w-4 inline mr-2" />
-                    Delete Product
+                    {loading ? 'Deleting...' : 'Delete Product'}
                   </motion.button>
                 </div>
               )}

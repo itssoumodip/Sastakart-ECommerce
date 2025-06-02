@@ -67,11 +67,9 @@ export const AuthProvider = ({ children }) => {
     // Set base URL from environment variable and enable credentials
     axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
     axios.defaults.withCredentials = true
-    
-    // Set Authorization header if token exists
+      // Set Authorization header if token exists
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      axios.defaults.headers.common['Cookie'] = `token=${token}`
       // Refresh cookie to extend expiration
       Cookies.set('token', token, { 
         path: '/',
@@ -81,7 +79,6 @@ export const AuthProvider = ({ children }) => {
       })
     } else {
       delete axios.defaults.headers.common['Authorization']
-      delete axios.defaults.headers.common['Cookie']
       Cookies.remove('token', { path: '/' })
     }
   }, [state.isAuthenticated]) // Re-run when auth state changes
@@ -138,8 +135,7 @@ export const AuthProvider = ({ children }) => {
         },
       }
         const { data } = await axios.post(API_ENDPOINTS.LOGIN, { email, password }, config)
-      
-      if (data.token) {
+        if (data.token) {
         Cookies.set('token', data.token, { 
           expires: 7,
           path: '/',
@@ -147,7 +143,6 @@ export const AuthProvider = ({ children }) => {
           sameSite: 'Lax'
         })
         axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
-        axios.defaults.headers.common['Cookie'] = `token=${data.token}`
       }
       
       dispatch({
@@ -226,10 +221,8 @@ export const AuthProvider = ({ children }) => {
       
       // Remove from local storage
       localStorage.removeItem('user')
-      
-      // Remove from headers
+        // Remove from headers
       delete axios.defaults.headers.common['Authorization']
-      delete axios.defaults.headers.common['Cookie']
       
       // Update state
       dispatch({ type: 'LOGOUT_SUCCESS' })
