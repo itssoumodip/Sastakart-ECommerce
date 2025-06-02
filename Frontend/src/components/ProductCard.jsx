@@ -118,21 +118,6 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
             >
               <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
             </motion.button>
-            <motion.button 
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                navigate(`/products/${product._id}`);
-              }}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-black shadow-md hover:shadow-lg transition-all"
-            >
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Eye className="h-5 w-5" />
-              </motion.div>
-            </motion.button>
           </div>
         </div>
         

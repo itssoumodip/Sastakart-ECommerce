@@ -16,7 +16,8 @@ import {
   Eye,
   X,
   SlidersHorizontal,
-  ArrowUpDown
+  ArrowUpDown,
+  Check
 } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
 
@@ -36,7 +37,9 @@ const Products = () => {
     sort: searchParams.get('sort') || 'newest',
     page: parseInt(searchParams.get('page')) || 1,
     limit: 12
-  })// Categories with subcategories and product types
+  })
+
+  // Categories with subcategories and product types
   const categoryTree = {
     'Electronics': {
       'Smartphones': ['iPhone', 'Android', 'Feature Phones'],
@@ -340,146 +343,260 @@ const Products = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sticky top-24">
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="font-medium text-xl">Filters</h2>
+            >              <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-200 h-screen shadow-lg p-6 sticky top-24">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                    <SlidersHorizontal className="h-6 w-6 mr-2 text-gray-600" />
+                    <span>Filters</span>
+                  </h2>
                   <div className="flex items-center gap-3">
                     {(filters.category || filters.minPrice || filters.maxPrice || filters.rating) && (
                       <button
                         onClick={clearFilters}
-                        className="text-sm text-gray-500 hover:text-gray-800 transition"
+                        className="text-sm flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-all duration-200"
                       >
-                        Clear all
+                        <X className="h-3.5 w-3.5" />
+                        <span>Clear all</span>
                       </button>
                     )}
                     <button 
                       onClick={() => setShowFilters(false)}
-                      className="lg:hidden text-gray-500 hover:text-gray-800"
+                      className="lg:hidden text-gray-500 hover:text-gray-800 bg-white p-2 rounded-full hover:bg-gray-100 transition-colors"
                       aria-label="Close filters"
                     >
                       <X className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
-                  {/* Category Filter */}
-                <div className="mb-6">
-                  <h3 className="font-medium text-gray-900 mb-3">Category</h3>
-                  <select
-                    value={filters.category}
-                    onChange={(e) => {
-                      handleFilterChange('category', e.target.value);
-                      // Reset subcategory when category changes
-                      handleFilterChange('subcategory', '');
-                    }}
-                    className="input w-full"
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                </div>
                 
-                {/* Subcategory Filter - Only shown when a category is selected */}
-                {filters.category && Object.keys(categoryTree[filters.category] || {}).length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="font-medium text-gray-900 mb-3">Subcategory</h3>
-                    <select
-                      value={filters.subcategory}
-                      onChange={(e) => {
-                        handleFilterChange('subcategory', e.target.value);
-                        // Reset product type when subcategory changes
-                        handleFilterChange('productType', '');
-                      }}
-                      className="input w-full"
-                    >
-                      <option value="">All {filters.category}</option>
-                      {Object.keys(categoryTree[filters.category] || {}).map(subcat => (
-                        <option key={subcat} value={subcat}>{subcat}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                
-                {/* Product Type Filter - Only shown when both category and subcategory are selected */}
-                {filters.category && filters.subcategory && categoryTree[filters.category]?.[filters.subcategory]?.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="font-medium text-gray-900 mb-3">Product Type</h3>
-                    <select
-                      value={filters.productType}
-                      onChange={(e) => handleFilterChange('productType', e.target.value)}
-                      className="input w-full"
-                    >
-                      <option value="">All {filters.subcategory}</option>
-                      {categoryTree[filters.category]?.[filters.subcategory]?.map(type => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                
-                {/* Price Range */}
-                <div className="mb-6">
-                  <h3 className="font-medium text-gray-900 mb-3">Price Range</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        value={filters.minPrice}
-                        onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                        className="input w-full"
-                      />
+                {/* Category Filter */}
+                <div className="space-y-5">
+                  <div className="filter-group">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-gray-900 flex items-center">
+                        <span>Category</span>
+                      </h3>
+                      {filters.category && (
+                        <button 
+                          onClick={() => {
+                            handleFilterChange('category', '');
+                            handleFilterChange('subcategory', '');
+                            handleFilterChange('productType', '');
+                          }}
+                          className="text-xs text-gray-500 hover:text-gray-800"
+                        >
+                          Reset
+                        </button>
+                      )}
                     </div>
-                    <div>
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        value={filters.maxPrice}
-                        onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                        className="input w-full"
-                      />
+                    <div className="relative">
+                      <select
+                        value={filters.category}
+                        onChange={(e) => {
+                          handleFilterChange('category', e.target.value);
+                          handleFilterChange('subcategory', '');
+                        }}
+                        className="appearance-none block w-full bg-white px-4 py-3.5 pr-10 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 text-gray-700 cursor-pointer"
+                      >
+                        <option value="">All Categories</option>
+                        {categories.map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <ChevronDown className="h-5 w-5" />
+                      </div>
                     </div>
                   </div>
-                </div>
                 
-                {/* Rating Filter */}
-                <div className="mb-6">
-                  <h3 className="font-medium text-gray-900 mb-3">Rating</h3>
-                  <select
-                    value={filters.rating}
-                    onChange={(e) => handleFilterChange('rating', e.target.value)}
-                    className="input w-full"
-                  >
-                    <option value="">Any Rating</option>
-                    <option value="4">4+ Stars</option>
-                    <option value="3">3+ Stars</option>
-                    <option value="2">2+ Stars</option>
-                    <option value="1">1+ Stars</option>
-                  </select>
+                  {/* Subcategory Filter - Only shown when a category is selected */}
+                  {filters.category && Object.keys(categoryTree[filters.category] || {}).length > 0 && (
+                    <div className="filter-group">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-gray-900">
+                          <span>Subcategory</span>
+                        </h3>
+                        {filters.subcategory && (
+                          <button 
+                            onClick={() => {
+                              handleFilterChange('subcategory', '');
+                              handleFilterChange('productType', '');
+                            }}
+                            className="text-xs text-gray-500 hover:text-gray-800"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <select
+                          value={filters.subcategory}
+                          onChange={(e) => {
+                            handleFilterChange('subcategory', e.target.value);
+                            handleFilterChange('productType', '');
+                          }}
+                          className="appearance-none block w-full bg-white px-4 py-3.5 pr-10 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 text-gray-700 cursor-pointer"
+                        >
+                          <option value="">All {filters.category}</option>
+                          {Object.keys(categoryTree[filters.category] || {}).map(subcat => (
+                            <option key={subcat} value={subcat}>{subcat}</option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                          <ChevronDown className="h-5 w-5" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                
+                  {/* Product Type Filter */}
+                  {filters.category && filters.subcategory && categoryTree[filters.category]?.[filters.subcategory]?.length > 0 && (
+                    <div className="filter-group">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-gray-900">
+                          <span>Product Type</span>
+                        </h3>
+                        {filters.productType && (
+                          <button 
+                            onClick={() => handleFilterChange('productType', '')}
+                            className="text-xs text-gray-500 hover:text-gray-800"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <select
+                          value={filters.productType}
+                          onChange={(e) => handleFilterChange('productType', e.target.value)}
+                          className="appearance-none block w-full bg-white px-4 py-3.5 pr-10 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 text-gray-700 cursor-pointer"
+                        >
+                          <option value="">All {filters.subcategory}</option>
+                          {categoryTree[filters.category]?.[filters.subcategory]?.map(type => (
+                            <option key={type} value={type}>{type}</option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                          <ChevronDown className="h-5 w-5" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                
+                  {/* Price Range */}
+                  <div className="filter-group">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-gray-900 flex items-center">
+                        <span>Price Range</span>
+                      </h3>
+                      {(filters.minPrice || filters.maxPrice) && (
+                        <button 
+                          onClick={() => {
+                            handleFilterChange('minPrice', '');
+                            handleFilterChange('maxPrice', '');
+                          }}
+                          className="text-xs text-gray-500 hover:text-gray-800"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-500 font-medium">₹</span>
+                        <input
+                          type="number"
+                          placeholder="Min"
+                          value={filters.minPrice}
+                          onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                          className="pl-8 w-full bg-white px-4 py-3.5 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 text-gray-700"
+                        />
+                      </div>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-500 font-medium">₹</span>
+                        <input
+                          type="number"
+                          placeholder="Max"
+                          value={filters.maxPrice}
+                          onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                          className="pl-8 w-full bg-white px-4 py-3.5 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 text-gray-700"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                
+                  {/* Rating Filter */}
+                  <div className="filter-group">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-gray-900 flex items-center">
+                        <span>Rating</span>
+                      </h3>
+                      {filters.rating && (
+                        <button 
+                          onClick={() => handleFilterChange('rating', '')}
+                          className="text-xs text-gray-500 hover:text-gray-800"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <select                        value={filters.rating}
+                        onChange={(e) => handleFilterChange('rating', e.target.value)}
+                        className="appearance-none block w-full bg-white px-4 py-3.5 pr-10 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 text-gray-700 cursor-pointer"
+                      >
+                        <option value="">Any Rating</option>
+                        <option value="4">4+ Stars</option>
+                        <option value="3">3+ Stars</option>
+                        <option value="2">2+ Stars</option>
+                        <option value="1">1+ Stars</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <ChevronDown className="h-5 w-5" />
+                      </div>
+                    </div>
+                  </div>
+                  
                 </div>
                 
                 {/* Sort By (Mobile Only) */}
-                <div className="mb-6 lg:hidden">
-                  <h3 className="font-medium text-gray-900 mb-3">Sort By</h3>
-                  <select
-                    value={filters.sort}
-                    onChange={(e) => handleFilterChange('sort', e.target.value)}
-                    className="input w-full"
-                  >
-                    {sortOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <div className="mt-6 lg:hidden">
+                  <div className="filter-group">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-gray-900">Sort By</h3>
+                    </div>
+                    <div className="relative">
+                      <select                        value={filters.sort}
+                        onChange={(e) => handleFilterChange('sort', e.target.value)}
+                        className="appearance-none block w-full bg-white px-4 py-3.5 pr-10 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 text-gray-700 cursor-pointer"
+                      >
+                        {sortOptions.map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <ChevronDown className="h-5 w-5" />
+                      </div>
+                    </div>
+                  </div>
+                
+                  {/* Apply Filters Button (Mobile Only) */}
+                  <div className="mt-8 lg:hidden">
+                    <button
+                      onClick={() => setShowFilters(false)}
+                      className="w-full py-3.5 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Filter className="w-5 h-5" />
+                      Apply Filters
+                    </button>
+                  </div>
                 
                 {/* View Mode (Mobile Only) */}
-                <div className="lg:hidden">
-                  <h3 className="font-medium text-gray-900 mb-3">View Mode</h3>
-                  <div className="flex items-center border border-gray-200 rounded-lg p-1 w-full">
+                <div className="mt-6 pt-6 border-t border-gray-200 lg:hidden">
+                  <h3 className="font-semibold text-gray-900 mb-3">View Mode</h3>
+                  <div className="flex items-center border border-gray-300 rounded-xl p-1 w-full bg-gray-50">
                     <button
                       onClick={() => setViewMode('grid')}
                       className={`flex-1 p-2 rounded transition-colors flex items-center justify-center ${
@@ -501,9 +618,9 @@ const Products = () => {
                     >
                       <List className="h-4 w-4 mr-2" />
                       <span>List</span>
-                    </button>
-                  </div>
+                    </button>                  </div>
                 </div>
+              </div>
               </div>
             </motion.aside>
             
@@ -513,10 +630,11 @@ const Products = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              {/* Sort and View Controls (Desktop) */}              <div className="hidden lg:flex items-center justify-between mb-6">
+            >                {/* Sort and View Controls (Desktop) */}              
+              <div className="hidden lg:flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
-                  {productsData && (                    <p className="text-sm text-gray-600">
+                  {productsData && (
+                    <p className="text-sm text-gray-600">
                       Showing {productsData.products?.length || 0} of {productsData.totalProducts} products
                       {filters.category && ` in ${filters.category}`}
                       {filters.subcategory && ` › ${filters.subcategory}`}
@@ -525,10 +643,10 @@ const Products = () => {
                   )}
                 </div>
                 
-                <div className="flex items-center gap-4">
-                  {/* Sort */}
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-600">Sort by:</label>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-4">
+                    {/* Sort */}
+                    <label className="text-sm absolute -ml-20 text-gray-600">Sort by:</label>
                     <select
                       value={filters.sort}
                       onChange={(e) => handleFilterChange('sort', e.target.value)}
@@ -566,7 +684,7 @@ const Products = () => {
                     </button>
                   </div>
                 </div>
-              </div>              {/* Products Grid/List */}
+              </div>{/* Products Grid/List */}
               {isLoading ? (
                 <div className={`grid gap-6 ${
                   viewMode === 'grid' 
