@@ -81,8 +81,7 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product, quantity = 1) => {
     // Handle both direct product objects and product data passed from ProductCard
     let cartItem;
-    
-    if (product.id && product.name && product.price) {
+      if (product.id && product.name && product.price) {
       // Data already formatted from ProductCard
       cartItem = {
         id: product.id,
@@ -92,6 +91,9 @@ export const CartProvider = ({ children }) => {
         stock: product.stock || 99,
         quantity: product.quantity || quantity,
         brand: product.brand || '',
+        category: product.category || '',
+        subcategory: product.subcategory || '',
+        productType: product.productType || '',
         selectedSize: product.selectedSize || '',
         selectedColor: product.selectedColor || ''
       };
@@ -100,8 +102,7 @@ export const CartProvider = ({ children }) => {
       if (product.stock < quantity) {
         toast.error('Not enough stock available')
         return      }
-      
-      cartItem = {
+        cartItem = {
         id: product._id,
         name: product.title,
         price: product.discountPrice || product.price,
@@ -110,6 +111,9 @@ export const CartProvider = ({ children }) => {
         gstRate: product.gstRate || 18,
         quantity,
         brand: product.brand || '',
+        category: product.category || '',
+        subcategory: product.subcategory || '',
+        productType: product.productType || '',
         selectedSize: product.selectedSize || '',
         selectedColor: product.selectedColor || ''
       };

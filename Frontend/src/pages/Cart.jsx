@@ -211,11 +211,17 @@ const Cart = () => {
                           {/* Product Details */}
                           <div className="flex-1">
                             <div className="flex justify-between items-start mb-4">
-                              <div>
-                                <h3 className="text-xl font-medium text-gray-900 mb-1 hover:text-black/70 transition-colors cursor-pointer" onClick={() => navigate(`/products/${item.id}`)}>
+                              <div>                                <h3 className="text-xl font-medium text-gray-900 mb-1 hover:text-black/70 transition-colors cursor-pointer" onClick={() => navigate(`/products/${item.id}`)}>
                                   {item.name || 'Product'}
                                 </h3>
-                                {item.brand && <p className="text-gray-500 text-sm mb-2">{item.brand}</p>}
+                                {item.brand && <p className="text-gray-500 text-sm mb-1">{item.brand}</p>}
+                                {item.category && (
+                                  <p className="text-gray-500 text-xs mb-2">
+                                    {item.category}
+                                    {item.subcategory && ` › ${item.subcategory}`}
+                                    {item.productType && ` › ${item.productType}`}
+                                  </p>
+                                )}
                                 <div className="flex gap-4 text-sm">
                                   {item.selectedSize && (
                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-800">

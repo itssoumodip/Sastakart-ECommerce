@@ -94,8 +94,7 @@ export const WishlistProvider = ({ children }) => {
       localStorage.setItem('wishlist', JSON.stringify(state.items));
     } catch (error) {
       console.error('Failed to save wishlist to localStorage:', error);
-    }
-  }, [state.items]);
+    }  }, [state.items]);
   
   // Add item to wishlist
   const addToWishlist = (product) => {
@@ -107,7 +106,10 @@ export const WishlistProvider = ({ children }) => {
         price: product.price,
         image: product.image,
         description: product.description,
-        category: product.category
+        category: product.category,
+        subcategory: product.subcategory || '',
+        productType: product.productType || '',
+        brand: product.brand || ''
       }
     });
     toast.success('Added to wishlist', toastConfig.success);

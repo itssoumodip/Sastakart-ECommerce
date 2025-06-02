@@ -20,16 +20,16 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
     if (product.stock === 0) {
       toast.error('Product is out of stock');
       return;
-    }
-
-    try {
+    }    try {
       addToCart({
         id: product._id,
         name: product.title,
         price: product.discountPrice || product.price,
         image: product.images?.[0] || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
         stock: product.stock || 99,
-        brand: product.brand || '',
+        brand: product.brand || '',        category: product.category || '',
+        subcategory: product.subcategory || '',
+        productType: product.productType || '',
         quantity: 1
       });
     } catch (error) {
@@ -44,14 +44,16 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
     
     if (isWishlisted) {
       removeFromWishlist(product._id);
-    } else {
-      addToWishlist({
+    } else {      addToWishlist({
         id: product._id,
         name: product.title,
         price: product.discountPrice || product.price,
         image: product.images?.[0] || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
         description: product.description || '',
-        category: product.category || 'Uncategorized'
+        category: product.category || 'Uncategorized',
+        subcategory: product.subcategory || '',
+        productType: product.productType || '',
+        brand: product.brand || ''
       });
     }
   };
@@ -84,7 +86,7 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
             alt={product.title}
             className={`${
               viewMode === 'grid' ? 'w-full h-64' : 'w-full h-64 md:h-full'
-            } object-cover group-hover:scale-105 transition-transform duration-500`}
+            } object-scale-down group-hover:scale-105 transition-transform duration-500`}
             loading="lazy"
           />
           
@@ -147,6 +149,13 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
               </p>
             )}
             
+            {/* Category information */}
+            <p className="text-xs text-gray-500 mb-2">
+              {product.category}
+              {product.subcategory && ` › ${product.subcategory}`}
+              {product.productType && ` › ${product.productType}`}
+            </p>
+            
             {/* Description - only in list view */}
             {viewMode === 'list' && product.description && (
               <p className="text-gray-600 mb-4 line-clamp-3 hidden md:block">
@@ -161,7 +170,7 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
                   <Star
                     key={i}
                     className={`h-4 w-4 ${
-                      i < Math.floor(product.rating || 4)
+                      i < Math.floor(product.rating || 0)
                         ? 'text-yellow-400 fill-yellow-400'
                         : 'text-gray-300'
                     }`}

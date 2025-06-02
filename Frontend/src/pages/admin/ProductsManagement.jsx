@@ -13,12 +13,43 @@ function ProductsManagement() {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [subcategoryFilter, setSubcategoryFilter] = useState('all');
+  const [productTypeFilter, setProductTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const productsPerPage = 8;
+  
+  // Categories with subcategories and product types
+  const categoryTree = {
+    'Electronics': {
+      'Smartphones': ['iPhone', 'Android', 'Feature Phones'],
+      'Laptops': ['Gaming', 'Business', 'Student', 'Convertible'],
+      'Audio': ['Headphones', 'Speakers', 'Earbuds', 'Microphones'],
+      'Cameras': ['DSLR', 'Mirrorless', 'Point & Shoot', 'Action Cameras'],
+      'Accessories': ['Chargers', 'Cases', 'Screen Protectors', 'Stands']
+    },
+    'Clothing': {
+      'Men': ['T-shirts', 'Shirts', 'Pants', 'Jeans', 'Jackets', 'Sweaters', 'Underwear', 'Socks'],
+      'Women': ['Tops', 'Dresses', 'Skirts', 'Pants', 'Jeans', 'Jackets', 'Lingerie', 'Activewear'],
+      'Kids': ['Boys', 'Girls', 'Infants', 'Shoes', 'School Wear']
+    },
+    'Home & Kitchen': {
+      'Furniture': ['Living Room', 'Bedroom', 'Dining', 'Office'],
+      'Cookware': ['Pots & Pans', 'Kitchen Tools', 'Bakeware', 'Knives'],
+      'Bedding': ['Sheets', 'Pillows', 'Comforters', 'Mattresses'],
+      'Decor': ['Wall Art', 'Lighting', 'Rugs', 'Curtains']
+    },
+    'Beauty & Personal Care': {
+      'Skincare': ['Cleansers', 'Moisturizers', 'Serums', 'Face Masks', 'Sunscreen'],
+      'Makeup': ['Face', 'Eyes', 'Lips', 'Nails', 'Brushes'],
+      'Haircare': ['Shampoo', 'Conditioner', 'Styling', 'Hair Color', 'Treatments'],
+      'Fragrance': ['Women\'s Perfume', 'Men\'s Cologne', 'Gift Sets']
+    },
+    'Others': {}
+  };
 
   // API Functions
   const fetchProducts = async () => {
@@ -33,6 +64,8 @@ function ProductsManagement() {
           name: product.title,
           price: product.price,
           category: product.category,
+          subcategory: product.subcategory || '',
+          productType: product.productType || '',
           inventory: product.stock || 0,
           status: product.stock > 0 ? (product.stock < 10 ? 'Low Stock' : 'Active') : 'Out of Stock',
           image: product.images && product.images.length > 0 ? product.images[0] : 'https://placehold.co/100x100'
@@ -45,7 +78,9 @@ function ProductsManagement() {
     } finally {
       setLoading(false);
     }
-  };  const deleteProduct = async (productId) => {
+  };
+  
+  const deleteProduct = async (productId) => {
     try {
       const token = getAuthToken();
       const response = await axios.delete(`${API_ENDPOINTS.PRODUCTS}/${productId}`, {
@@ -68,7 +103,7 @@ function ProductsManagement() {
   useEffect(() => {
     fetchProducts();
   }, []);
-
+  
   useEffect(() => {
     let updatedProducts = [...products];
 
@@ -83,6 +118,20 @@ function ProductsManagement() {
     if (categoryFilter !== 'all') {
       updatedProducts = updatedProducts.filter(product => 
         product.category === categoryFilter
+      );
+    }
+    
+    // Filter by subcategory
+    if (subcategoryFilter !== 'all') {
+      updatedProducts = updatedProducts.filter(product => 
+        product.subcategory === subcategoryFilter
+      );
+    }
+    
+    // Filter by product type
+    if (productTypeFilter !== 'all') {
+      updatedProducts = updatedProducts.filter(product => 
+        product.productType === productTypeFilter
       );
     }
 
@@ -108,7 +157,7 @@ function ProductsManagement() {
     });
 
     setFilteredProducts(updatedProducts);
-  }, [searchTerm, categoryFilter, statusFilter, sortBy, sortOrder, products]);
+  }, [searchTerm, categoryFilter, subcategoryFilter, productTypeFilter, statusFilter, sortBy, sortOrder, products]);
 
   const handleDeleteProduct = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
@@ -297,17 +346,49 @@ function ProductsManagement() {
                 className="input pl-10"
               />
             </div>
-
             <select
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setSubcategoryFilter('all');
+                setProductTypeFilter('all');
+              }}
               className="input"
             >
               <option value="all">All Categories</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Accessories">Accessories</option>
-              <option value="Clothing">Clothing</option>
+              {Object.keys(categoryTree).map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
             </select>
+            
+            {categoryFilter !== 'all' && (
+              <select
+                value={subcategoryFilter}
+                onChange={(e) => {
+                  setSubcategoryFilter(e.target.value);
+                  setProductTypeFilter('all');
+                }}
+                className="input"
+              >
+                <option value="all">All Subcategories</option>
+                {Object.keys(categoryTree[categoryFilter] || {}).map(subcategory => (
+                  <option key={subcategory} value={subcategory}>{subcategory}</option>
+                ))}
+              </select>
+            )}
+            
+            {categoryFilter !== 'all' && subcategoryFilter !== 'all' && categoryTree[categoryFilter]?.[subcategoryFilter]?.length > 0 && (
+              <select
+                value={productTypeFilter}
+                onChange={(e) => setProductTypeFilter(e.target.value)}
+                className="input"
+              >
+                <option value="all">All Product Types</option>
+                {categoryTree[categoryFilter]?.[subcategoryFilter]?.map(productType => (
+                  <option key={productType} value={productType}>{productType}</option>
+                ))}
+              </select>
+            )}
 
             <select
               value={statusFilter}
@@ -319,7 +400,7 @@ function ProductsManagement() {
               <option value="Low Stock">Low Stock</option>
               <option value="Out of Stock">Out of Stock</option>
             </select>
-
+            
             <motion.button
               onClick={() => handleSort('name')}
               className="btn-outline flex items-center justify-center gap-2"
@@ -329,6 +410,23 @@ function ProductsManagement() {
               <ArrowUpDown className="h-4 w-4" />
               Sort by {sortBy}
             </motion.button>
+            
+            {(searchTerm || categoryFilter !== 'all' || subcategoryFilter !== 'all' || productTypeFilter !== 'all' || statusFilter !== 'all') && (
+              <motion.button
+                onClick={() => {
+                  setSearchTerm('');
+                  setCategoryFilter('all');
+                  setSubcategoryFilter('all');
+                  setProductTypeFilter('all');
+                  setStatusFilter('all');
+                }}
+                className="btn-outline flex items-center justify-center gap-2 bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Clear Filters
+              </motion.button>
+            )}
           </div>
         </motion.div>
 
@@ -358,6 +456,8 @@ function ProductsManagement() {
                 onClick={() => {
                   setSearchTerm('');
                   setCategoryFilter('all');
+                  setSubcategoryFilter('all');
+                  setProductTypeFilter('all');
                   setStatusFilter('all');
                 }}
                 className="btn-primary"
@@ -397,10 +497,13 @@ function ProductsManagement() {
                       {getStatusBadge(product.status)}
                     </div>
                   </div>
-                  
-                  <div className="p-6">
+                    <div className="p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-                    <p className="text-gray-600 text-sm mb-2">{product.category}</p>
+                    <p className="text-gray-600 text-sm mb-2">
+                      {product.category}
+                      {product.subcategory && ` › ${product.subcategory}`}
+                      {product.productType && ` › ${product.productType}`}
+                    </p>
                     
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-2xl font-bold text-gray-900">₹{product.price}</span>

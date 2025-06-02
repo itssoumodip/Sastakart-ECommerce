@@ -609,10 +609,17 @@ const Checkout = () => {
               <div className="absolute -top-2 -right-2 bg-gray-900 text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center shadow-sm">
                 {item.quantity}
               </div>
-            </div>
-            <div className="flex-1">
+            </div>            <div className="flex-1">
               <h4 className="font-medium text-gray-900 text-sm">{item.name}</h4>
-              <p className="text-xs text-gray-500">{item.brand}</p>              <div className="flex items-center justify-between mt-1">
+              <p className="text-xs text-gray-500">{item.brand}</p>
+              {item.category && (
+                <p className="text-xs text-gray-500">
+                  {item.category}
+                  {item.subcategory && ` › ${item.subcategory}`}
+                  {item.productType && ` › ${item.productType}`}
+                </p>
+              )}
+              <div className="flex items-center justify-between mt-1">
                 <p className="text-sm font-semibold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
                 {item.selectedSize && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">

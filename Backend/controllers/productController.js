@@ -19,10 +19,18 @@ exports.getProducts = catchAsyncErrors(async (req, res, next) => {
         ]
       }
     : {};
-
   // Category filter
   const category = req.query.category && req.query.category !== 'All Categories' 
     ? { category: req.query.category } 
+    : {};
+      // Subcategory filter
+  const subcategory = req.query.subcategory 
+    ? { subcategory: req.query.subcategory } 
+    : {};
+    
+  // Product type filter
+  const productType = req.query.productType 
+    ? { productType: req.query.productType } 
     : {};
     
   // Price range filter
@@ -59,13 +67,13 @@ exports.getProducts = catchAsyncErrors(async (req, res, next) => {
       default:
         sort = { createdAt: -1 };
     }  } else {
-    sort = { createdAt: -1 };
-  }
-  
-  // Build query
+    sort = { createdAt: -1 };  }
+    // Build query
   const query = {
     ...keyword,
     ...category,
+    ...subcategory,
+    ...productType,
     ...priceFilter,
     ...ratingFilter
   };

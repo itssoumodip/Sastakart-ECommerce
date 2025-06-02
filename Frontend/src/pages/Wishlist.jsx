@@ -50,26 +50,56 @@ const Wishlist = () => {
   const navigate = useNavigate();
   const { items: wishlistItems, loading, removeFromWishlist, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
-  
-  const [viewMode, setViewMode] = useState('grid');
+    const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('default');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [filterSubcategory, setFilterSubcategory] = useState('all');
+  const [filterProductType, setFilterProductType] = useState('all');
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const [isSubcategoryMenuOpen, setIsSubcategoryMenuOpen] = useState(false);
+  const [isProductTypeMenuOpen, setIsProductTypeMenuOpen] = useState(false);
   
   // Extract unique categories from wishlist items
   const categories = wishlistItems.length > 0 
-    ? ['all', ...new Set(wishlistItems.filter(item => item.category).map(item => item.category.toLowerCase()))]
+    ? ['all', ...new Set(wishlistItems.filter(item => item.category).map(item => item.category))]
     : ['all'];
+  
+  // Extract subcategories for when a category is selected
+  const subcategories = filterCategory !== 'all' && wishlistItems.length > 0
+    ? ['all', ...new Set(wishlistItems
+        .filter(item => item.category === filterCategory && item.subcategory)
+        .map(item => item.subcategory))]
+    : [];
+  
+  // Extract product types for when both category and subcategory are selected
+  const productTypes = filterSubcategory !== 'all' && wishlistItems.length > 0
+    ? ['all', ...new Set(wishlistItems
+        .filter(item => 
+          item.category === filterCategory && 
+          item.subcategory === filterSubcategory && 
+          item.productType)
+        .map(item => item.productType))]
+    : [];
 
   // Filter and sort wishlist items
   const filteredItems = wishlistItems
     .filter(item => {
       const matchesSearch = (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
                           (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      
       const matchesCategory = filterCategory === 'all' || 
-                            (item.category && item.category.toLowerCase() === filterCategory.toLowerCase());
-      return matchesSearch && matchesCategory;
+                            (item.category === filterCategory);
+                            
+      const matchesSubcategory = filterSubcategory === 'all' || 
+                               !filterSubcategory || 
+                               (item.subcategory === filterSubcategory);
+                               
+      const matchesProductType = filterProductType === 'all' || 
+                               !filterProductType || 
+                               (item.productType === filterProductType);
+                               
+      return matchesSearch && matchesCategory && matchesSubcategory && matchesProductType;
     })
     .sort((a, b) => {
       switch (sortOption) {
@@ -182,9 +212,22 @@ const Wishlist = () => {
                       className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                     />
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  </div>
-
-                  <div className="flex items-center gap-3">
+                  </div>                  <div className="flex items-center gap-3">
+                    {(searchQuery || filterCategory !== 'all' || filterSubcategory !== 'all' || filterProductType !== 'all' || sortOption !== 'default') && (
+                      <button
+                        onClick={() => {
+                          setSearchQuery('');
+                          setFilterCategory('all');
+                          setFilterSubcategory('all');
+                          setFilterProductType('all');
+                          setSortOption('default');
+                        }}
+                        className="px-4 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
+                      >
+                        Clear Filters
+                      </button>
+                    )}
+                    
                     <div className="flex items-center border border-gray-300 rounded-lg p-1">
                       <motion.button 
                         onClick={() => setViewMode('grid')}
@@ -222,12 +265,15 @@ const Wishlist = () => {
                       <option value="price_high">Price: High to Low</option>
                       <option value="name_asc">Name: A-Z</option>
                       <option value="name_desc">Name: Z-A</option>
-                    </select>
-
+                    </select>                    {/* Category Filter */}
                     {categories.length > 1 && (
                       <div className="relative">
                         <motion.button
-                          onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
+                          onClick={() => {
+                            setIsFilterMenuOpen(!isFilterMenuOpen);
+                            setIsSubcategoryMenuOpen(false);
+                            setIsProductTypeMenuOpen(false);
+                          }}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           className="px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent inline-flex items-center"
@@ -249,6 +295,8 @@ const Wishlist = () => {
                                   key={category}
                                   onClick={() => {
                                     setFilterCategory(category);
+                                    setFilterSubcategory('all');
+                                    setFilterProductType('all');
                                     setIsFilterMenuOpen(false);
                                   }}
                                   whileHover={{ backgroundColor: '#F3F4F6' }}
@@ -259,6 +307,103 @@ const Wishlist = () => {
                                   }`}
                                 >
                                   {category === 'all' ? 'All Categories' : category}
+                                </motion.button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
+
+                    {/* Subcategory Filter */}
+                    {filterCategory !== 'all' && subcategories.length > 1 && (
+                      <div className="relative">
+                        <motion.button
+                          onClick={() => {
+                            setIsSubcategoryMenuOpen(!isSubcategoryMenuOpen);
+                            setIsFilterMenuOpen(false);
+                            setIsProductTypeMenuOpen(false);
+                          }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent inline-flex items-center"
+                        >
+                          <SlidersHorizontal className="h-5 w-5 mr-2" />
+                          {filterSubcategory === 'all' ? `All ${filterCategory}` : filterSubcategory}
+                        </motion.button>
+
+                        <AnimatePresence>
+                          {isSubcategoryMenuOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 8 }}
+                              className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10"
+                            >
+                              {subcategories.map((subcategory) => (
+                                <motion.button
+                                  key={subcategory}
+                                  onClick={() => {
+                                    setFilterSubcategory(subcategory);
+                                    setFilterProductType('all');
+                                    setIsSubcategoryMenuOpen(false);
+                                  }}
+                                  whileHover={{ backgroundColor: '#F3F4F6' }}
+                                  className={`w-full px-4 py-2 text-left text-sm ${
+                                    subcategory === filterSubcategory
+                                      ? 'bg-gray-100 text-gray-900 font-medium'
+                                      : 'text-gray-700 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  {subcategory === 'all' ? `All ${filterCategory}` : subcategory}
+                                </motion.button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
+
+                    {/* Product Type Filter */}
+                    {filterCategory !== 'all' && filterSubcategory !== 'all' && productTypes.length > 1 && (
+                      <div className="relative">
+                        <motion.button
+                          onClick={() => {
+                            setIsProductTypeMenuOpen(!isProductTypeMenuOpen);
+                            setIsFilterMenuOpen(false);
+                            setIsSubcategoryMenuOpen(false);
+                          }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent inline-flex items-center"
+                        >
+                          <SlidersHorizontal className="h-5 w-5 mr-2" />
+                          {filterProductType === 'all' ? `All ${filterSubcategory}` : filterProductType}
+                        </motion.button>
+
+                        <AnimatePresence>
+                          {isProductTypeMenuOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 8 }}
+                              className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10"
+                            >
+                              {productTypes.map((type) => (
+                                <motion.button
+                                  key={type}
+                                  onClick={() => {
+                                    setFilterProductType(type);
+                                    setIsProductTypeMenuOpen(false);
+                                  }}
+                                  whileHover={{ backgroundColor: '#F3F4F6' }}
+                                  className={`w-full px-4 py-2 text-left text-sm ${
+                                    type === filterProductType
+                                      ? 'bg-gray-100 text-gray-900 font-medium'
+                                      : 'text-gray-700 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  {type === 'all' ? `All ${filterSubcategory}` : type}
                                 </motion.button>
                               ))}
                             </motion.div>
@@ -324,10 +469,11 @@ const Wishlist = () => {
                     <p className="text-gray-600 mb-6">
                       Try adjusting your search or filter to find what you're looking for.
                     </p>
-                    <motion.button
-                      onClick={() => {
+                    <motion.button                      onClick={() => {
                         setSearchQuery('');
                         setFilterCategory('all');
+                        setFilterSubcategory('all');
+                        setFilterProductType('all');
                         setSortOption('default');
                       }}
                       whileHover={{ scale: 1.05 }}
@@ -390,11 +536,14 @@ const Wishlist = () => {
 
                       {/* Product Info */}
                       <div className="p-4 flex-1 flex flex-col">
-                        <div className="flex-1">
-                          <h3 className="font-medium text-gray-900 mb-1 line-clamp-2 group-hover:text-black/70 transition-colors">
+                        <div className="flex-1">                          <h3 className="font-medium text-gray-900 mb-1 line-clamp-2 group-hover:text-black/70 transition-colors">
                             {item.name}
                           </h3>
-                          <p className="text-sm text-gray-500 mb-2">{item.category}</p>
+                          <p className="text-xs text-gray-500 mb-2">
+                            {item.category}
+                            {item.subcategory && ` › ${item.subcategory}`}
+                            {item.productType && ` › ${item.productType}`}
+                          </p>
                           <p className="text-lg font-semibold text-gray-900 mb-4">
                             ₹{item.price.toFixed(2)}
                           </p>

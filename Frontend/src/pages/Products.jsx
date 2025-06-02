@@ -25,31 +25,81 @@ const Products = () => {
   const [viewMode, setViewMode] = useState('grid')
   const [showFilters, setShowFilters] = useState(false)
   const [searchInput, setSearchInput] = useState('')
-  
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
     category: searchParams.get('category') || '',
+    subcategory: searchParams.get('subcategory') || '',
+    productType: searchParams.get('productType') || '',
     minPrice: searchParams.get('minPrice') || '',
     maxPrice: searchParams.get('maxPrice') || '',
     rating: searchParams.get('rating') || '',
     sort: searchParams.get('sort') || 'newest',
     page: parseInt(searchParams.get('page')) || 1,
     limit: 12
-  })
-
-  const categories = [
-    'Electronics',
-    'Clothing',
-    'Home & Kitchen',
-    'Beauty & Personal Care',
-    'Books',
-    'Sports & Outdoors',
-    'Toys & Games',
-    'Health & Wellness',
-    'Jewelry',
-    'Automotive',
-    'Others'
-  ]
+  })// Categories with subcategories and product types
+  const categoryTree = {
+    'Electronics': {
+      'Smartphones': ['iPhone', 'Android', 'Feature Phones'],
+      'Laptops': ['Gaming', 'Business', 'Student', 'Convertible'],
+      'Audio': ['Headphones', 'Speakers', 'Earbuds', 'Microphones'],
+      'Cameras': ['DSLR', 'Mirrorless', 'Point & Shoot', 'Action Cameras'],
+      'Accessories': ['Chargers', 'Cases', 'Screen Protectors', 'Stands']
+    },
+    'Clothing': {
+      'Men': ['T-shirts', 'Shirts', 'Pants', 'Jeans', 'Jackets', 'Sweaters', 'Underwear', 'Socks'],
+      'Women': ['Tops', 'Dresses', 'Skirts', 'Pants', 'Jeans', 'Jackets', 'Lingerie', 'Activewear'],
+      'Kids': ['Boys', 'Girls', 'Infants', 'Shoes', 'School Wear']
+    },
+    'Home & Kitchen': {
+      'Furniture': ['Living Room', 'Bedroom', 'Dining', 'Office'],
+      'Cookware': ['Pots & Pans', 'Kitchen Tools', 'Bakeware', 'Knives'],
+      'Bedding': ['Sheets', 'Pillows', 'Comforters', 'Mattresses'],
+      'Decor': ['Wall Art', 'Lighting', 'Rugs', 'Curtains']
+    },    'Beauty & Personal Care': {
+      'Skincare': ['Cleansers', 'Moisturizers', 'Serums', 'Face Masks', 'Sunscreen'],
+      'Makeup': ['Face', 'Eyes', 'Lips', 'Nails', 'Brushes'],
+      'Haircare': ['Shampoo', 'Conditioner', 'Styling', 'Hair Color', 'Treatments'],
+      'Fragrance': ['Women\'s Perfume', 'Men\'s Cologne', 'Gift Sets']
+    },
+    'Books': {
+      'Fiction': ['Novels', 'Fantasy', 'Sci-Fi', 'Mystery', 'Romance'],
+      'Non-fiction': ['Biography', 'Self-Help', 'History', 'Business', 'Travel'],
+      'Academic': ['Textbooks', 'Reference', 'Study Guides', 'Professional'],
+      'Children': ['Picture Books', 'Middle Grade', 'Young Adult']
+    },
+    'Sports & Outdoors': {
+      'Fitness': ['Exercise Equipment', 'Yoga', 'Weights', 'Fitness Trackers'],
+      'Camping': ['Tents', 'Sleeping Bags', 'Backpacks', 'Camp Kitchen'],
+      'Sports Equipment': ['Team Sports', 'Individual Sports', 'Water Sports'],
+      'Activewear': ['Running', 'Training', 'Swimwear', 'Accessories']
+    },
+    'Toys & Games': {
+      'Board Games': ['Strategy', 'Family', 'Card Games', 'Classic Games'],
+      'Educational': ['STEM Toys', 'Learning Kits', 'Arts & Crafts', 'Puzzles'],
+      'Action Figures': ['Superheroes', 'Collectibles', 'Dolls'],
+      'Outdoor Play': ['Sports Toys', 'Playsets', 'Water Toys', 'Ride-Ons']
+    },
+    'Health & Wellness': {
+      'Supplements': ['Vitamins', 'Protein', 'Weight Management', 'Herbal'],
+      'Personal Care': ['Oral Care', 'Bath & Body', 'Feminine Care'],
+      'Medical Supplies': ['First Aid', 'Health Monitors', 'Mobility Aids']
+    },
+    'Jewelry': {
+      'Necklaces': ['Pendants', 'Chains', 'Chokers', 'Statement'],
+      'Earrings': ['Studs', 'Hoops', 'Drops', 'Cuffs'],
+      'Rings': ['Engagement', 'Wedding', 'Fashion', 'Stackable'],
+      'Bracelets': ['Bangles', 'Chain', 'Cuffs', 'Charm']
+    },
+    'Automotive': {
+      'Interior': ['Seat Covers', 'Floor Mats', 'Organizers', 'Electronics'],
+      'Exterior': ['Car Care', 'Covers', 'Accessories'],
+      'Tools': ['Hand Tools', 'Diagnostic', 'Specialty Tools'],
+      'Parts': ['Replacement Parts', 'Performance', 'Accessories']
+    },
+    'Others': {}  }
+  
+  // Flat list of categories for backward compatibility
+  const categories = Object.keys(categoryTree)
 
   const sortOptions = [
     { value: 'newest', label: 'Newest First' },
@@ -98,30 +148,29 @@ const Products = () => {
       page: 1 // Reset to first page when filters change
     }))
   }
-
   const handleSearchSubmit = (e) => {
-    e.preventDefault()
-    handleFilterChange('search', searchInput)
-  }
-
-  const clearFilters = () => {
-    setFilters({
+    e.preventDefault();
+    handleFilterChange('search', searchInput);
+  };
+  
+  const clearFilters = () => {    setFilters({
       search: '',
       category: '',
+      subcategory: '',
+      productType: '',
       minPrice: '',
       maxPrice: '',
       rating: '',
       sort: 'newest',
       page: 1,
       limit: 12
-    })
-    setSearchInput('')
+    });
+    setSearchInput('');
   }
-
   const handlePageChange = (page) => {
-    setFilters(prev => ({ ...prev, page }))
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+    setFilters(prev => ({ ...prev, page }));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const Pagination = () => {
     if (!productsData || productsData.totalPages <= 1) return null
@@ -313,13 +362,16 @@ const Products = () => {
                     </button>
                   </div>
                 </div>
-                
-                {/* Category Filter */}
+                  {/* Category Filter */}
                 <div className="mb-6">
                   <h3 className="font-medium text-gray-900 mb-3">Category</h3>
                   <select
                     value={filters.category}
-                    onChange={(e) => handleFilterChange('category', e.target.value)}
+                    onChange={(e) => {
+                      handleFilterChange('category', e.target.value);
+                      // Reset subcategory when category changes
+                      handleFilterChange('subcategory', '');
+                    }}
                     className="input w-full"
                   >
                     <option value="">All Categories</option>
@@ -328,6 +380,44 @@ const Products = () => {
                     ))}
                   </select>
                 </div>
+                
+                {/* Subcategory Filter - Only shown when a category is selected */}
+                {filters.category && Object.keys(categoryTree[filters.category] || {}).length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="font-medium text-gray-900 mb-3">Subcategory</h3>
+                    <select
+                      value={filters.subcategory}
+                      onChange={(e) => {
+                        handleFilterChange('subcategory', e.target.value);
+                        // Reset product type when subcategory changes
+                        handleFilterChange('productType', '');
+                      }}
+                      className="input w-full"
+                    >
+                      <option value="">All {filters.category}</option>
+                      {Object.keys(categoryTree[filters.category] || {}).map(subcat => (
+                        <option key={subcat} value={subcat}>{subcat}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                
+                {/* Product Type Filter - Only shown when both category and subcategory are selected */}
+                {filters.category && filters.subcategory && categoryTree[filters.category]?.[filters.subcategory]?.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="font-medium text-gray-900 mb-3">Product Type</h3>
+                    <select
+                      value={filters.productType}
+                      onChange={(e) => handleFilterChange('productType', e.target.value)}
+                      className="input w-full"
+                    >
+                      <option value="">All {filters.subcategory}</option>
+                      {categoryTree[filters.category]?.[filters.subcategory]?.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 
                 {/* Price Range */}
                 <div className="mb-6">
@@ -424,12 +514,13 @@ const Products = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              {/* Sort and View Controls (Desktop) */}
-              <div className="hidden lg:flex items-center justify-between mb-6">
+              {/* Sort and View Controls (Desktop) */}              <div className="hidden lg:flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
-                  {productsData && (
-                    <p className="text-sm text-gray-600">
+                  {productsData && (                    <p className="text-sm text-gray-600">
                       Showing {productsData.products?.length || 0} of {productsData.totalProducts} products
+                      {filters.category && ` in ${filters.category}`}
+                      {filters.subcategory && ` › ${filters.subcategory}`}
+                      {filters.productType && ` › ${filters.productType}`}
                     </p>
                   )}
                 </div>

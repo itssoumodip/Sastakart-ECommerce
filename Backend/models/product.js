@@ -27,8 +27,7 @@ const productSchema = new mongoose.Schema({
       type: String,
       required: true
     }
-  ],
-  category: {
+  ],  category: {
     type: String,
     required: [true, 'Please select category for this product'],
     enum: {
@@ -47,6 +46,12 @@ const productSchema = new mongoose.Schema({
       ],
       message: 'Please select correct category'
     }
+  },  subcategory: {
+    type: String,
+  },
+  productType: {
+    type: String,
+    default: ''
   },
   brand: {
     type: String,

@@ -85,6 +85,9 @@ const ProductDetail = () => {  const { id } = useParams();
         image: product.images?.[0] || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
         stock: product.stock,
         brand: product.brand || '',
+        category: product.category || '',
+        subcategory: product.subcategory || '',
+        productType: product.productType || '',
         quantity: quantity,
         selectedSize,
         selectedColor
@@ -100,15 +103,16 @@ const ProductDetail = () => {  const { id } = useParams();
     if (productInWishlist) {
       removeFromWishlist(product._id);
       toast.success('Removed from wishlist', toastConfig.success);
-    } else {
-      addToWishlist({
+    } else {      addToWishlist({
         id: product._id,
         name: product.title,
         price: product.discountPrice || product.price,
         image: product.images?.[0],
         description: product.description,
         category: product.category,
-        brand: product.brand
+        subcategory: product.subcategory || '',
+        productType: product.productType || '',
+        brand: product.brand || ''
       });
       toast.success('Added to wishlist!', toastConfig.success);
     }
@@ -137,8 +141,7 @@ const ProductDetail = () => {  const { id } = useParams();
         comment: reviewInput.comment,
         productId: id
       };
-      
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/products/${id}/reviews`, reviewData, config);
+        const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/products/review`, reviewData, config);
       
       if (response.data.success) {
         const newReview = {
@@ -235,8 +238,7 @@ const ProductDetail = () => {  const { id } = useParams();
       
       <div className="min-h-screen bg-white">
         {/* Breadcrumb */}
-        <div className="max-w-7xl mx-auto px-4 py-4 lg:py-6">
-          <nav className="flex items-center text-sm text-gray-500">
+        <div className="max-w-7xl mx-auto px-4 py-4 lg:py-6">          <nav className="flex items-center text-sm text-gray-500">
             <Link to="/" className="hover:underline">Home</Link>
             <ChevronRight className="w-4 h-4 mx-2" />
             <Link to="/products" className="hover:underline">Products</Link>
@@ -244,6 +246,22 @@ const ProductDetail = () => {  const { id } = useParams();
             <Link to={`/products?category=${product.category}`} className="hover:underline">
               {product.category}
             </Link>
+            {product.subcategory && (
+              <>
+                <ChevronRight className="w-4 h-4 mx-2" />
+                <Link to={`/products?category=${product.category}&subcategory=${product.subcategory}`} className="hover:underline">
+                  {product.subcategory}
+                </Link>
+              </>
+            )}
+            {product.productType && (
+              <>
+                <ChevronRight className="w-4 h-4 mx-2" />
+                <Link to={`/products?category=${product.category}&subcategory=${product.subcategory}&productType=${product.productType}`} className="hover:underline">
+                  {product.productType}
+                </Link>
+              </>
+            )}
             <ChevronRight className="w-4 h-4 mx-2" />
             <span className="text-gray-900 font-medium truncate">{product.title}</span>
           </nav>

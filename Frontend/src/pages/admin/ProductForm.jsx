@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, X, Upload, Package, Save, Eye, Trash2, Edit3 } from 'lucide-react';
+import { ArrowLeft, Plus, X, Upload, Package, Save, Eye, Trash2, Edit3, ShoppingCart, Heart } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { getAuthToken, getAuthHeaders } from '../../utils/auth';
@@ -12,28 +12,77 @@ function ProductForm() {
   const navigate = useNavigate();
   const isEditMode = !!id;
   
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
-  const [loading, setLoading] = useState(false);
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();  const [loading, setLoading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [selectedVariant, setSelectedVariant] = useState(null);
-  
-  // Watch values for dynamic UI updates
+  const [showPreview, setShowPreview] = useState(false);// Watch values for dynamic UI updates
   const currentCategory = watch('category');
+  const currentSubcategory = watch('subcategory');
+  const currentProductType = watch('productType');
+  // Categories, subcategories and product types based on the backend model
+  const categoryTree = {
+    'Electronics': {
+      'Smartphones': ['iPhone', 'Android', 'Feature Phones'],
+      'Laptops': ['Gaming', 'Business', 'Student', 'Convertible'],
+      'Audio': ['Headphones', 'Speakers', 'Earbuds', 'Microphones'],
+      'Cameras': ['DSLR', 'Mirrorless', 'Point & Shoot', 'Action Cameras'],
+      'Accessories': ['Chargers', 'Cases', 'Screen Protectors', 'Stands']
+    },
+    'Clothing': {
+      'Men': ['T-shirts', 'Shirts', 'Pants', 'Jeans', 'Jackets', 'Sweaters', 'Underwear', 'Socks'],
+      'Women': ['Tops', 'Dresses', 'Skirts', 'Pants', 'Jeans', 'Jackets', 'Lingerie', 'Activewear'],
+      'Kids': ['Boys', 'Girls', 'Infants', 'Shoes', 'School Wear']
+    },
+    'Home & Kitchen': {
+      'Furniture': ['Living Room', 'Bedroom', 'Dining', 'Office'],
+      'Cookware': ['Pots & Pans', 'Kitchen Tools', 'Bakeware', 'Knives'],
+      'Bedding': ['Sheets', 'Pillows', 'Comforters', 'Mattresses'],
+      'Decor': ['Wall Art', 'Lighting', 'Rugs', 'Curtains']
+    },    'Beauty & Personal Care': {
+      'Skincare': ['Cleansers', 'Moisturizers', 'Serums', 'Face Masks', 'Sunscreen'],
+      'Makeup': ['Face', 'Eyes', 'Lips', 'Nails', 'Brushes'],
+      'Haircare': ['Shampoo', 'Conditioner', 'Styling', 'Hair Color', 'Treatments'],
+      'Fragrance': ['Women\'s Perfume', 'Men\'s Cologne', 'Gift Sets']
+    },
+    'Books': {
+      'Fiction': ['Novels', 'Fantasy', 'Sci-Fi', 'Mystery', 'Romance'],
+      'Non-fiction': ['Biography', 'Self-Help', 'History', 'Business', 'Travel'],
+      'Academic': ['Textbooks', 'Reference', 'Study Guides', 'Professional'],
+      'Children': ['Picture Books', 'Middle Grade', 'Young Adult']
+    },
+    'Sports & Outdoors': {
+      'Fitness': ['Exercise Equipment', 'Yoga', 'Weights', 'Fitness Trackers'],
+      'Camping': ['Tents', 'Sleeping Bags', 'Backpacks', 'Camp Kitchen'],
+      'Sports Equipment': ['Team Sports', 'Individual Sports', 'Water Sports'],
+      'Activewear': ['Running', 'Training', 'Swimwear', 'Accessories']
+    },
+    'Toys & Games': {
+      'Board Games': ['Strategy', 'Family', 'Card Games', 'Classic Games'],
+      'Educational': ['STEM Toys', 'Learning Kits', 'Arts & Crafts', 'Puzzles'],
+      'Action Figures': ['Superheroes', 'Collectibles', 'Dolls'],
+      'Outdoor Play': ['Sports Toys', 'Playsets', 'Water Toys', 'Ride-Ons']
+    },
+    'Health & Wellness': {
+      'Supplements': ['Vitamins', 'Protein', 'Weight Management', 'Herbal'],
+      'Personal Care': ['Oral Care', 'Bath & Body', 'Feminine Care'],
+      'Medical Supplies': ['First Aid', 'Health Monitors', 'Mobility Aids']
+    },
+    'Jewelry': {
+      'Necklaces': ['Pendants', 'Chains', 'Chokers', 'Statement'],
+      'Earrings': ['Studs', 'Hoops', 'Drops', 'Cuffs'],
+      'Rings': ['Engagement', 'Wedding', 'Fashion', 'Stackable'],
+      'Bracelets': ['Bangles', 'Chain', 'Cuffs', 'Charm']
+    },    'Automotive': {
+      'Interior': ['Seat Covers', 'Floor Mats', 'Organizers', 'Electronics'],
+      'Exterior': ['Car Care', 'Covers', 'Accessories'],
+      'Tools': ['Hand Tools', 'Diagnostic', 'Specialty Tools'],
+      'Parts': ['Replacement Parts', 'Performance', 'Accessories']
+    },
+    'Others': {}
+  };
   
-  // Categories and status options based on the backend model
-  const categories = [
-    'Electronics',
-    'Clothing',
-    'Home & Kitchen',
-    'Beauty & Personal Care',
-    'Books',
-    'Sports & Outdoors',
-    'Toys & Games',
-    'Health & Wellness',
-    'Jewelry',
-    'Automotive',
-    'Others'
-  ];
+  // Flat list of categories for form select
+  const categories = Object.keys(categoryTree);
   
   const statusOptions = ['Active', 'Draft', 'Out of Stock'];
 
@@ -66,12 +115,13 @@ function ProductForm() {
           if (!response.ok) {
             throw new Error('Failed to fetch product details');
           }
-          const { product } = await response.json();
-          setValue('title', product.title); // Use 'title' for both edit and submit
+          const { product } = await response.json();          setValue('title', product.title); // Use 'title' for both edit and submit
           setValue('description', product.description);
           setValue('price', product.price);
           setValue('salePrice', product.discountPrice);
           setValue('category', product.category);
+          setValue('subcategory', product.subcategory || '');
+          setValue('productType', product.productType || '');
           setValue('brand', product.brand);
           setValue('stock', product.stock); // Use 'stock' for both edit and submit
           setValue('status', product.stock > 0 ? (product.stock < 10 ? 'Low Stock' : 'Active') : 'Out of Stock');
@@ -145,9 +195,25 @@ function ProductForm() {
       setLoading(false);
     }
   };
-
   const removeImage = (index) => {
     setUploadedImages(images => images.filter((_, i) => i !== index));
+  };
+
+  const handlePreview = () => {
+    const formData = watch();
+    
+    // Validate that we have at least basic product info for preview
+    if (!formData.title || !formData.price) {
+      toast.error('Please enter at least product name and price to preview');
+      return;
+    }
+    
+    if (uploadedImages.length === 0) {
+      toast.error('Please upload at least one image to preview');
+      return;
+    }
+    
+    setShowPreview(true);
   };
 
   const onSubmit = async (data) => {
@@ -156,21 +222,29 @@ function ProductForm() {
       if (uploadedImages.length === 0) {
         toast.error('Please upload at least one product image');
         return;
-      }      const productData = {
+      }
+      
+      // Ensure all category data is properly formatted
+      const productData = {
         title: data.title,
         description: data.description,
         price: parseFloat(data.price),
         discountPrice: data.salePrice ? parseFloat(data.salePrice) : undefined,
         images: uploadedImages,
         category: data.category,
+        subcategory: data.subcategory || '',
+        productType: data.productType || '',
         brand: data.brand || 'Generic',
         stock: parseInt(data.stock) || 0,
-        features: data.features ? data.features.split(',').map(f => f.trim()).filter(f => f) : [],
-        meta: {
-          title: data.metaTitle || data.title,
-          description: data.metaDescription || data.description
-        }
+        features: data.features ? data.features.split(',').map(f => f.trim()).filter(f => f) : []
       };
+      
+      // Log the category data being submitted
+      console.log('Submitting product with categories:', {
+        category: productData.category,
+        subcategory: productData.subcategory,
+        productType: productData.productType
+      });
 
       const url = isEditMode 
         ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}`
@@ -257,6 +331,226 @@ function ProductForm() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (currentCategory) {
+      console.log('Current Category:', currentCategory);
+      console.log('Available subcategories:', Object.keys(categoryTree[currentCategory] || {}));
+    }
+  }, [currentCategory]);
+  
+  useEffect(() => {
+    if (currentCategory && currentSubcategory) {
+      console.log('Current Subcategory:', currentSubcategory);
+      console.log('Available product types:', categoryTree[currentCategory]?.[currentSubcategory] || []);
+      console.log('Product types array?', Array.isArray(categoryTree[currentCategory]?.[currentSubcategory]));
+      console.log('Full category tree structure:', categoryTree);
+    }
+  }, [currentCategory, currentSubcategory]);
+
+  // ProductPreview Modal Component
+  const ProductPreview = () => {
+    const formData = watch();
+    
+    const previewProduct = {
+      _id: 'preview',
+      title: formData.title || 'Product Name',
+      description: formData.description || 'Product description...',
+      price: parseFloat(formData.price) || 0,
+      discountPrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
+      images: uploadedImages,
+      category: formData.category || '',
+      subcategory: formData.subcategory || '',
+      productType: formData.productType || '',
+      brand: formData.brand || '',
+      stock: parseInt(formData.stock) || 0,
+      rating: 0,
+      numReviews: 0,
+      features: formData.features ? formData.features.split(',').map(f => f.trim()).filter(f => f) : []
+    };
+
+    // Add rating display component
+    const RatingDisplay = ({ rating, numReviews }) => {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="flex">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                className={`h-4 w-4 ${
+                  star <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-sm text-gray-500">
+            {numReviews > 0 ? `(${numReviews} reviews)` : 'No reviews yet'}
+          </span>
+        </div>
+      );
+    };
+
+    return (
+      <AnimatePresence>
+        {showPreview && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowPreview(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900">Product Preview</h2>
+                  <button
+                    onClick={() => setShowPreview(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <p className="text-gray-600 mt-1">This is how your product will appear to customers</p>
+              </div>
+              
+              <div className="p-6">
+                <div className="grid lg:grid-cols-2 gap-8">
+                  {/* Product Images */}
+                  <div>
+                    <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden mb-4">
+                      {uploadedImages.length > 0 ? (
+                        <img
+                          src={uploadedImages[0]}
+                          alt="Product preview"
+                          className="w-full h-full object-scale-down"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <Package className="h-16 w-16" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {uploadedImages.length > 1 && (
+                      <div className="flex gap-2 overflow-x-auto">
+                        {uploadedImages.slice(1, 5).map((image, index) => (
+                          <img
+                            key={index}
+                            src={image}
+                            alt={`Preview ${index + 2}`}
+                            className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                          />
+                        ))}
+                        {uploadedImages.length > 5 && (
+                          <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-sm text-gray-500">
+                            +{uploadedImages.length - 5}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Product Info */}
+                  <div>
+                    <div className="mb-4">
+                      {previewProduct.category && (
+                        <p className="text-sm text-gray-500 mb-2">
+                          {previewProduct.category}
+                          {previewProduct.subcategory && ` › ${previewProduct.subcategory}`}
+                          {previewProduct.productType && ` › ${previewProduct.productType}`}
+                        </p>
+                      )}
+                      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                        {previewProduct.title}
+                      </h1>
+                      {previewProduct.brand && (
+                        <p className="text-lg text-gray-600 mb-4">by {previewProduct.brand}</p>
+                      )}
+                      
+                      {/* Rating display */}
+                      <RatingDisplay rating={previewProduct.rating} numReviews={previewProduct.numReviews} />
+                    </div>
+                    
+                    {/* Price */}
+                    <div className="mb-6">
+                      {previewProduct.discountPrice && previewProduct.discountPrice < previewProduct.price ? (
+                        <div className="flex items-center gap-3">
+                          <span className="text-3xl font-bold text-gray-900">
+                            ₹{previewProduct.discountPrice.toFixed(2)}
+                          </span>
+                          <span className="text-xl text-gray-500 line-through">
+                            ₹{previewProduct.price.toFixed(2)}
+                          </span>
+                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm font-medium">
+                            {Math.round(((previewProduct.price - previewProduct.discountPrice) / previewProduct.price) * 100)}% OFF
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-3xl font-bold text-gray-900">
+                          ₹{previewProduct.price.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Stock Status */}
+                    <div className="mb-6">
+                      {previewProduct.stock > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <span className="text-green-700 font-medium">
+                            {previewProduct.stock > 10 ? 'In Stock' : `Only ${previewProduct.stock} left`}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <span className="text-red-700 font-medium">Out of Stock</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Description */}
+                    {previewProduct.description && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+                        <p className="text-gray-600 leading-relaxed">
+                          {previewProduct.description}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Action Buttons */}
+                    <div className="flex gap-3">
+                      <button
+                        disabled={previewProduct.stock === 0}
+                        className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-colors ${
+                          previewProduct.stock === 0
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            : 'bg-black text-white hover:bg-gray-800'
+                        }`}
+                      >
+                        <ShoppingCart className="w-5 h-5 inline mr-2" />
+                        Add to Cart
+                      </button>
+                      <button className="p-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+                        <Heart className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  };
 
   return (
     <motion.div 
@@ -295,9 +589,9 @@ function ProductForm() {
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <motion.button
+          <div className="flex items-center gap-3">            <motion.button
               type="button"
+              onClick={handlePreview}
               className="btn-outline flex items-center gap-2"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -346,21 +640,7 @@ function ProductForm() {
                     {errors.title && (
                       <p className="text-red-600 text-sm mt-1">{errors.title.message}</p>
                     )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      SKU
-                    </label>
-                    <input
-                      type="text"
-                      {...register('sku')}
-                      className="input"
-                      placeholder="Product SKU"
-                    />
-                  </div>
-
-                  <div>
+                  </div>                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Price *
                     </label>
@@ -407,14 +687,19 @@ function ProductForm() {
                     {errors.brand && (
                       <p className="text-red-600 text-sm mt-1">{errors.brand.message}</p>
                     )}
-                  </div>
-
-                  <div>
+                  </div>                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Category *
-                    </label>
-                    <select
-                      {...register('category', { required: 'Category is required' })}
+                    </label>                    <select
+                      {...register('category', { 
+                        required: 'Category is required',
+                        onChange: (e) => {
+                          // Reset subcategory and product type when category changes
+                          setValue('subcategory', '');
+                          setValue('productType', '');
+                          console.log('Category changed to:', e.target.value);
+                        }
+                      })}
                       className="input"
                     >
                       <option value="">Select category</option>
@@ -425,7 +710,48 @@ function ProductForm() {
                     {errors.category && (
                       <p className="text-red-600 text-sm mt-1">{errors.category.message}</p>
                     )}
-                  </div>                  <div>
+                  </div>
+
+                  {/* Subcategory field - only shown when a category that has subcategories is selected */}                  {currentCategory && Object.keys(categoryTree[currentCategory] || {}).length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Subcategory
+                      </label>                      <select
+                        {...register('subcategory', {
+                          onChange: (e) => {
+                            // Reset product type when subcategory changes
+                            setValue('productType', '');
+                            console.log('Subcategory changed to:', e.target.value);
+                            console.log('Product types available:', categoryTree[currentCategory]?.[e.target.value] || []);
+                          }
+                        })}
+                        className="input"
+                      >
+                        <option value="">Select subcategory</option>
+                        {Object.keys(categoryTree[currentCategory] || {}).map(subcat => (
+                          <option key={subcat} value={subcat}>{subcat}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}                  {/* Product Type field - only shown when both category and subcategory are selected */}
+                  {currentCategory && currentSubcategory && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Product Type
+                      </label>
+                      <select
+                        {...register('productType')}
+                        className="input"
+                      >
+                        <option value="">Select product type</option>
+                        {(categoryTree[currentCategory]?.[currentSubcategory] || []).map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Status
                     </label>
@@ -554,37 +880,6 @@ function ProductForm() {
                     />
                   </div>
                 </div>
-              </div>              {/* SEO */}
-              <div className="card p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
-                  SEO
-                </h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Meta Title
-                    </label>
-                    <input
-                      type="text"
-                      {...register('metaTitle')}
-                      className="input"
-                      placeholder="SEO title"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Meta Description
-                    </label>
-                    <textarea
-                      {...register('metaDescription')}
-                      rows={3}
-                      className="input"
-                      placeholder="SEO description"
-                    />
-                  </div>
-                </div>
               </div>
 
               {/* Delete button for edit mode */}
@@ -606,6 +901,9 @@ function ProductForm() {
             </motion.div>
           </div>
         </form>
+
+        {/* Product Preview Modal */}
+        <ProductPreview />
       </div>
     </motion.div>
   );
