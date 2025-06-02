@@ -43,11 +43,48 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-// Database connection
-mongoose
-  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ecommerce')
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.error('MongoDB Connection Error:', err));
+// Database connection with improved configuration
+const connectDB = async () => {
+  try {
+    const mongoOptions = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 15000, // Timeout after 15 seconds instead of 30
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds
+      connectTimeoutMS: 15000, // Give up initial connection after 15 seconds
+      maxPoolSize: 50, // Maintain up to 50 socket connections
+      minPoolSize: 10, // Maintain at least 10 socket connections
+      maxIdleTimeMS: 60000, // Close idle connections after 60 seconds
+      writeConcern: { w: 'majority' }, // Wait for write acknowledgment from majority of replicas
+      retryWrites: true, // Automatically retry write operations
+      retryReads: true // Automatically retry read operations
+    };
+
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ecommerce', mongoOptions);
+    console.log('MongoDB Connected Successfully');
+  } catch (error) {
+    console.error('MongoDB Connection Error:', error.message);
+    // If initial connection fails, retry after 5 seconds
+    setTimeout(connectDB, 5000);
+  }
+};
+
+// Handle MongoDB connection events
+mongoose.connection.on('error', err => {
+  console.error('MongoDB Connection Error:', err.message);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB Disconnected, trying to reconnect...');
+  connectDB();
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('MongoDB Reconnected Successfully');
+});
+
+// Initialize database connection
+connectDB();
 
 // Error handling middleware
 app.use(errorMiddleware);
