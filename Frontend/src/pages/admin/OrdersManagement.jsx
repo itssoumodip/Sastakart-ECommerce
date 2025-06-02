@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, ArrowUpDown, Eye, ShoppingBag, Package, Truck, CheckCircle, Clock, DollarSign, CreditCard, XCircle, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_ENDPOINTS } from '../../config/api';
-import { getAuthHeaders } from '../../utils/auth'; // Added import
+import { getAuthHeaders } from '../../utils/auth';
+import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 
 function OrdersManagement() {
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,57 +24,58 @@ function OrdersManagement() {
   const ordersPerPage = 10;
   const [codAnalytics, setCodAnalytics] = useState({});
   const [showCodSection, setShowCodSection] = useState(false);
+
   useEffect(() => {
+    // Check if user is authenticated and has admin role
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/admin/orders' } });
+      return;
+    }
+
+    if (!user || user.role !== 'admin') {
+      toast.error('Access denied. Admin privileges required.');
+      navigate('/');
+      return;
+    }
+
     fetchOrders();
     fetchCodAnalytics();
-  }, []);
+  }, [isAuthenticated, user, navigate]);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/admin/orders`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json'
-        }
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/orders/admin/orders`, {
+        headers: getAuthHeaders()
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders');
-      }
-      const data = await response.json();
-      
-      // Transform backend data to match frontend structure
-      const transformedOrders = data.orders?.map(order => {
-        const orderItems = order.orderItems || [];
-        return {
-          id: order._id,
-          date: order.createdAt,
-          customer: order.user?.name || (order.shippingInfo ? 
-            `${order.shippingInfo.firstName || ''} ${order.shippingInfo.lastName || ''}`.trim() : 
-            'Unknown Customer'),
-          email: order.user?.email || order.shippingInfo?.email || 'No email',
-          phone: order.user?.phone || order.shippingInfo?.phoneNo || '',
-          total: order.totalPrice,
-          status: order.orderStatus,
-          items: orderItems,
-          itemCount: orderItems.length,
-          paymentMethod: order.paymentInfo?.type || 'cod',
-          shippingInfo: order.shippingInfo || {},
-          subtotal: order.subtotal || 0,
-          shippingCost: order.shippingCost || 0,
-          tax: order.tax || 0,
-          discount: order.discount || 0
-        };
-      }) || [];
+      if (response.data.success) {
+        // Transform backend data to match frontend structure
+        const transformedOrders = response.data.orders?.map(order => {
+          const orderItems = order.orderItems || [];
+          return {
+            id: order._id,
+            date: order.createdAt,
+            customer: order.user?.name || (order.shippingInfo ? 
+              `${order.shippingInfo.firstName || ''} ${order.shippingInfo.lastName || ''}`.trim() : 
+              'Unknown Customer'),
+            email: order.user?.email || order.shippingInfo?.email || 'No email',
+            phone: order.user?.phone || order.shippingInfo?.phoneNo || '',
+            total: order.totalPrice,
+            status: order.orderStatus,
+            itemCount: orderItems.length,
+            paymentMethod: order.paymentMethod || 'online'
+          };
+        }) || [];
 
-      setOrders(transformedOrders);
+        setOrders(transformedOrders);
+        setError(null);
+      }
     } catch (err) {
       console.error('Error fetching orders:', err);
-      setError(err.message);
-      toast.error('Failed to fetch orders');
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch orders';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

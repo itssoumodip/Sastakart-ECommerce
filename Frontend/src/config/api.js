@@ -26,6 +26,23 @@ axios.interceptors.request.use(
   }
 );
 
+// Add a response interceptor for error handling
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized access
+      window.location.href = '/login';
+    } else if (error.response?.status === 403) {
+      // Handle forbidden access
+      if (window.location.pathname.startsWith('/admin')) {
+        window.location.href = '/';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const API_ENDPOINTS = {
   // Auth endpoints
   LOGIN: '/api/auth/login',

@@ -214,64 +214,6 @@ function Dashboard() {  const defaultStats = {
               </div>
             </motion.div>
 
-            {/* GST Overview */}
-            <motion.div 
-              className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8"
-              variants={itemVariants}
-            >
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-indigo-100 rounded-lg">
-                    <Store className="h-6 w-6 text-indigo-600" />
-                  </div>                  {(stats.gstStats?.growth || 0) > 0 && (
-                    <div className="flex items-center text-indigo-600 text-sm">
-                      <TrendingUp className="h-4 w-4 mr-1" />
-                      +{stats.gstStats?.growth || 0}%
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-gray-600 text-sm font-medium">Total GST Collected</h3>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(stats.gstStats.totalCollected)}
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-pink-100 rounded-lg">
-                    <Calendar className="h-6 w-6 text-pink-600" />
-                  </div>
-                </div>
-                <h3 className="text-gray-600 text-sm font-medium">Monthly GST</h3>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(stats.gstStats.monthlyCollected)}
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-yellow-100 rounded-lg">
-                    <Calendar className="h-6 w-6 text-yellow-600" />
-                  </div>
-                </div>
-                <h3 className="text-gray-600 text-sm font-medium">Yearly GST</h3>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(stats.gstStats.yearlyCollected)}
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-gray-100 rounded-lg">
-                    <Package className="h-6 w-6 text-gray-600" />
-                  </div>
-                </div>
-                <h3 className="text-gray-600 text-sm font-medium">Exempt Orders</h3>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {stats.gstStats.exemptOrders}
-                </p>
-              </div>
-            </motion.div>
 
             {/* Recent Orders */}
             <motion.div 
