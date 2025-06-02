@@ -107,7 +107,7 @@ function OrdersManagement() {
       );
       
       if (response.data.success) {
-        toast.success('COD payment collected successfully!');
+        toast.success(`Successfully collected cash payment of ₹${order.totalPrice} for Order #${order.id}`);
         
         // Update local state to reflect the change
         setOrders(orders.map(order => {
@@ -514,15 +514,6 @@ function OrdersManagement() {
                             <Eye className="h-4 w-4" />
                             View
                           </Link>
-                          {order.paymentMethod === 'cod' && order.status !== 'COD_Collected' && (
-                            <button
-                              onClick={() => handleCollectCOD(order.id)}
-                              className="text-green-600 hover:text-green-900 transition-colors duration-200 flex items-center gap-1"
-                            >
-                              <DollarSign className="h-4 w-4" />
-                              Collect
-                            </button>
-                          )}
                         </div>
                       </td>
                     </motion.tr>

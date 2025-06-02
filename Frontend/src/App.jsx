@@ -31,7 +31,6 @@ import OrdersManagement from './pages/admin/OrdersManagement'
 import OrderDetail from './pages/admin/OrderDetail'
 import UsersManagement from './pages/admin/UsersManagement'
 import CODManagement from './pages/admin/CODManagement'
-import GSTManagement from './pages/admin/GSTManagement'
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
@@ -87,6 +86,11 @@ function App() {
             <ProtectedRoute>
               <Orders />
             </ProtectedRoute>
+          } />
+          <Route path="/profile/orders/:id" element={
+            <ProtectedRoute>
+              <OrderDetail />
+            </ProtectedRoute>
           } />          {/* Admin Routes */}
           <Route path="/admin" element={
             <AdminRoute>
@@ -97,10 +101,8 @@ function App() {
             <Route path="products" element={<ProductsManagement />} />
             <Route path="products/new" element={<ProductForm />} />
             <Route path="products/:id" element={<ProductForm />} />
-            <Route path="orders" element={<OrdersManagement />} />            <Route path="orders/:id" element={<OrderDetail />} />
-            <Route path="users" element={<UsersManagement />} />
+            <Route path="orders" element={<OrdersManagement />} />            <Route path="orders/:id" element={<OrderDetail />} />            <Route path="users" element={<UsersManagement />} />
             <Route path="cod-management" element={<CODManagement />} />
-            <Route path="gst-management" element={<GSTManagement />} />
           </Route>
         </Routes>      </main>
 

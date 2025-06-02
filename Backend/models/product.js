@@ -80,6 +80,12 @@ const productSchema = new mongoose.Schema({
       type: String
     }
   ],
+  gstRate: {
+    type: Number,
+    default: 18, // Default 18% GST
+    min: 0,
+    max: 28
+  },
   reviews: [
     {
       user: {

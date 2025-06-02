@@ -13,18 +13,52 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
     shippingPrice,
     totalPrice,
     paymentInfo,
-    paymentMethod = 'card'  } = req.body;
+    paymentMethod = 'card'
+  } = req.body;
+
+  // Calculate GST for each order item and create GST summary
+  const categoryWiseGst = new Map();
+  let totalGstAmount = 0;
+
+  // Fetch product details to get actual GST rates
+  const products = await Product.find({
+    _id: { $in: orderItems.map(item => item.product) }
+  });
+
+  const enrichedOrderItems = orderItems.map(item => {
+    const product = products.find(p => p._id.toString() === item.product.toString());
+    const gstRate = product.gstRate || 18; // Default 18% if not set
+    const gstAmount = (item.price * item.quantity * gstRate) / 100;
+    
+    // Accumulate category-wise GST
+    const currentCategoryGst = categoryWiseGst.get(product.category) || 0;
+    categoryWiseGst.set(product.category, currentCategoryGst + gstAmount);
+    totalGstAmount += gstAmount;
+
+    return {
+      ...item,
+      gstRate,
+      gstAmount
+    };
+  });
+  // Generate a unique invoice number
+  const invoiceNumber = `INV${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
   // Handle COD orders differently
   const orderData = {
-    orderItems,
+    orderItems: enrichedOrderItems,
     shippingInfo,
     itemsPrice,
     taxPrice,
     shippingPrice,
     totalPrice,
     paymentMethod,
-    user: req.user._id
+    user: req.user._id,
+    gstSummary: {
+      totalGstAmount,
+      categoryWiseGst: Object.fromEntries(categoryWiseGst),
+      invoiceNumber
+    }
   };
   if (paymentMethod === 'cod') {
     orderData.paymentInfo = {

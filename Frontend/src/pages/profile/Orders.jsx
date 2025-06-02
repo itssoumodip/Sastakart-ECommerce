@@ -360,7 +360,7 @@ const Orders = () => {
                         </div>
                         <div className="flex items-center mt-1">
                           <CreditCard className="h-4 w-4 text-gray-400 mr-1" />
-                          <span className="text-sm text-gray-500">Payment: {order.paymentInfo?.method || 'Card'}</span>
+                          <span className="text-sm text-gray-500">Payment: {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Card'}</span>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2">

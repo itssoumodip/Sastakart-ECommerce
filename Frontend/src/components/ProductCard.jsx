@@ -11,16 +11,16 @@ const ProductCard = forwardRef(({ product, index = 0 }, ref) => {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
   
-  const isWishlisted = isInWishlist(product._id);
-  const handleAddToCart = (e) => {
+  const isWishlisted = isInWishlist(product._id);  const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (product.stock === 0) {
+      toast.error('Product is out of stock');
+      return;
+    }
+
     try {
-      if (product.stock === 0) {
-        toast.error('Product is out of stock');
-        return;
-      }
-      
       addToCart({
         id: product._id,
         name: product.title,
@@ -32,7 +32,7 @@ const ProductCard = forwardRef(({ product, index = 0 }, ref) => {
       });
     } catch (error) {
       console.error('Cart error:', error);
-      toast.error('Failed to add to cart');
+      // Let CartContext handle the error toast
     }
   };
   

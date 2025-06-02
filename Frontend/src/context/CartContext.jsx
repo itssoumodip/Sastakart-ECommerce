@@ -1,5 +1,6 @@
-import { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
+import axios from 'axios'
 
 const CartContext = createContext()
 
@@ -72,11 +73,11 @@ export const CartProvider = ({ children }) => {
       }
     }
   }, [])
-
   // Save cart to localStorage whenever items change
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(state.items))
-  }, [state.items])
+    localStorage.setItem('cart', JSON.stringify(state.items));
+  }, [state.items]);
+
   const addToCart = (product, quantity = 1) => {
     // Handle both direct product objects and product data passed from ProductCard
     let cartItem;
@@ -98,59 +99,64 @@ export const CartProvider = ({ children }) => {
       // Raw product object from database
       if (product.stock < quantity) {
         toast.error('Not enough stock available')
-        return
-      }
-
+        return      }
+      
       cartItem = {
         id: product._id,
         name: product.title,
         price: product.discountPrice || product.price,
         image: (product.images && product.images[0]) || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
         stock: product.stock,
+        gstRate: product.gstRate || 18,
         quantity,
         brand: product.brand || '',
         selectedSize: product.selectedSize || '',
         selectedColor: product.selectedColor || ''
       };
-    }
-
-    dispatch({ type: 'ADD_TO_CART', payload: cartItem })
-    toast.success('Added to cart')
+    }    dispatch({ type: 'ADD_TO_CART', payload: cartItem });
+    toast.success(`${cartItem.name} added to cart`);
   }
-
   const removeFromCart = (id) => {
-    dispatch({ type: 'REMOVE_FROM_CART', payload: id })
-    toast.success('Removed from cart')
-  }
+    const item = state.items.find(item => item.id === id);
+    dispatch({ type: 'REMOVE_FROM_CART', payload: id });
+    toast.success(`${item?.name || 'Item'} removed from cart`);
+  };
 
   const updateQuantity = (id, quantity) => {
     if (quantity <= 0) {
-      removeFromCart(id)
-      return
+      removeFromCart(id);
+      return;
     }
 
-    const item = state.items.find(item => item.id === id)
+    const item = state.items.find(item => item.id === id);
     if (item && quantity > item.stock) {
-      toast.error('Not enough stock available')
-      return
-    }
-
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } })
+      toast.error(`Only ${item.stock} units available for ${item.name}`);
+      return;
+    }    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
   }
-
   const clearCart = () => {
-    dispatch({ type: 'CLEAR_CART' })
-    toast.success('Cart cleared')
-  }
-
+    dispatch({ type: 'CLEAR_CART' });
+    toast.success('Cart cleared');
+  };
   const getCartTotal = () => {
-    return state.items.reduce((total, item) => total + item.price * item.quantity, 0)
-  }
-
+    return state.items.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
   const getCartItemsCount = () => {
-    return state.items.reduce((total, item) => total + item.quantity, 0)
-  }
+    return state.items.reduce((total, item) => total + item.quantity, 0);
+  };
+  const getCartGstDetails = () => {
+    let totalGstAmount = 0;
 
+    state.items.forEach(item => {
+      const gstRate = item.gstRate || 18; // Use product's GST rate or default to 18%
+      const itemGstAmount = (item.price * item.quantity * gstRate) / 100;
+      totalGstAmount += itemGstAmount;
+    });
+
+    return {
+      totalGstAmount
+    };
+  };
   const value = {
     ...state,
     addToCart,
@@ -159,6 +165,7 @@ export const CartProvider = ({ children }) => {
     clearCart,
     getCartTotal,
     getCartItemsCount,
+    getCartGstDetails
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

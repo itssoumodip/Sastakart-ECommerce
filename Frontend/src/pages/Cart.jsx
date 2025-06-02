@@ -28,7 +28,8 @@ import {
   Trash2,
   Search,
   User,
-  Menu
+  Menu,
+  IndianRupee
 } from 'lucide-react';
 
 const Cart = () => {
@@ -61,7 +62,7 @@ const Cart = () => {
     if (promoCodes[upperPromo]) {
       setDiscount(promoCodes[upperPromo]);
       setAppliedPromo(upperPromo);
-      toast.success(`Promo code applied! ${promoCodes[upperPromo]}% off`);
+      toast.success(`${promoCodes[upperPromo]}% discount applied to your order`);
       setPromoCode('');
     } else {
       toast.error('Invalid promo code');
@@ -72,15 +73,15 @@ const Cart = () => {
     setDiscount(0);
     setAppliedPromo('');
     toast.success('Promo code removed');
-  };
-  const subtotal = getCartTotal();
+  };  const subtotal = getCartTotal();
+  const { totalGstAmount, categoryWiseGst } = useCart().getCartGstDetails();
   const discountAmount = (subtotal * discount) / 100;
   const shipping = subtotal > 3500 ? 0 : 299;
-  const total = subtotal - discountAmount + shipping;
+  const total = subtotal - discountAmount + shipping + totalGstAmount;
   
   const handleCheckout = () => {
     if (!cartItems || cartItems.length === 0) {
-      toast.error('Your cart is empty');
+      toast.error('Please add items to your cart before proceeding to checkout');
       return;
     }
     setIsLoading(true);
@@ -364,8 +365,7 @@ const Cart = () => {
                         <span className="font-medium">-₹{discountAmount.toFixed(2)}</span>
                       </motion.div>
                     )}
-                    
-                    <div className="flex justify-between text-gray-600 items-center py-1">
+                      <div className="flex justify-between text-gray-600 items-center py-1">
                       <span className="flex items-center gap-2">
                         <Truck className="w-4 h-4" />
                         Shipping
@@ -373,6 +373,15 @@ const Cart = () => {
                       <span className={`font-medium ${shipping === 0 ? 'text-green-600' : ''}`}>
                         {shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}
                       </span>
+                    </div>                    {/* GST Section */}
+                    <div className="border-t border-gray-100 pt-3">
+                      <div className="flex justify-between text-gray-600 items-center py-1">
+                        <span className="flex items-center gap-2">
+                          <IndianRupee className="w-4 h-4" />
+                          GST
+                        </span>
+                        <span className="font-medium">₹{totalGstAmount.toFixed(2)}</span>
+                      </div>
                     </div>
                     
                     <div className="border-t border-gray-100 pt-4 mt-2">
@@ -380,6 +389,7 @@ const Cart = () => {
                         <span>Total</span>
                         <span>₹{total.toFixed(2)}</span>
                       </div>
+                      <p className="text-xs text-gray-500 mt-1">Including GST & shipping charges</p>
                     </div>
                   </div>
 

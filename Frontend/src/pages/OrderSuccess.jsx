@@ -3,12 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { 
-  CheckCircle, 
-  Package, 
-  Mail, 
-  ArrowRight, 
-  Home, 
-  ShoppingBag, 
+  CheckCircle,
+  Package,
+  Mail,
+  ArrowRight,
+  Home,
+  ShoppingBag,
   Clock,
   Truck,
   Star,
@@ -141,12 +141,24 @@ const OrderSuccess = () => {
                       })}
                     </span>
                   </div>
-                  
-                  <div className="flex justify-between items-center py-3">
+                    <div className="flex justify-between items-center py-3">
                     <span className="text-gray-600 font-medium">Payment Status:</span>
-                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full">
-                      <CheckCircle className="w-4 h-4 mr-1" />
-                      Paid
+                    <span className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${
+                      location.state?.paymentMethod === 'cod' 
+                        ? 'bg-yellow-100 text-yellow-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {location.state?.paymentMethod === 'cod' ? (
+                        <>
+                          <Clock className="w-4 h-4 mr-1" />
+                          Cash on Delivery
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Paid
+                        </>
+                      )}
                     </span>
                   </div>
                 </div>              </motion.div>

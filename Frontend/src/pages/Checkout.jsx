@@ -72,18 +72,18 @@ const Checkout = () => {
       toast.error('Your cart is empty');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderPlaced]);
-  const subtotal = getCartTotal();
+  }, [orderPlaced]);  const subtotal = getCartTotal();
+  const { totalGstAmount, categoryWiseGst } = useCart().getCartGstDetails();
   const shipping = subtotal > 3500 ? 0 : 299;
-  const tax = subtotal * 0.18;
-  const total = subtotal + shipping + tax;
   const calculateTax = () => {
-    return subtotal * 0.18;
+    return totalGstAmount;
   };
 
   const calculateShipping = () => {
     return subtotal > 3500 ? 0 : 299;
-  };  const calculateTotal = () => {
+  };  
+  
+  const calculateTotal = () => {
     const codCharge = paymentMethod === 'cod' ? 50 : 0;
     return subtotal + calculateShipping() + calculateTax() + codCharge;
   };
@@ -106,7 +106,10 @@ const Checkout = () => {
     console.error('Payment error:', error);
     setPaymentError(error.message || error?.response?.data?.message || 'Payment processing failed');
     setLoading(false);
-    toast.error('Payment failed: ' + (error.message || 'Please try again'));
+    const errorMsg = error.message || error?.response?.data?.message;
+    if (!errorMsg?.includes('failed')) {
+      toast.error(`Payment failed: ${errorMsg || 'Please check your card details and try again'}`);
+    }
   };
 
   const handlePaymentSuccess = async (paymentData) => {
@@ -116,7 +119,7 @@ const Checkout = () => {
     try {
       const shippingData = shippingForm.getValues();
       await createOrder(shippingData, paymentData);
-      toast.success('Payment successful! Redirecting to order confirmation...');
+      toast.success('Order confirmed! Preparing your items for shipping...');
     } catch (error) {
       console.error('Order creation failed:', error);
       handlePaymentError(error);
@@ -137,7 +140,7 @@ const Checkout = () => {
         method: 'cod'
       };
       await createOrder(shippingData, codPaymentData);
-      toast.success('Order placed successfully! Redirecting to confirmation...');
+      toast.success('Your Cash on Delivery order has been placed successfully!');
     } catch (error) {
       console.error('COD order creation failed:', error);
       handlePaymentError(error);
@@ -636,8 +639,8 @@ const Checkout = () => {
             )}
           </span>
         </div>        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">GST (18%)</span>
-          <span className="font-medium">₹{tax.toFixed(2)}</span>
+          <span className="text-gray-600">GST</span>
+          <span className="font-medium">₹{totalGstAmount.toFixed(2)}</span>
         </div>
         
         {paymentMethod === 'cod' && (

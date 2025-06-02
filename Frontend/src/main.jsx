@@ -38,21 +38,38 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                   reverseOrder={false}
                   gutter={8}
                   containerClassName=""
-                  containerStyle={{}}
-                  toastOptions={{
+                  containerStyle={{}}                  toastOptions={{
                     // Default options for all toasts
-                    duration: 4000,
+                    duration: 3000,
                     style: {
                       background: '#363636',
                       color: '#fff',
+                      padding: '16px',
+                      borderRadius: '8px',
                     },
-                    // Prevent duplicate toasts
-                    id: (id) => id, // This helps in preventing duplicates
+                    // Custom ID function to prevent duplicates
+                    id: (message) => message,
+                    // Success toast styling
                     success: {
                       duration: 3000,
+                      style: {
+                        background: '#059669',
+                      },
+                      iconTheme: {
+                        primary: '#fff',
+                        secondary: '#059669',
+                      }
                     },
+                    // Error toast styling
                     error: {
                       duration: 4000,
+                      style: {
+                        background: '#DC2626',
+                      },
+                      iconTheme: {
+                        primary: '#fff',
+                        secondary: '#DC2626',
+                      }
                     }
                   }}
                 />

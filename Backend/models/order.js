@@ -54,6 +54,16 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Product'
+      },
+      gstRate: {
+        type: Number,
+        required: true,
+        default: 18
+      },
+      gstAmount: {
+        type: Number,
+        required: true,
+        default: 0
       }
     }
   ],  paymentInfo: {
@@ -138,7 +148,24 @@ const orderSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  gstSummary: {
+    totalGstAmount: {
+      type: Number,
+      required: true,
+      default: 0
+    },
+    categoryWiseGst: {
+      type: Map,
+      of: Number,
+      default: {}
+    },
+    invoiceNumber: {
+      type: String,
+      required: true,
+      unique: true
+    }
+  },
 });
 
 module.exports = mongoose.model('Order', orderSchema);

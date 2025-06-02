@@ -77,8 +77,7 @@ const ProductDetail = () => {  const { id } = useParams();
       return;
     }
     
-    try {
-      addToCart({
+    try {      addToCart({
         id: product._id,
         name: product.title,
         price: product.discountPrice || product.price,
@@ -89,8 +88,6 @@ const ProductDetail = () => {  const { id } = useParams();
         selectedSize,
         selectedColor
       });
-      
-      toast.success('Added to cart!');
     } catch (error) {
       console.error('Cart error:', error);
       toast.error('Failed to add to cart');

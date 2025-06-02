@@ -26,33 +26,13 @@ function GSTManagement() {
     exemptCategories: [],
     rates: {}
   });
-  const [gstReports, setGstReports] = useState([]);
-  const [analytics, setAnalytics] = useState({
+  const [gstReports, setGstReports] = useState([]);  const [analytics, setAnalytics] = useState({
     totalGstCollected: 0,
     monthlyGst: 0,
     yearlyGst: 0,
     exemptOrders: 0
   });
-  const [isEditMode, setIsEditMode] = useState(false);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { duration: 0.6, staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 }
-    }
-  };
-
-  const categoryGstRates = [
+  const [categoryGstRates, setCategoryGstRates] = useState([
     { category: 'Electronics', rate: 18, description: 'Smartphones, laptops, accessories' },
     { category: 'Clothing', rate: 5, description: 'Apparel under ₹1000' },
     { category: 'Books', rate: 0, description: 'Educational books and magazines' },
@@ -61,29 +41,76 @@ function GSTManagement() {
     { category: 'Home', rate: 18, description: 'Home appliances and furniture' },
     { category: 'Sports', rate: 18, description: 'Sports equipment and gear' },
     { category: 'Health', rate: 12, description: 'Health and wellness products' }
-  ];
+  ]);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { duration: 0.6, staggerChildren: 0.1 }
+    }
+  };  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  };
 
   useEffect(() => {
     fetchGSTData();
-  }, []);
-
-  const fetchGSTData = async () => {
+  }, []);  const fetchGSTData = async () => {
     try {
       setLoading(true);
-      
-      // Simulate API calls - replace with actual endpoints
-      const [settingsRes, reportsRes, analyticsRes] = await Promise.all([
-        // axios.get('/api/admin/gst/settings'),
-        // axios.get('/api/admin/gst/reports'),
-        // axios.get('/api/admin/gst/analytics')
-        Promise.resolve({ data: { success: true, settings: gstSettings } }),
-        Promise.resolve({ data: { success: true, reports: [] } }),
-        Promise.resolve({ data: { success: true, analytics: analytics } })
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      };
+
+      const [settingsRes, analyticsRes] = await Promise.all([
+        axios.get(`${baseUrl}/api/gst/settings`, {
+          withCredentials: true,
+          headers
+        }),
+        axios.get(`${baseUrl}/api/gst/analytics`, {
+          withCredentials: true,
+          headers
+        })
       ]);
 
-      setGstSettings(settingsRes.data.settings);
-      setGstReports(reportsRes.data.reports);
-      setAnalytics(analyticsRes.data.analytics);
+      if (settingsRes.data.success) {
+        setGstSettings(settingsRes.data.settings);
+        
+        // Update category GST rates from server data
+        const updatedRates = categoryGstRates.map(category => ({
+          ...category,
+          rate: settingsRes.data.settings.rates[category.category] || category.rate
+        }));
+        setCategoryGstRates(updatedRates);
+      }
+
+      if (analyticsRes.data.success) {
+        setAnalytics(analyticsRes.data.analytics);
+      }
+      
+      if (analyticsRes.data.success) {
+        setAnalytics(analyticsRes.data.analytics);
+      }
+      
+      // Update the category GST rates with the values from the server
+      if (settingsRes.data.settings.rates) {
+        setCategoryGstRates(prev => 
+          prev.map(item => ({
+            ...item,
+            rate: settingsRes.data.settings.rates[item.category] !== undefined
+              ? settingsRes.data.settings.rates[item.category]
+              : item.rate
+          }))
+        );
+      }
     } catch (error) {
       console.error('Error fetching GST data:', error);
       toast.error('Failed to load GST data');
@@ -91,9 +118,9 @@ function GSTManagement() {
       setLoading(false);
     }
   };
-
   const updateGSTRate = async (category, newRate) => {
     try {
+      // Update the local state immediately for a responsive UI
       const updatedSettings = {
         ...gstSettings,
         rates: {
@@ -101,12 +128,42 @@ function GSTManagement() {
           [category]: newRate
         }
       };
-      // await axios.put('/api/admin/gst/settings', updatedSettings);
       setGstSettings(updatedSettings);
-      toast.success(`GST rate updated for ${category}`);
+      
+      // Send API request to update in the backend
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/gst/settings`, 
+        { 
+          category, 
+          rate: newRate 
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      
+      if (response.data.success) {
+        toast.success(`GST rate updated for ${category}`);
+        
+        // Update categoryGstRates state to reflect the new rate
+        setCategoryGstRates(prev => 
+          prev.map(item => 
+            item.category === category ? { ...item, rate: newRate } : item
+          )
+        );
+      } else {
+        toast.error('Failed to update GST rate');
+      }
     } catch (error) {
       console.error('Error updating GST rate:', error);
-      toast.error('Failed to update GST rate');
+      toast.error(error.response?.data?.message || 'Failed to update GST rate');
+      
+      // Revert local state changes if API call fails
+      fetchGSTData();
     }
   };
 
