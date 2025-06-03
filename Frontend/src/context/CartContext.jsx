@@ -73,9 +73,12 @@ export const CartProvider = ({ children }) => {
       }
     }
   }, [])
-  // Save cart to localStorage whenever items change
+  // Save cart to localStorage whenever items change using debounce
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(state.items));
+    const saveTimeout = setTimeout(() => {
+      localStorage.setItem('cart', JSON.stringify(state.items));
+    }, 300); // 300ms debounce
+    return () => clearTimeout(saveTimeout);
   }, [state.items]);
 
   const addToCart = (product, quantity = 1) => {

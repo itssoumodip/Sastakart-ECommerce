@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://your-backend-domain.vercel.app/api/$1"
+      "destination": "https://sastakart-backend.vercel.app/api/$1"
     },
     {
       "source": "/((?!api).*)",

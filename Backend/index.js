@@ -19,11 +19,19 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['https://sastakart.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
+  origin: (origin, callback) => {
+    const allowedOrigins = ['https://sastakart.vercel.app', 'http://localhost:5173', 'http://localhost:3000'];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'stripe-signature'],
-  exposedHeaders: ['set-cookie']
+  exposedHeaders: ['set-cookie'],
+  maxAge: 86400 // Cache preflight requests for 24 hours
 }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));

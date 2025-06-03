@@ -68,12 +68,15 @@ export const AuthProvider = ({ children }) => {
     // Set base URL from environment variable and enable credentials
     axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
     axios.defaults.withCredentials = true
-      // Set Authorization header if token exists
+
+    // Set Authorization header if token exists
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       // Refresh cookie to extend expiration
       Cookies.set('token', token, { 
         path: '/',
+        sameSite: 'strict',
+        secure: true,
         expires: 7,
         secure: window.location.protocol === 'https:',
         sameSite: 'Lax'
