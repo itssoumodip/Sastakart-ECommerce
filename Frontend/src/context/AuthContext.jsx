@@ -77,8 +77,8 @@ export const AuthProvider = ({ children }) => {
     const initAuth = async () => {
       const token = Cookies.get('token')
       
-      // Set base URL from environment variable and enable credentials
-      axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+      // Set base URL and enable credentials
+      axios.defaults.baseURL = import.meta.env.VITE_API_URL
       axios.defaults.withCredentials = true
 
       // Set Authorization header if token exists
