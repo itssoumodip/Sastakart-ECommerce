@@ -25,7 +25,10 @@ export const toastConfig = {
       background: '#3b82f6',
       color: '#fff',
     },
-  }
+  },
+  // Prevent excessive re-renders with toasts
+  position: 'top-right',
+  id: (message) => message, // Prevent duplicates
 };
 
 // Toast message formatter to ensure consistency

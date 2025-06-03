@@ -21,33 +21,28 @@ const queryClient = new QueryClient({
 })
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter 
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true
-      }}
-    >
-      <HelmetProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <App />
-                <Toaster
-                  position="top-right"
-                  reverseOrder={false}
-                  gutter={8}
-                  toastOptions={{
-                    ...toastConfig,
-                    id: (message) => formatToastMessage(message), // Prevent duplicates and remove emojis
-                  }}
-                />
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
-        </QueryClientProvider>
-      </HelmetProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
+  <BrowserRouter 
+    future={{
+      v7_startTransition: true,
+      v7_relativeSplatPath: true
+    }}
+  >
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <App />
+              <Toaster
+                position="top-right"
+                reverseOrder={false}
+                gutter={8}
+                toastOptions={toastConfig}
+              />
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
+  </BrowserRouter>
 )

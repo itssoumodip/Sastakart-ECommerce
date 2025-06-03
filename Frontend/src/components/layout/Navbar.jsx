@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
@@ -6,7 +6,7 @@ import { useCart } from '../../context/CartContext'
 import { useWishlist } from '../../context/WishlistContext'
 import { Search, ShoppingCart, User, Menu, X, LogOut, Package, Settings, Heart } from 'lucide-react'
 
-const Navbar = () => {
+const NavbarComponent = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -16,15 +16,26 @@ const Navbar = () => {
   const { getWishlistCount } = useWishlist()
   const navigate = useNavigate()
   const location = useLocation()
-
-  // Handle scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
+  // Handle scroll effect with useRef to avoid dependency issues
+  const isScrolledRef = useCallback((prevIsScrolled) => {
+    const shouldBeScrolled = window.scrollY > 10;
+    if (prevIsScrolled !== shouldBeScrolled) {
+      setIsScrolled(shouldBeScrolled);
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    return shouldBeScrolled;
+  }, []);
+  
+  useEffect(() => {
+    let scrolled = isScrolled;
+    
+    const handleScroll = () => {
+      scrolled = isScrolledRef(scrolled);
+    };
+    
+    // Use passive listener for better performance
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isScrolledRef])
 
   // Close menus on route change
   useEffect(() => {
@@ -304,9 +315,14 @@ const Navbar = () => {
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
-    </nav>
+      </AnimatePresence>    </nav>
   )
 }
 
-export default Navbar
+// Memoize the component with proper configuration
+const Navbar = memo(NavbarComponent, (prevProps, nextProps) => {
+  // No props to compare since this is a top-level component
+  return false;  // Always re-render when context changes
+});
+
+export default Navbar;

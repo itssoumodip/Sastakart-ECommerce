@@ -61,7 +61,7 @@ const initialState = {
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
-    // Configure axios defaults
+  // Configure axios defaults
   useEffect(() => {
     const token = Cookies.get('token')
     
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
       delete axios.defaults.headers.common['Authorization']
       Cookies.remove('token', { path: '/' })
     }
-  }, [state.isAuthenticated]) // Re-run when auth state changes
+  }, []) // Run only once on component mount
 
   // Load user on app start
   useEffect(() => {
