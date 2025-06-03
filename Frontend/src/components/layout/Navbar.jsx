@@ -6,73 +6,127 @@ import { useCart } from '../../context/CartContext'
 import { useWishlist } from '../../context/WishlistContext'
 import { Search, ShoppingCart, User, Menu, X, LogOut, Package, Settings, Heart } from 'lucide-react'
 
-const NavbarComponent = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isScrolled, setIsScrolled] = useState(false)
-  const { user, isAuthenticated, logout } = useAuth()
-  const { getCartItemsCount } = useCart()
-  const { getWishlistCount } = useWishlist()
-  const navigate = useNavigate()
-  const location = useLocation()
-  
-  // Use refs to avoid re-renders and track scroll state without triggering updates
-  const scrollRef = useRef({
-    prevScrollY: 0,
-    ticking: false,
-    isScrolled: false,
-    lastUpdate: 0
-  });
-  
-  // Memoize cart and wishlist counts to prevent re-renders
-  const cartCount = useRef(getCartItemsCount());
-  const wishlistCount = useRef(getWishlistCount());
-  
-  // Throttle scroll handler to reduce processing
-  useEffect(() => {
+// Completely isolate scroll logic in vanilla JS outside of React rendering cycle
+// This runs once during initial page load and won't be affected by React re-renders
+(() => {
+  if (typeof window !== 'undefined' && !window.__navbarScrollHandlerAttached) {
+    let isScrolled = false;
+    let ticking = false;
+    let lastUpdate = 0;
+    
     const handleScroll = () => {
-      // Skip if we've updated recently (throttle to max once per 100ms)
       const now = Date.now();
-      if (now - scrollRef.current.lastUpdate < 100) return;
+      // Only update max once per 500ms - extremely aggressive throttling for Vercel
+      if (now - lastUpdate < 500) return;
       
-      scrollRef.current.prevScrollY = window.scrollY;
-      
-      if (!scrollRef.current.ticking) {
-        // Use setTimeout instead of requestAnimationFrame for more control
+      if (!ticking) {
+        ticking = true;
         setTimeout(() => {
-          const shouldBeScrolled = scrollRef.current.prevScrollY > 10;
+          const shouldBeScrolled = window.scrollY > 10;
           
-          if (shouldBeScrolled !== scrollRef.current.isScrolled) {
-            scrollRef.current.isScrolled = shouldBeScrolled;
-            setIsScrolled(shouldBeScrolled);
-            scrollRef.current.lastUpdate = Date.now();
+          if (shouldBeScrolled !== isScrolled) {
+            isScrolled = shouldBeScrolled;
+            
+            // Use DOM directly, bypassing React entirely
+            const navbar = document.getElementById('main-navbar');
+            if (navbar) {
+              if (isScrolled) {
+                navbar.classList.add('scrolled');
+                navbar.classList.add('bg-white');
+                navbar.classList.add('shadow-md');
+                navbar.classList.add('border-b');
+                navbar.classList.add('border-gray-200');
+                navbar.classList.remove('bg-white/95');
+                navbar.classList.remove('backdrop-blur-sm');
+              } else {
+                navbar.classList.remove('scrolled');
+                navbar.classList.remove('bg-white');
+                navbar.classList.remove('shadow-md');
+                navbar.classList.remove('border-b');
+                navbar.classList.remove('border-gray-200');
+                navbar.classList.add('bg-white/95');
+                navbar.classList.add('backdrop-blur-sm');
+              }
+            }
+            
+            lastUpdate = now;
           }
           
-          scrollRef.current.ticking = false;
-        }, 20); // Short timeout for quick response but not too frequent
-        
-        scrollRef.current.ticking = true;
+          ticking = false;
+        }, 150);
       }
     };
     
+    // Flag to ensure we only attach once
+    window.__navbarScrollHandlerAttached = true;
     window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    // Update cart/wishlist counts periodically rather than on every render
-    const updateCounts = () => {
-      cartCount.current = getCartItemsCount();
-      wishlistCount.current = getWishlistCount();
-    };
-    
-    const countInterval = setInterval(updateCounts, 2000);
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearInterval(countInterval);
-    };
-  }, []);
+  }
+})();
+
+// Minimal navbar component with minimal state
+const NavbarComponent = () => {
+  // Reduce state variables to absolute minimum
+  const [searchQuery, setSearchQuery] = useState('');
+  const [menus, setMenus] = useState({
+    main: false,
+    user: false
+  });
   
-  // Memoize handlers to prevent recreation on renders
+  const { user, isAuthenticated, logout } = useAuth();
+  const { getCartItemsCount } = useCart();
+  const { getWishlistCount } = useWishlist();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Store counts in refs to avoid re-renders
+  const countsRef = useRef({
+    cart: getCartItemsCount(),
+    wishlist: getWishlistCount()
+  });
+  
+  // Update counts without triggering re-renders
+  useEffect(() => {
+    const updateCounts = () => {
+      // Update internal ref
+      countsRef.current = {
+        cart: getCartItemsCount(),
+        wishlist: getWishlistCount()
+      };
+      
+      // Direct DOM updates bypassing React
+      document.querySelectorAll('.cart-count').forEach(el => {
+        el.textContent = countsRef.current.cart;
+        if (countsRef.current.cart > 0) {
+          el.style.display = 'flex';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+      
+      document.querySelectorAll('.wishlist-count').forEach(el => {
+        el.textContent = countsRef.current.wishlist;
+        if (countsRef.current.wishlist > 0) {
+          el.style.display = 'flex';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    };
+    
+    // Initial update without re-render
+    updateCounts();
+    
+    // Set very infrequent updates for production
+    const interval = setInterval(updateCounts, 5000);
+    return () => clearInterval(interval);
+  }, [getCartItemsCount, getWishlistCount]);
+  
+  // Reset menus on route change
+  useEffect(() => {
+    setMenus({main: false, user: false});
+  }, [location.pathname]);
+  
+  // Basic handlers
   const handleSearch = useCallback((e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -83,43 +137,35 @@ const NavbarComponent = () => {
   
   const handleLogout = useCallback(() => {
     logout();
-    setIsUserMenuOpen(false);
+    setMenus(prev => ({...prev, user: false}));
     navigate('/');
   }, [logout, navigate]);
   
+  // Simplified toggle handlers
   const toggleMenu = useCallback(() => {
-    setIsMenuOpen(prev => !prev);
+    setMenus(prev => ({...prev, main: !prev.main}));
   }, []);
   
   const toggleUserMenu = useCallback(() => {
-    setIsUserMenuOpen(prev => !prev);
+    setMenus(prev => ({...prev, user: !prev.user}));
   }, []);
   
-  // Close menus on route change
-  useEffect(() => {
-    setIsMenuOpen(false)
-    setIsUserMenuOpen(false)
-  }, [location])
-
   return (
-    <nav className={`sticky top-0 left-0 right-0 z-40 transition-all duration-300 ${
-      scrollRef.current.isScrolled
-        ? 'bg-white shadow-md border-b border-gray-200' 
-        : 'bg-white/95 backdrop-blur-sm'
-    }`}>
+    <nav id="main-navbar" className="sticky top-0 left-0 right-0 z-40 transition-all duration-300 bg-white/95 backdrop-blur-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}          <motion.div
+          {/* Logo */}
+          <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="flex-shrink-0"
-          >            <Link 
-              to="/" 
-              className="text-xl lg:text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors duration-200"
-            >
+          >
+            <Link to="/" className="text-xl lg:text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors duration-200">
               <span className="font-medium">SastaKart</span>
             </Link>
-          </motion.div>          {/* Search Bar - Desktop */}
+          </motion.div>
+          
+          {/* Search Bar - Desktop */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-8">
             <div className="relative w-full">
               <input
@@ -131,35 +177,31 @@ const NavbarComponent = () => {
               />
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
-          </form>{/* Desktop Navigation */}          <div className="hidden lg:flex items-center space-x-8">            <Link to="/products" className="nav-link">
-              Products
-            </Link>
+          </form>
+          
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-8">
+            <Link to="/products" className="nav-link">Products</Link>
+            
             {/* Wishlist */}
-            <Link 
-              to="/wishlist" 
-              className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
-            >
+            <Link to="/wishlist" className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200">
               <div className="relative">
                 <Heart className="h-6 w-6" />
-                {wishlistCount.current > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-sm">
-                    {wishlistCount.current}
-                  </span>
-                )}
+                <span className="wishlist-count absolute -top-1.5 -right-1.5 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-sm"
+                     style={{display: countsRef.current.wishlist > 0 ? 'flex' : 'none'}}>
+                  {countsRef.current.wishlist}
+                </span>
               </div>
             </Link>
-              {/* Cart */}
-            <Link 
-              to="/cart" 
-              className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
-            >
+            
+            {/* Cart */}
+            <Link to="/cart" className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200">
               <div className="relative">
                 <ShoppingCart className="h-6 w-6" />
-                {cartCount.current > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-sm">
-                    {cartCount.current}
-                  </span>
-                )}
+                <span className="cart-count absolute -top-1.5 -right-1.5 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-sm"
+                     style={{display: countsRef.current.cart > 0 ? 'flex' : 'none'}}>
+                  {countsRef.current.cart}
+                </span>
               </div>
             </Link>
 
@@ -175,7 +217,7 @@ const NavbarComponent = () => {
                   </div>
                   <span className="hidden xl:block text-sm font-medium">{user?.name}</span>
                 </button>                <AnimatePresence>
-                  {isUserMenuOpen && (
+                  {menus.user && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -236,7 +278,7 @@ const NavbarComponent = () => {
               </div>
             )}
           </div>
-
+          
           {/* Mobile menu button */}
           <div className="lg:hidden flex items-center space-x-4">
             <Link 
@@ -244,9 +286,9 @@ const NavbarComponent = () => {
               className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors duration-200"
             >
               <ShoppingCart className="h-6 w-6" />
-              {cartCount.current > 0 && (
+              {countsRef.current.cart > 0 && (
                 <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {cartCount.current}
+                  {countsRef.current.cart}
                 </span>
               )}
             </Link>
@@ -255,11 +297,11 @@ const NavbarComponent = () => {
               onClick={toggleMenu}
               className="p-2 text-gray-700 hover:text-gray-900 transition-colors duration-200"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {menus.main ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
-
+        
         {/* Mobile Search */}
         <div className="md:hidden pb-4">
           <form onSubmit={handleSearch} className="relative">
@@ -274,10 +316,10 @@ const NavbarComponent = () => {
           </form>
         </div>
       </div>
-
+      
       {/* Mobile Menu */}
       <AnimatePresence>
-        {isMenuOpen && (
+        {menus.main && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -297,9 +339,9 @@ const NavbarComponent = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <span>Wishlist</span>
-                {wishlistCount.current > 0 && (
+                {countsRef.current.wishlist > 0 && (
                   <span className="ml-2 bg-amber-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                    {wishlistCount.current}
+                    {countsRef.current.wishlist}
                   </span>
                 )}
               </Link>
@@ -361,11 +403,12 @@ const NavbarComponent = () => {
             </div>
           </motion.div>
         )}
-      </AnimatePresence>    </nav>
-  )
-}
+      </AnimatePresence>
+    </nav>
+  );
+};
 
-// Improve memoization with a better comparison
-const Navbar = memo(NavbarComponent, () => true); // Force component to only update when props/state actually change
+// Extreme stabilization with pure component
+const StableNavbar = memo(NavbarComponent, () => true);
 
-export default Navbar;
+export default StableNavbar;

@@ -32,5 +32,13 @@
         }
       ]
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "MINIMIZE_MAIN_BUNDLE": "true"
+    }
+  },
+  "github": {
+    "silent": true
+  }
 }
