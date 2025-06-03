@@ -206,7 +206,7 @@ export const AuthProvider = ({ children }) => {
       Cookies.remove('token', { 
         path: '/',
         secure: window.location.protocol === 'https:',
-        sameSite: 'Lax'
+        sameSite: 'Lax' 
       })
       localStorage.removeItem('user')
       delete axios.defaults.headers.common['Authorization']
