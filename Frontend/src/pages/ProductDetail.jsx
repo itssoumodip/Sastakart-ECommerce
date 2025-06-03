@@ -139,7 +139,7 @@ const ProductDetail = () => {  const { id } = useParams();
       const reviewData = {
         rating: reviewInput.rating,
         comment: reviewInput.comment,
-        productId: id
+        productId: id 
       };
         const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/products/review`, reviewData, config);
       
