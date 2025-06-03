@@ -18,41 +18,41 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const slides = [
-    {
-      image: "https://images.unsplash.com/photo-1618886614638-80e3c103d31a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-      alt: "Fashion model in black suit"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-      alt: "Fashion model shopping"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-      alt: "Luxury shopping experience"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-      alt: "Premium fashion collection"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-      alt: "Fashion model in formal wear"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-      alt: "Elegant shopping environment"
-    },
+  // const slides = [
+  //   {
+  //     image: "https://images.unsplash.com/photo-1618886614638-80e3c103d31a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+  //     alt: "Fashion model in black suit"
+  //   },
+  //   {
+  //     image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+  //     alt: "Fashion model shopping"
+  //   },
+  //   {
+  //     image: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+  //     alt: "Luxury shopping experience"
+  //   },
+  //   {
+  //     image: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+  //     alt: "Premium fashion collection"
+  //   },
+  //   {
+  //     image: "https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+  //     alt: "Fashion model in formal wear"
+  //   },
+  //   {
+  //     image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+  //     alt: "Elegant shopping environment"
+  //   },
 
-    {
-      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-      alt: "Smart watch collection"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-      alt: "Modern interior design products"
-    }
-  ];
+  //   {
+  //     image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+  //     alt: "Smart watch collection"
+  //   },
+  //   {
+  //     image: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+  //     alt: "Modern interior design products"
+  //   }
+  // ];
 
   useEffect(() => {
     const timer = setInterval(() => {
