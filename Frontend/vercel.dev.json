@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://your-backend-domain.vercel.app/api/$1"
+      "destination": "http://localhost:5000/api/$1"
     },
     {
       "source": "/((?!api).*)",
@@ -34,7 +34,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
     }
