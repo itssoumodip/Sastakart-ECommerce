@@ -50,7 +50,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-
+ 
 // Database connection with improved configuration
 const connectDB = async () => {
   try {
