@@ -33,13 +33,11 @@ const Login = () => {
       navigate(from, { replace: true })
     }
   }, [isAuthenticated, navigate, from])
-
   const onSubmit = async (data) => {
     try {
       setIsLoading(true)
       const result = await login(data.email, data.password)
       if (result.success) {
-        toast.success('Welcome back! 🎉')
         navigate(from, { replace: true })
       }
     } catch (error) {

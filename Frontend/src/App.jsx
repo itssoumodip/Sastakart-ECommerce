@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Outlet } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 
 // Layout Components
@@ -37,62 +37,65 @@ import CODManagement from './pages/admin/CODManagement'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import ScrollToTop from './components/ScrollToTop'
+import LoadingSpinner from './components/common/LoadingSpinner'
 
 function App() {
   const { loading } = useAuth()
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-black"></div>
-      </div>
-    )
+    return <LoadingSpinner size="lg" label="Loading..." fullScreen />
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <ScrollToTop />
-      <Navbar />
-      <PageLayout>
-        <main className="flex-grow">
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/wishlist" element={<Wishlist />} />
+    <Routes>
+      {/* Admin Routes - Separate layout without main Navbar/Footer */}
+      <Route element={<AdminRoute />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="products" element={<ProductsManagement />} />
+          <Route path="products/new" element={<ProductForm />} />
+          <Route path="products/edit/:id" element={<ProductForm />} />
+          <Route path="orders" element={<OrdersManagement />} />
+          <Route path="orders/:id" element={<OrderDetail />} />
+          <Route path="users" element={<UsersManagement />} />
+          <Route path="cod" element={<CODManagement />} />
+        </Route>
+      </Route>
 
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/order-success" element={<OrderSuccess />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/profile/orders" element={<Orders />} />
-            </Route>
+      {/* Non-Admin Routes - With main Navbar/Footer */}
+      <Route
+        element={
+          <div className="min-h-screen flex flex-col bg-white">
+            <ScrollToTop />
+            <Navbar />
+            <PageLayout>
+              <main className="flex-grow">
+                <Outlet />
+              </main>
+            </PageLayout>
+            <Footer />
+          </div>
+        }
+      >
+        {/* Public Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/wishlist" element={<Wishlist />} />
 
-            {/* Admin Routes */}
-            <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="products" element={<ProductsManagement />} />
-                <Route path="products/new" element={<ProductForm />} />
-                <Route path="products/edit/:id" element={<ProductForm />} />
-                <Route path="orders" element={<OrdersManagement />} />
-                <Route path="orders/:id" element={<OrderDetail />} />
-                <Route path="users" element={<UsersManagement />} />
-                <Route path="cod" element={<CODManagement />} />
-              </Route>
-            </Route>
-          </Routes>
-        </main>
-      </PageLayout>
-      <Footer />
-    </div>
+        {/* Protected User Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/orders" element={<Orders />} />
+        </Route>
+      </Route>
+    </Routes>
   )
 }
 
