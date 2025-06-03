@@ -1,16 +1,13 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-const AdminRoute = ({ children }) => {
+const AdminRoute = () => {
   const { user, isAuthenticated, loading } = useAuth()
   const location = useLocation()
 
+  // Only show loading on initial auth check
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
-      </div>
-    )
+    return null // Let the main layout handle loading state
   }
 
   if (!isAuthenticated) {
@@ -21,7 +18,7 @@ const AdminRoute = ({ children }) => {
     return <Navigate to="/" replace />
   }
 
-  return children
+  return <Outlet />
 }
 
 export default AdminRoute

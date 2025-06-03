@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { CreditCard, AlertTriangle } from 'lucide-react';
 import StripeProvider from './StripeProvider';
 import StripePaymentForm from './StripePaymentForm';
+
+const LoadingPaymentForm = () => (
+  <div className="animate-pulse">
+    <div className="h-10 bg-gray-200 rounded mb-4"></div>
+    <div className="h-40 bg-gray-200 rounded"></div>
+  </div>
+);
 
 const CheckoutPayment = ({ 
   paymentMethod, 
@@ -29,45 +36,60 @@ const CheckoutPayment = ({
               value="card"
               checked={paymentMethod === 'card'}
               onChange={(e) => setPaymentMethod(e.target.value)}
-              className="sr-only"
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
             />
-            <div className={`w-4 h-4 border-2 rounded-full mr-3 ${
-              paymentMethod === 'card' ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
-            }`}>
-              {paymentMethod === 'card' && (
-                <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1"></div>
-              )}
+            <div className="ml-3">
+              <span className="flex items-center text-sm font-medium text-gray-900">
+                <CreditCard className="w-5 h-5 mr-2" />
+                Credit/Debit Card
+              </span>
             </div>
-            <CreditCard className="w-5 h-5 mr-3 text-gray-600" />
-            <span className="font-medium">Credit Card</span>
+          </label>
+          
+          <label className="relative flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="cod"
+              checked={paymentMethod === 'cod'}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+            />
+            <div className="ml-3">
+              <span className="flex items-center text-sm font-medium text-gray-900">
+                Cash on Delivery (COD)
+              </span>
+            </div>
           </label>
         </div>
       </div>
 
-      {/* Payment Error Display */}
+      {/* Payment Form */}
+      {paymentMethod === 'card' && (
+        <Suspense fallback={<LoadingPaymentForm />}>
+          <StripeProvider>
+            <StripePaymentForm
+              amount={calculateTotal() * 100} // Convert to cents
+              onPaymentSuccess={handlePaymentSuccess}
+              onPaymentError={handlePaymentError}
+              metadata={{
+                shipping_name: shippingData?.name,
+                shipping_email: shippingData?.email,
+              }}
+            />
+          </StripeProvider>
+        </Suspense>
+      )}
+
+      {/* Error Display */}
       {paymentError && (
-        <div className="mb-6 bg-red-50 border border-red-200 p-4 rounded-lg">
-          <div className="flex">
+        <div className="mt-4 p-4 bg-red-50 rounded-md">
+          <div className="flex items-center">
             <AlertTriangle className="h-5 w-5 text-red-400 mr-2" />
-            <p className="text-sm text-red-600">{paymentError}</p>
+            <p className="text-sm text-red-700">{paymentError}</p>
           </div>
         </div>
       )}
-
-      {/* Stripe Payment Form */}
-      <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-        <StripeProvider>
-          <StripePaymentForm 
-            amount={calculateTotal()} 
-            onPaymentSuccess={handlePaymentSuccess}
-            onPaymentError={handlePaymentError}
-            metadata={{
-              customerEmail: shippingData.email,
-              customerName: `${shippingData.firstName} ${shippingData.lastName}`
-            }}
-          />
-        </StripeProvider>
-      </div>
     </div>
   );
 };

@@ -89,7 +89,7 @@ const Home = () => {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="bg-white h-[90vh] overflow-hidden relative">
+      <section className="bg-white h-screen overflow-hidden relative">
         {/* Slides */}
         <div className="absolute inset-0">
           {slides.map((slide, index) => (
@@ -111,7 +111,7 @@ const Home = () => {
 
         {/* Content - Positioned at bottom left */}
         <div className="absolute bottom-16 left-8 md:left-12 lg:left-16 max-w-xl">
-          <div className="md:px-9 lg:px-12 py-8">
+          <div className="md:px-9 lg:px-12 py-28">
             <h1 
               className="text-4xl md:text-5xl lg:text-6xl font-light text-white"
               style={textShadowStyle}

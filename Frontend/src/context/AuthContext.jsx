@@ -15,6 +15,7 @@ const authReducer = (state, action) => {
       return {
         ...state,
         loading: true,
+        error: null
       }
     case 'LOGIN_SUCCESS':
     case 'REGISTER_SUCCESS':
@@ -24,10 +25,10 @@ const authReducer = (state, action) => {
         loading: false,
         isAuthenticated: true,
         user: action.payload,
+        error: null
       }
     case 'LOGIN_FAIL':
     case 'REGISTER_FAIL':
-    case 'LOAD_USER_FAIL':
       return {
         ...state,
         loading: false,
@@ -35,12 +36,21 @@ const authReducer = (state, action) => {
         user: null,
         error: action.payload,
       }
+    case 'LOAD_USER_FAIL':
+      return {
+        ...state,
+        loading: false,
+        isAuthenticated: false,
+        user: null,
+        error: null // Don't show error for load user fail
+      }
     case 'LOGOUT_SUCCESS':
       return {
         ...state,
         loading: false,
         isAuthenticated: false,
         user: null,
+        error: null
       }
     case 'CLEAR_ERRORS':
       return {
@@ -55,76 +65,59 @@ const authReducer = (state, action) => {
 const initialState = {
   user: null,
   isAuthenticated: false,
-  loading: true,
+  loading: true,  // Set initial loading to true
   error: null,
 }
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
+
   // Configure axios defaults
   useEffect(() => {
-    const token = Cookies.get('token')
-    
-    // Set base URL from environment variable and enable credentials
-    axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-    axios.defaults.withCredentials = true
+    const initAuth = async () => {
+      const token = Cookies.get('token')
+      
+      // Set base URL from environment variable and enable credentials
+      axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+      axios.defaults.withCredentials = true
 
-    // Set Authorization header if token exists
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      // Refresh cookie to extend expiration
-      Cookies.set('token', token, { 
-        path: '/',
-        sameSite: 'strict',
-        secure: true,
-        expires: 7,
-        secure: window.location.protocol === 'https:',
-        sameSite: 'Lax'
-      })
-    } else {
-      delete axios.defaults.headers.common['Authorization']
-      Cookies.remove('token', { path: '/' })
+      // Set Authorization header if token exists
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        // Load user data if token exists
+        await loadUser()
+      } else {
+        dispatch({ type: 'LOAD_USER_FAIL' })
+      }
     }
+
+    initAuth()
   }, []) // Run only once on component mount
 
-  // Load user on app start
-  useEffect(() => {
-    loadUser()
-  }, [])
   const loadUser = async () => {
     try {
       dispatch({ type: 'LOAD_USER_REQUEST' })
       
       const { data } = await axios.get(API_ENDPOINTS.ME)
       
-      // Store user data in localStorage for persistence
       if (data.user) {
         localStorage.setItem('user', JSON.stringify(data.user))
+        dispatch({
+          type: 'LOAD_USER_SUCCESS',
+          payload: data.user,
+        })
+      } else {
+        throw new Error('No user data received')
       }
-      
-      dispatch({
-        type: 'LOAD_USER_SUCCESS',
-        payload: data.user,
-      })
     } catch (error) {
-      // Try to load user from localStorage if API call fails
-      const savedUser = localStorage.getItem('user')
-      if (savedUser) {
-        try {
-          const userData = JSON.parse(savedUser)
-          dispatch({
-            type: 'LOAD_USER_SUCCESS',
-            payload: userData,
-          })
-          return
-        } catch (parseError) {
-          localStorage.removeItem('user')
-        }
+      // Clear token if it's an authentication error
+      if (error.response?.status === 401) {
+        Cookies.remove('token', { path: '/' })
+        localStorage.removeItem('user')
       }
       
       dispatch({
         type: 'LOAD_USER_FAIL',
-        payload: error.response?.data?.message || 'Something went wrong',
       })
     }
   }

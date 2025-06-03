@@ -6,8 +6,6 @@ import { useCart } from '../../context/CartContext'
 import { useWishlist } from '../../context/WishlistContext'
 import { Search, ShoppingCart, User, Menu, X, LogOut, Package, Settings, Heart } from 'lucide-react'
 
-// Completely isolate scroll logic in vanilla JS outside of React rendering cycle
-// This runs once during initial page load and won't be affected by React re-renders
 (() => {
   if (typeof window !== 'undefined' && !window.__navbarScrollHandlerAttached) {
     let isScrolled = false;
@@ -302,19 +300,7 @@ const NavbarComponent = () => {
           </div>
         </div>
         
-        {/* Mobile Search */}
-        <div className="md:hidden pb-4">
-          <form onSubmit={handleSearch} className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search products..."
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
-            />
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          </form>
-        </div>
+       
       </div>
       
       {/* Mobile Menu */}
