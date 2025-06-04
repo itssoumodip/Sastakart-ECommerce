@@ -80,39 +80,53 @@ export const CartProvider = ({ children }) => {
     }, 300); // 300ms debounce
     return () => clearTimeout(saveTimeout);
   }, [state.items]);
-
   const addToCart = (product, quantity = 1) => {
     // Handle both direct product objects and product data passed from ProductCard
     let cartItem;
       if (product.id && product.name && product.price) {
+      // Validate price to ensure it's a proper number
+      const validatedPrice = parseFloat(product.price);
+      if (isNaN(validatedPrice) || validatedPrice <= 0) {
+        toast.error('Invalid product price', toastConfig.error);
+        return;
+      }
+      
       // Data already formatted from ProductCard
       cartItem = {
         id: product.id,
         name: product.name,
-        price: product.price,
+        price: validatedPrice,
         image: product.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
-        stock: product.stock || 99,
-        quantity: product.quantity || quantity,
+        stock: parseInt(product.stock) || 99,
+        quantity: parseInt(product.quantity || quantity) || 1,
         brand: product.brand || '',
         category: product.category || '',
         subcategory: product.subcategory || '',
         productType: product.productType || '',
         selectedSize: product.selectedSize || '',
         selectedColor: product.selectedColor || ''
-      };
-    } else {
+      };    } else {
       // Raw product object from database
       if (product.stock < quantity) {
         toast.error('Not enough stock available')
-        return      }
-        cartItem = {
+        return
+      }
+      
+      // Validate price
+      const validatedPrice = parseFloat(product.discountPrice || product.price);
+      if (isNaN(validatedPrice) || validatedPrice <= 0) {
+        toast.error('Invalid product price', toastConfig.error);
+        return;
+      }
+      
+      cartItem = {
         id: product._id,
         name: product.title,
-        price: product.discountPrice || product.price,
+        price: validatedPrice,
         image: (product.images && product.images[0]) || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
-        stock: product.stock,
-        gstRate: product.gstRate || 18,
-        quantity,
+        stock: parseInt(product.stock) || 0,
+        gstRate: parseFloat(product.gstRate) || 18,
+        quantity: parseInt(quantity) || 1,
         brand: product.brand || '',
         category: product.category || '',
         subcategory: product.subcategory || '',
@@ -149,24 +163,44 @@ export const CartProvider = ({ children }) => {
     } else {
       toast.success('Cart cleared', toastConfig.success);
     }
-  };
-  const getCartTotal = () => {
-    return state.items.reduce((total, item) => total + item.price * item.quantity, 0);
+  };  const getCartTotal = () => {
+    // Ensure all price calculations are valid numbers and properly formatted
+    return parseFloat(
+      state.items.reduce((total, item) => {
+        const price = parseFloat(item.price) || 0;
+        const quantity = parseInt(item.quantity) || 0;
+        return total + (price * quantity);
+      }, 0).toFixed(2)
+    );
   };
   const getCartItemsCount = () => {
     return state.items.reduce((total, item) => total + item.quantity, 0);
-  };
-  const getCartGstDetails = () => {
+  };  const getCartGstDetails = () => {
     let totalGstAmount = 0;
+    const categoryWiseGst = {};
 
     state.items.forEach(item => {
-      const gstRate = item.gstRate || 18; // Use product's GST rate or default to 18%
-      const itemGstAmount = (item.price * item.quantity * gstRate) / 100;
-      totalGstAmount += itemGstAmount;
+      // Use product's GST rate or default to 18% if not specified
+      const gstRate = item.gstRate || 18; 
+      
+      // Calculate GST amount with proper validation
+      const itemPrice = parseFloat(item.price) || 0;
+      const quantity = parseInt(item.quantity) || 0;
+      
+      if (itemPrice > 0 && quantity > 0) {
+        const itemGstAmount = (itemPrice * quantity * gstRate) / 100;
+        totalGstAmount += itemGstAmount;
+        
+        // Track GST by category if needed
+        if (item.category) {
+          categoryWiseGst[item.category] = (categoryWiseGst[item.category] || 0) + itemGstAmount;
+        }
+      }
     });
 
     return {
-      totalGstAmount
+      totalGstAmount: parseFloat(totalGstAmount.toFixed(2)),
+      categoryWiseGst
     };
   };
   const value = {

@@ -89,18 +89,6 @@ const Login = () => {
                 <img src={googleIcon} alt="Google" className="w-5 h-5" />
                 <span className="text-sm">Sign up with Google</span>
               </button>
-              
-              <button 
-                className="flex-1 border border-gray-300 rounded-md py-3 flex justify-center items-center gap-2 hover:bg-gray-50 transition-all"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#EA4335" d="M12 5c1.617 0 3.101.554 4.286 1.474l3.637-3.47C17.766 1.154 15.052 0 12 0 7.392 0 3.397 2.6 1.386 6.296l4.026 3.112C6.343 6.866 8.949 5 12 5z"/>
-                  <path fill="#4285F4" d="M23.896 13.502C23.96 12.882 24 12.271 24 11.5c0-.445-.017-.883-.05-1.311H12v4.845h6.703a5.904 5.904 0 0 1-2.55 3.843l3.925 3.035C22.061 19.857 23.897 17.015 23.896 13.502z"/>
-                  <path fill="#FBBC05" d="M5.412 14.184C5.16 13.35 5 12.448 5 11.5c0-.948.16-1.85.412-2.684L1.386 6.296A11.955 11.955 0 0 0 0 11.5c0 1.863.43 3.622 1.169 5.204l4.243-2.52z"/>
-                  <path fill="#34A853" d="M12 24c3.052 0 5.766-1.154 7.923-3.001l-3.992-3.092a7.502 7.502 0 0 1-11.731-2.203l-4.243 2.52C2.38 21.39 6.309 24 12 24z"/>
-                </svg>
-                <span className="text-sm">Sign up with Email</span>
-              </button>
             </div>
             
             {/* OR Divider */}

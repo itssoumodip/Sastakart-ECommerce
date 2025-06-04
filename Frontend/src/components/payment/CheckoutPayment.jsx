@@ -12,71 +12,34 @@ const LoadingPaymentForm = () => (
 
 const CheckoutPayment = ({ 
   paymentMethod, 
-  setPaymentMethod, 
   paymentError, 
   calculateTotal, 
   handlePaymentSuccess, 
   handlePaymentError,
   shippingData
-}) => {
+}) => {  // Format total amount for display
+  const formattedTotal = typeof calculateTotal === 'function' ? 
+    calculateTotal().toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }) : '0.00';
+    
   return (
     <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Payment Information</h2>
-      
-      {/* Payment Method Selection */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-4">
-          Payment Method
-        </label>
-        <div className="grid grid-cols-1 gap-3">
-          <label className="relative flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="card"
-              checked={paymentMethod === 'card'}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-            />
-            <div className="ml-3">
-              <span className="flex items-center text-sm font-medium text-gray-900">
-                <CreditCard className="w-5 h-5 mr-2" />
-                Credit/Debit Card
-              </span>
-            </div>
-          </label>
-          
-          <label className="relative flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="cod"
-              checked={paymentMethod === 'cod'}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-            />
-            <div className="ml-3">
-              <span className="flex items-center text-sm font-medium text-gray-900">
-                Cash on Delivery (COD)
-              </span>
-            </div>
-          </label>
-        </div>
-      </div>
+      {/* No duplicate payment method selection here */}
 
       {/* Payment Form */}
       {paymentMethod === 'card' && (
         <Suspense fallback={<LoadingPaymentForm />}>
-          <StripeProvider>
-            <StripePaymentForm
-              amount={calculateTotal() * 100} // Convert to cents
-              onPaymentSuccess={handlePaymentSuccess}
-              onPaymentError={handlePaymentError}
-              metadata={{
-                shipping_name: shippingData?.name,
-                shipping_email: shippingData?.email,
-              }}
-            />
+          <StripeProvider>          <StripePaymentForm
+            amount={Math.round(calculateTotal() * 100)} // Convert to cents and round to avoid floating point issues
+            onPaymentSuccess={handlePaymentSuccess}
+            onPaymentError={handlePaymentError}
+            metadata={{
+              shipping_name: shippingData?.name,
+              shipping_email: shippingData?.email,
+            }}
+          />
           </StripeProvider>
         </Suspense>
       )}

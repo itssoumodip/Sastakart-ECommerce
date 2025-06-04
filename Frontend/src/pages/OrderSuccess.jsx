@@ -99,7 +99,7 @@ const OrderSuccess = () => {
               </motion.p>
             </motion.div>
             
-            <div className="grid lg:grid-cols-2 gap-8 mb-12">
+            <div className="grid lg:grid-cols-2 sm:text-md text-sm -ml-4 gap-8 mb-12">
               {/* Order Details Card */}
               <motion.div 
                 className="bg-white border border-gray-200 rounded-2xl p-8 shadow-lg"
@@ -291,13 +291,6 @@ const OrderSuccess = () => {
                   >
                     <Mail className="w-5 h-5" />
                     <span>Email Support</span>
-                  </a>
-                  <a
-                    href="tel:+1-555-123-4567"
-                    className="btn-outline inline-flex items-center justify-center space-x-2"
-                  >
-                    <span>📞</span>
-                    <span>Call Us: (555) 123-4567</span>
                   </a>
                 </div>
               </div>

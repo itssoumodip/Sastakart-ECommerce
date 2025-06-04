@@ -86,7 +86,7 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
             alt={product.title}
             className={`${
               viewMode === 'grid' ? 'w-full h-64' : 'w-full h-64 md:h-full'
-            } object-scale-down group-hover:scale-105 transition-transform duration-500`}
+            } object-contain group-hover:scale-105 transition-transform duration-500`}
             loading="lazy"
           />
           

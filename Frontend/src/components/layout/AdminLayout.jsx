@@ -166,7 +166,7 @@ function AdminLayout() {
                 </div>
                 <motion.button
                   onClick={handleLogout}
-                  className="flex-shrink-0 p-1 text-gray-400 hover:text-white transition-colors duration-200"
+                  className="flex-shrink-0 p-1  text-gray-400 hover:text-white transition-colors duration-200"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -282,7 +282,7 @@ function AdminLayout() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <LogOut className="h-5 w-5" />
+                      <LogOut className="h-5 w-5 ml-20" />
                     </motion.button>
                   </div>
                 </div>

@@ -74,11 +74,12 @@ const Cart = () => {
     setDiscount(0);
     setAppliedPromo('');
     toast.success('Promo code removed', toastConfig.success);
-  };  const subtotal = getCartTotal();
+  };  // Calculate with proper parsing and formatting for all monetary values
+  const subtotal = getCartTotal();
   const { totalGstAmount, categoryWiseGst } = useCart().getCartGstDetails();
-  const discountAmount = (subtotal * discount) / 100;
+  const discountAmount = parseFloat(((subtotal * discount) / 100).toFixed(2));
   const shipping = subtotal > 3500 ? 0 : 299;
-  const total = subtotal - discountAmount + shipping + totalGstAmount;
+  const total = parseFloat((subtotal - discountAmount + shipping + totalGstAmount).toFixed(2));
   
   const handleCheckout = () => {
     if (!cartItems || cartItems.length === 0) {
@@ -153,7 +154,7 @@ const Cart = () => {
           >
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 flex items-center gap-3">
                   <ShoppingBag className="h-8 w-8 text-gray-800" />
                   My Shopping Bag
                   <span className="text-xl font-medium text-gray-500">
@@ -178,7 +179,7 @@ const Cart = () => {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden -ml-7">
                 <div className="p-6 border-b border-gray-100 bg-gray-50">
                   <h2 className="font-medium text-gray-700">Cart Items</h2>
                 </div>
@@ -194,13 +195,13 @@ const Cart = () => {
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                         className="p-6 hover:bg-gray-50/50 transition-colors group"
                       >
-                        <div className="flex gap-6">
+                        <div className="flex gap-3">
                           {/* Product Image */}
                           <div className="flex-shrink-0 relative group overflow-hidden rounded-xl">
                             <img
                               src={item.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop'}
                               alt={item.name || 'Product'}
-                              className="w-32 h-40 object-cover bg-gray-50 group-hover:scale-105 transition-transform duration-300"
+                              className="w-32 h-full object-cover bg-gray-50 group-hover:scale-105 transition-transform duration-300"
                               onError={(e) => {
                                 e.target.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop';
                               }}
@@ -352,10 +353,9 @@ const Cart = () => {
                   </div>
 
                   {/* Price Breakdown */}
-                  <div className="space-y-4 mb-8">
-                    <div className="flex justify-between text-gray-600 items-center py-1">
+                  <div className="space-y-4 mb-8">                    <div className="flex justify-between text-gray-600 items-center py-1">
                       <span>Subtotal</span>
-                      <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                      <span className="font-medium">₹{subtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     </div>
                     
                     {discount > 0 && (
@@ -369,7 +369,7 @@ const Cart = () => {
                           <Tag className="w-4 h-4" /> 
                           Discount ({discount}%)
                         </span>
-                        <span className="font-medium">-₹{discountAmount.toFixed(2)}</span>
+                        <span className="font-medium">-₹{discountAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </motion.div>
                     )}
                       <div className="flex justify-between text-gray-600 items-center py-1">
@@ -378,7 +378,7 @@ const Cart = () => {
                         Shipping
                       </span>
                       <span className={`font-medium ${shipping === 0 ? 'text-green-600' : ''}`}>
-                        {shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}
+                        {shipping === 0 ? 'Free' : `₹${shipping.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
                       </span>
                     </div>                    {/* GST Section */}
                     <div className="border-t border-gray-100 pt-3">
@@ -387,14 +387,14 @@ const Cart = () => {
                           <IndianRupee className="w-4 h-4" />
                           GST
                         </span>
-                        <span className="font-medium">₹{totalGstAmount.toFixed(2)}</span>
+                        <span className="font-medium">₹{totalGstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </div>
                     </div>
                     
                     <div className="border-t border-gray-100 pt-4 mt-2">
                       <div className="flex justify-between text-xl font-semibold text-gray-900">
                         <span>Total</span>
-                        <span>₹{total.toFixed(2)}</span>
+                        <span>₹{total.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">Including GST & shipping charges</p>
                     </div>

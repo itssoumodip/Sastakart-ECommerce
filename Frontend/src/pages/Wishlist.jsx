@@ -174,7 +174,7 @@ const Wishlist = () => {
           >
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+                <h1 className="sm:text-3xl text-xl font-bold text-gray-900 flex items-center gap-3 mb-2">
                   <Heart className="h-8 w-8 text-gray-800" />
                   My Wishlist
                   <span className="text-xl font-medium text-gray-500">

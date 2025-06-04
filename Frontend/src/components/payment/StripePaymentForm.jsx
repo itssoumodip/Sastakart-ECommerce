@@ -94,50 +94,50 @@ const StripePaymentForm = ({ amount, onPaymentSuccess, onPaymentError, metadata 
       }
     }
   };
-
   return (
-    <div className="mt-6">
-      <div className="mb-4 flex items-center">
-        <Lock className="w-5 h-5 text-gray-500 mr-2" />
-        <h3 className="text-lg font-medium text-gray-900">Secure Payment</h3>
-      </div>
+    <div className="mt-3 md:mt-4">
+      {/* We removed the duplicate heading since it's already in the parent component */}
       
       {paymentError && (
-        <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-          <AlertTriangle className="w-5 h-5 text-red-500 mr-3 flex-shrink-0 mt-0.5" />
-          <p className="text-red-700 text-sm">{paymentError}</p>
+        <div className="mb-3 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start">
+          <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+          <p className="text-red-700 text-xs md:text-sm">{paymentError}</p>
         </div>
       )}
       
       <form onSubmit={handleSubmit}>
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Card Details
           </label>
-          <div className="border border-gray-300 rounded-lg p-4 bg-white">
+          <div className="border border-gray-300 rounded-lg p-3 bg-white">
             <div className="flex items-center mb-2">
-              <CreditCard className="w-5 h-5 text-gray-400 mr-2" />
-              <span className="text-sm text-gray-600">Enter your card information</span>
+              <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-gray-400 mr-2" />
+              <span className="text-xs md:text-sm text-gray-600">Enter your card information</span>
             </div>
             <CardElement options={cardElementOptions} />
           </div>
-          <p className="mt-2 text-xs text-gray-500">
+          <p className="mt-1.5 text-xs text-gray-500">
             Your card information is securely processed by Stripe. We do not store your card details.
           </p>
-        </div>
-        
-        <button
+        </div>          <button
           type="submit"
           disabled={isProcessing || !stripe || !clientSecret}
-          className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full bg-indigo-600 text-white py-2.5 md:py-3 px-4 rounded-lg text-sm md:text-base font-medium hover:bg-indigo-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
         >
           {isProcessing ? (
             <>
-              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+              <span className="inline-block w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
               Processing...
             </>
           ) : (
-            `Pay ₹${amount.toFixed(2)}`
+            <>
+              <Lock className="w-4 h-4 mr-1.5 md:mr-2" />
+              Pay ₹{(amount / 100).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })}
+            </>
           )}
         </button>
       </form>

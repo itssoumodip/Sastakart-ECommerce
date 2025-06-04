@@ -147,24 +147,6 @@ function Dashboard() {  const defaultStats = {
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
               variants={itemVariants}
             >
-              {/* Total Sales */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-green-100 rounded-lg">
-                    <IndianRupee className="h-6 w-6 text-green-600" />
-                  </div>
-                  {stats.salesGrowth > 0 && (
-                    <div className="flex items-center text-green-600 text-sm">
-                      <TrendingUp className="h-4 w-4 mr-1" />
-                      +{stats.salesGrowth}%
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-gray-600 text-sm font-medium">Total Sales</h3>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(stats.totalSales)}
-                </p>
-              </div>
 
               {/* Total Orders */}
               <div className="bg-white rounded-lg shadow p-6">

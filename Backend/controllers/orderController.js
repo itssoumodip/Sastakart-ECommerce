@@ -5,42 +5,43 @@ const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 
 // Create new order => /api/orders
 exports.newOrder = catchAsyncErrors(async (req, res, next) => {
-  const {
-    orderItems,
-    shippingInfo,
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
-    paymentInfo,
-    paymentMethod = 'card'
+  const { 
+    orderItems, 
+    shippingInfo, 
+    paymentInfo, 
+    paymentMethod,
+    itemsPrice, 
+    taxPrice, 
+    shippingPrice, 
+    totalPrice 
   } = req.body;
 
-  // Calculate GST for each order item and create GST summary
-  const categoryWiseGst = new Map();
-  let totalGstAmount = 0;
+  // Validate total price to prevent unrealistic values
+  if (totalPrice > 1000000) {
+    return next(new ErrorHandler('Invalid order total amount', 400));
+  }
 
-  // Fetch product details to get actual GST rates
-  const products = await Product.find({
-    _id: { $in: orderItems.map(item => item.product) }
-  });
+  // Calculate total GST based on order items
+  let totalGstAmount = 0;
+  let categoryWiseGst = new Map();
 
   const enrichedOrderItems = orderItems.map(item => {
-    const product = products.find(p => p._id.toString() === item.product.toString());
-    const gstRate = product.gstRate || 18; // Default 18% if not set
-    const gstAmount = (item.price * item.quantity * gstRate) / 100;
+    // Calculate GST for each item if applicable
+    const itemGst = item.price * item.quantity * 0.18; // Assuming 18% GST
+    totalGstAmount += itemGst;
     
-    // Accumulate category-wise GST
-    const currentCategoryGst = categoryWiseGst.get(product.category) || 0;
-    categoryWiseGst.set(product.category, currentCategoryGst + gstAmount);
-    totalGstAmount += gstAmount;
-
+    // Track GST by category
+    if (item.category) {
+      const currentAmount = categoryWiseGst.get(item.category) || 0;
+      categoryWiseGst.set(item.category, currentAmount + itemGst);
+    }
+    
     return {
       ...item,
-      gstRate,
-      gstAmount
+      gst: itemGst
     };
   });
+
   // Generate a unique invoice number
   const invoiceNumber = `INV${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
@@ -60,11 +61,8 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
       invoiceNumber
     }
   };
+  
   if (paymentMethod === 'cod') {
-    orderData.paymentInfo = {
-      id: 'COD_' + Date.now(),
-      status: 'pending'
-    };
     orderData.orderStatus = 'COD_Pending';
     orderData.codAmount = totalPrice;
     orderData.statusHistory = [{
@@ -74,6 +72,11 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
       updatedBy: req.user._id
     }];
   } else {
+    // Ensure paymentInfo exists and has proper structure
+    if (!paymentInfo || !paymentInfo.id || !paymentInfo.status) {
+      return next(new ErrorHandler('Payment information is required', 400));
+    }
+    
     orderData.paymentInfo = paymentInfo;
     orderData.paidAt = Date.now();
     orderData.orderStatus = 'Processing';

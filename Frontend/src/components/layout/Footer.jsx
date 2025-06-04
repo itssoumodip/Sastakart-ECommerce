@@ -128,7 +128,7 @@ const Footer = () => {
 
         {/* Features */}
         <div className="border-t border-gray-200 mt-10 pt-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:gap-[300px] gap-6">
             <div className="flex items-center space-x-3">
               <div className="bg-gray-100 p-2 rounded-full">
                 <Truck className="h-6 w-6 text-black" />
@@ -159,24 +159,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Contact Info */}
-        <div className="border-t border-gray-200 mt-8 pt-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600 text-sm">+91 1234 567 890</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600 text-sm">support@sastakart.com</span>
-              </div>
-            </div>
-            <div className="text-gray-600 text-sm">
-              Monday - Saturday: 9AM - 8PM IST
-            </div>
-          </div>
-        </div>
+    
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-200 mt-6 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -196,7 +179,7 @@ const Footer = () => {
           </div>        </div>
         
         {/* Newsletter Subscription */}
-        <div className="mt-10 pt-8 border-t border-gray-200">
+        <div className="mt-7 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-1">Subscribe to our newsletter</h3>

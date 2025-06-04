@@ -72,20 +72,23 @@ const Checkout = () => {
       toast.error('Your cart is empty');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderPlaced]);  const subtotal = getCartTotal();
+  }, [orderPlaced]);  // Calculate with proper parsing and formatting for all monetary values
+  const subtotal = getCartTotal(); 
   const { totalGstAmount, categoryWiseGst } = useCart().getCartGstDetails();
   const shipping = subtotal > 3500 ? 0 : 299;
+  
   const calculateTax = () => {
-    return totalGstAmount;
+    return parseFloat(totalGstAmount);
   };
 
   const calculateShipping = () => {
-    return subtotal > 3500 ? 0 : 299;
+    return parseFloat(subtotal > 3500 ? 0 : 299);
   };  
   
   const calculateTotal = () => {
     const codCharge = paymentMethod === 'cod' ? 50 : 0;
-    return subtotal + calculateShipping() + calculateTax() + codCharge;
+    const total = subtotal + calculateShipping() + calculateTax() + codCharge;
+    return parseFloat(total.toFixed(2));
   };
 
 
@@ -147,16 +150,27 @@ const Checkout = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const createOrder = async (shippingData, paymentData) => {
+  };  const createOrder = async (shippingData, paymentData) => {
+    // Ensure values are properly formatted as numbers with two decimal places
+    // Use parseFloat to convert string values and fix decimal places
+    const total = parseFloat(calculateTotal().toFixed(2));
+    const subtotalFormatted = parseFloat(getCartTotal().toFixed(2));
+    const taxFormatted = parseFloat(calculateTax().toFixed(2));
+    const shippingFormatted = parseFloat(calculateShipping().toFixed(2));
+    
+    // Validate amounts to prevent unrealistic values
+    if (total > 100000 || subtotalFormatted > 100000) {
+      toast.error('Order total exceeds maximum allowed amount', toastConfig.error);
+      return;
+    }
+    
     const orderData = {
       orderItems: (cartItems || []).map(item => ({
         product: item.id,
         name: item.name,
-        quantity: item.quantity,
+        quantity: parseInt(item.quantity) || 1,
         image: item.image,
-        price: item.price
+        price: parseFloat((parseFloat(item.price) || 0).toFixed(2)) // Double parse to ensure proper number
       })),
       shippingInfo: {
         firstName: shippingData.firstName,
@@ -172,10 +186,10 @@ const Checkout = () => {
         ...paymentData
       },
       paymentMethod: paymentMethod,
-      itemsPrice: getCartTotal(),
-      taxPrice: calculateTax(),
-      shippingPrice: calculateShipping(),
-      totalPrice: calculateTotal()
+      itemsPrice: subtotalFormatted,
+      taxPrice: taxFormatted,
+      shippingPrice: shippingFormatted,
+      totalPrice: total
     };
 
     const response = await axios.post('/api/orders', orderData, {
@@ -398,7 +412,7 @@ const Checkout = () => {
           </div>
         </div>
 
-        <div className="flex justify-between pt-6">          <button
+        <div className="flex sm:flex-row items-center flex-col gap-5 justify-between pt-6">          <button
             type="button"
             onClick={() => navigate('/cart')}
             className="bg-white text-gray-700 px-6 py-3 rounded-full font-medium border border-gray-300 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center gap-2 shadow-sm"
@@ -417,22 +431,21 @@ const Checkout = () => {
         </div>
       </form>
     </motion.div>
-  );
-  const PaymentStep = () => (
+  );  const PaymentStep = () => (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
     >
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Payment Information</h2>
+      <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">Payment Information</h2>
       
-      {/* Payment Method Selection */}      <div className="mb-8">
-        <label className="block text-sm font-medium text-gray-700 mb-4">
+      {/* Payment Method Selection */}
+      <div className="mb-4 md:mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-3">
           Payment Method
-        </label>
-        <div className="grid grid-cols-1 gap-4">
-          <label className="relative flex items-center p-4 border border-gray-200 bg-white rounded-xl cursor-pointer hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md">
+        </label>        <div className="grid grid-cols-1 gap-3">
+          <label className="relative flex items-center p-3 md:p-4 border border-gray-200 bg-white rounded-lg md:rounded-xl cursor-pointer hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md">
             <input
               type="radio"
               name="paymentMethod"
@@ -441,25 +454,25 @@ const Checkout = () => {
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="sr-only"
             />
-            <div className={`w-5 h-5 border-2 rounded-full mr-3 flex items-center justify-center ${
+            <div className={`w-4 h-4 md:w-5 md:h-5 border-2 rounded-full mr-2 md:mr-3 flex items-center justify-center ${
               paymentMethod === 'card' ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
             }`}>
               {paymentMethod === 'card' && (
-                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full"></div>
               )}
             </div>
             <div className="flex items-center">
-              <CreditCard className="w-5 h-5 mr-3 text-gray-700" />
-              <span className="font-medium">Credit Card</span>
-            </div>            <div className="ml-auto flex items-center space-x-2">
-              <span className="w-8 h-5 bg-blue-600 rounded"></span>
-              <span className="w-8 h-5 bg-yellow-500 rounded"></span>
-              <span className="w-8 h-5 bg-red-500 rounded"></span>
+              <CreditCard className="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3 text-gray-700" />
+              <span className="font-medium text-sm md:text-base">Credit Card</span>
+            </div>
+            <div className="ml-auto flex items-center space-x-1 md:space-x-2">
+              <span className="w-6 h-4 md:w-8 md:h-5 bg-blue-600 rounded"></span>
+              <span className="w-6 h-4 md:w-8 md:h-5 bg-yellow-500 rounded"></span>
+              <span className="w-6 h-4 md:w-8 md:h-5 bg-red-500 rounded"></span>
             </div>
           </label>
           
-          <label className="relative flex items-center p-4 border border-gray-200 bg-white rounded-xl cursor-pointer hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md">
-            <input
+          <label className="relative flex items-center p-3 md:p-4 border border-gray-200 bg-white rounded-lg md:rounded-xl cursor-pointer hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md">            <input
               type="radio"
               name="paymentMethod"
               value="cod"
@@ -467,45 +480,45 @@ const Checkout = () => {
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="sr-only"
             />
-            <div className={`w-5 h-5 border-2 rounded-full mr-3 flex items-center justify-center ${
+            <div className={`w-4 h-4 md:w-5 md:h-5 border-2 rounded-full mr-2 md:mr-3 flex items-center justify-center ${
               paymentMethod === 'cod' ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
             }`}>
               {paymentMethod === 'cod' && (
-                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full"></div>
               )}
             </div>
             <div className="flex items-center">
-              <Banknote className="w-5 h-5 mr-3 text-gray-700" />
-              <span className="font-medium">Cash on Delivery (COD)</span>
+              <Banknote className="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3 text-gray-700" />
+              <span className="font-medium text-sm md:text-base">Cash on Delivery</span>
             </div>
             <div className="ml-auto">
-              <span className="text-sm text-gray-500">₹50 extra charge</span>
+              <span className="text-xs md:text-sm text-gray-500">₹50 charge</span>
             </div>
           </label>
         </div>
-      </div>      {/* Payment Error Display */}
+      </div>{/* Payment Error Display */}
       {paymentError && (
-        <div className="mb-8 bg-red-50 border border-red-100 p-5 rounded-xl shadow-sm">
+        <div className="mb-4 md:mb-6 bg-red-50 border border-red-100 p-3 md:p-4 rounded-lg md:rounded-xl shadow-sm">
           <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-4 flex-shrink-0">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-red-100 flex items-center justify-center mr-3 flex-shrink-0">
+              <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-red-500" />
             </div>
             <div>
-              <h4 className="font-medium text-red-700 mb-1">Payment Failed</h4>
-              <p className="text-sm text-red-600">{paymentError}</p>
+              <h4 className="font-medium text-red-700 text-sm md:text-base">Payment Failed</h4>
+              <p className="text-xs md:text-sm text-red-600">{paymentError}</p>
             </div>
           </div>
         </div>
-      )}      {/* Checkout Payment Component */}
-      <div className="border border-gray-200 rounded-2xl p-6 bg-white shadow-sm">
-        <div className="mb-4 pb-4 border-b border-gray-100">
+      )}{/* Checkout Payment Component */}
+      <div className="border border-gray-200 rounded-xl p-4 md:p-6 bg-white shadow-sm">
+        <div className="mb-3 pb-3 border-b border-gray-100">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-              <Lock className="w-5 h-5 text-blue-600" />
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+              <Lock className="w-4 h-4 text-blue-600" />
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Secure Payment</h4>
-              <p className="text-sm text-gray-500">Your payment information is encrypted and secure</p>
+              <p className="text-xs text-gray-500">Your payment information is encrypted and secure</p>
             </div>
           </div>
         </div>
@@ -513,7 +526,6 @@ const Checkout = () => {
         {paymentMethod === 'card' ? (
           <CheckoutPayment 
             paymentMethod={paymentMethod}
-            setPaymentMethod={setPaymentMethod}
             paymentError={paymentError}
             calculateTotal={calculateTotal}
             handlePaymentSuccess={handlePaymentSuccess}
@@ -523,63 +535,59 @@ const Checkout = () => {
               firstName: shippingForm.getValues('firstName'),
               lastName: shippingForm.getValues('lastName')
             }}
-          />
-        ) : (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
-                <Banknote className="w-5 h-5 text-green-600" />
+          />        ) : (
+          <div className="bg-green-50 border border-green-200 rounded-lg md:rounded-xl p-3 md:p-4">
+            <div className="flex items-center mb-3">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <Banknote className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <h4 className="font-medium text-green-800">Cash on Delivery Selected</h4>
-                <p className="text-sm text-green-600">Pay when your order is delivered to your doorstep</p>
+                <h4 className="font-medium text-green-800 text-sm md:text-base">Cash on Delivery Selected</h4>
+                <p className="text-xs text-green-600">Pay when your order is delivered</p>
               </div>
             </div>
-            <div className="text-sm text-green-700 bg-green-100 p-3 rounded-lg">
+            <div className="text-xs md:text-sm text-green-700 bg-green-100 p-2 md:p-3 rounded-lg">
               <strong>COD Terms:</strong>
-              <ul className="mt-2 space-y-1 text-xs">
+              <ul className="mt-1 space-y-0.5 text-xs">
                 <li>• ₹50 additional charge for COD orders</li>
                 <li>• Payment to be made in cash to delivery agent</li>
                 <li>• Please keep exact change ready</li>
-                <li>• Order will be packed and shipped after confirmation</li>
               </ul>
             </div>
           </div>
         )}
       </div>
-      
-      <div className="flex justify-between pt-6">        <button
+        <div className="flex sm:flex-row items-center flex-col gap-3 justify-between pt-4 md:pt-6">        <button
           type="button"
           onClick={handlePrevStep}
-          className="bg-white text-gray-700 px-6 py-3 rounded-full font-medium border border-gray-300 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center gap-2 shadow-sm"
+          className="bg-white text-gray-700 px-4 md:px-6 py-2.5 md:py-3 rounded-full text-sm md:text-base font-medium border border-gray-300 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center gap-1.5 shadow-sm w-full sm:w-auto"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-3.5 h-3.5 md:w-4 md:h-4" />
           Back to Shipping
-        </button>
-          <button
+        </button>          <button
           type="button"
           onClick={paymentMethod === 'cod' ? handleCODOrder : undefined}
-          disabled={loading || (paymentMethod === 'card')}
-          className={`px-8 py-3 rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-2 shadow-md ${
+          disabled={loading}
+          className={`px-4 md:px-6 py-2.5 md:py-3 rounded-full text-sm md:text-base font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center gap-1.5 shadow-md w-full sm:w-auto ${
             paymentMethod === 'cod' 
               ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500' 
-              : 'bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-900'
-          } ${(paymentMethod === 'card') ? 'opacity-50 cursor-not-allowed' : ''}`}
+              : 'bg-gray-500 text-white focus:ring-gray-500'
+          } ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           {loading ? (
             <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               Processing...
             </>
           ) : paymentMethod === 'cod' ? (
             <>
-              <Banknote className="w-5 h-5" />
+              <Banknote className="w-4 h-4 md:w-5 md:h-5" />
               Place COD Order
             </>
           ) : (
             <>
-              <Lock className="w-5 h-5" />
-              {paymentMethod === 'card' ? 'Complete Payment Above' : 'Continue'}
+              <Lock className="w-4 h-4 md:w-5 md:h-5" />
+              Use Card Payment
             </>
           )}
         </button>

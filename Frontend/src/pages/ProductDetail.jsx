@@ -328,7 +328,7 @@ const ProductDetail = () => {  const { id } = useParams();
                   
                   {product.stock > 0 ? (
                     <span className="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                      In Stock ({product.stock})
+                      In Stock
                     </span>
                   ) : (
                     <span className="px-2.5 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
@@ -451,7 +451,7 @@ const ProductDetail = () => {  const { id } = useParams();
               </div>
               
               {/* Add to Cart and Wishlist */}
-              <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 mb-8">
+              <div className="flex flex-row space-y-1 gap-2 sm:flex-row sm:space-y-0 sm:space-x-4 mb-8">
                 <button
                   onClick={handleAddToCart}
                   disabled={product.stock === 0}

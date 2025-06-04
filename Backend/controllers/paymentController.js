@@ -7,10 +7,20 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 exports.createPaymentIntent = catchAsyncErrors(async (req, res, next) => {
   const { amount, currency = 'INR', metadata } = req.body;
 
+  // Validate amount
+  if (!amount || isNaN(amount) || amount <= 0) {
+    return next(new ErrorHandler('Invalid payment amount', 400));
+  }
+
+  // Prevent unrealistically large amounts (set a reasonable maximum)
+  if (amount > 10000000) { // 10 million in cents
+    return next(new ErrorHandler('Payment amount exceeds maximum allowed', 400));
+  }
+
   try {
-    // Create a PaymentIntent with Stripe
+    // Create a PaymentIntent with Stripe - amount should already be in cents
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Stripe requires the amount in cents
+      amount: Math.round(amount), // Ensure it's a valid integer
       currency,
       metadata,
       payment_method_types: ['card'],
