@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const ErrorHandler = require('../utils/errorHandler');
+const cloudinary = require('../utils/cloudinary');
 
 // Get all users (Admin only) => /api/admin/users
 exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
@@ -127,4 +128,44 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
     success: true,
     message: 'Password updated successfully'
   });
+});
+
+// Update user avatar => /api/users/profile/avatar
+exports.updateAvatar = catchAsyncErrors(async (req, res, next) => {
+  if (!req.body.avatar) {
+    return next(new ErrorHandler('Please provide an image', 400));
+  }
+
+  const user = await User.findById(req.user.id);
+
+  try {
+    // If user already has a non-default avatar, delete it from Cloudinary
+    if (user.avatar && user.avatar !== 'default-avatar.jpg' && !user.avatar.includes('default-avatar')) {
+      // Extract public_id from the Cloudinary URL
+      const publicId = user.avatar.split('/').pop().split('.')[0];
+      if (publicId) {
+        await cloudinary.uploader.destroy(`ecommerce/avatars/${publicId}`);
+      }
+    }
+
+    // Upload new avatar to Cloudinary
+    const result = await cloudinary.uploader.upload(req.body.avatar, {
+      folder: 'ecommerce/avatars',
+      width: 300,
+      crop: "scale",
+      quality: "auto:best"
+    });
+
+    // Update user's avatar field
+    user.avatar = result.secure_url;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      avatarUrl: result.secure_url,
+      user
+    });
+  } catch (error) {
+    return next(new ErrorHandler('Avatar upload failed', 500));
+  }
 });

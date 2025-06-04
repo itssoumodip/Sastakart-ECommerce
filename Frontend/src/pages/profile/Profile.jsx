@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Helmet } from 'react-helmet-async';
@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import { API_ENDPOINTS } from '../../config/api';
 import {
   User,
@@ -37,6 +38,8 @@ const Profile = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef(null);
 
   const profileForm = useForm({
     defaultValues: {
@@ -59,7 +62,6 @@ const Profile = () => {
       confirmPassword: ''
     }
   });
-
   // Update form values when user data changes
   useEffect(() => {
     if (user) {
@@ -76,7 +78,6 @@ const Profile = () => {
       });
     }
   }, [user, profileForm]);
-
   const handleProfileUpdate = async (data) => {
     setLoading(true);
     try {
@@ -136,7 +137,6 @@ const Profile = () => {
     logout();
     toast.success('Successfully logged out');
   };
-
   const handleEditCancel = () => {
     setIsEditing(false);
     // Reset form to original user data
@@ -152,6 +152,90 @@ const Profile = () => {
         postalCode: user.postalCode || '',
         country: user.country || 'United States'
       });
+    }
+  };
+
+
+  const handleAvatarClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Please upload an image file (JPEG, PNG, or GIF)');
+      return;
+    }
+
+    // Check file size (limit to 2MB)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      toast.error('Image size must be less than 2MB');
+      return;
+    }
+
+    try {
+      setUploadingAvatar(true);
+      
+      // Convert file to base64
+      const reader = new FileReader();      reader.onloadend = async () => {
+        try {
+          // Get token from cookie
+          const token = Cookies.get('token');
+          if (!token) {
+            toast.error('Authentication token not found. Please log in again.');
+            setUploadingAvatar(false);
+            return;
+          }
+          
+          console.log('Uploading avatar to:', API_ENDPOINTS.UPDATE_AVATAR);
+          console.log('Auth token exists:', !!token);
+          
+          // Send avatar to backend
+          const response = await axios.post(API_ENDPOINTS.UPDATE_AVATAR, {
+            avatar: reader.result
+          }, {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (response.data && response.data.success) {
+            // Update user state with new avatar
+            updateUser({ ...user, avatar: response.data.avatarUrl });
+            toast.success('Profile picture updated successfully!');
+            // Reload user data to ensure consistency
+            await loadUser();          } else {
+            throw new Error('Failed to update profile picture');
+          }
+        } catch (error) {
+          console.error('Avatar upload error:', error);
+          console.error('Error details:', error.response?.data || error.message);
+          
+          if (error.response?.status === 401) {
+            toast.error('Please log in again to update your profile picture.');
+          } else if (error.response?.status === 413) {
+            toast.error('Image is too large. Please choose a smaller image.');
+          } else {
+            toast.error(error.response?.data?.message || 'Failed to update profile picture. Please try again.');
+          }
+        } finally {
+          setUploadingAvatar(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      toast.error('Failed to upload image');
+      setUploadingAvatar(false);
     }
   };
 
@@ -187,14 +271,48 @@ const Profile = () => {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                 {/* Profile Summary */}
                 <div className="p-6 border-b border-gray-100">
-                  <div className="text-center">
-                    <div className="relative inline-block">
-                      <div className="w-20 h-20 rounded-full bg-gray-500 flex items-center justify-center text-white text-2xl font-bold">
-                        {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-                      </div>
-                      <button className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                        <Camera className="w-4 h-4 text-gray-600" />
+                  <div className="text-center">                    <div className="relative inline-block">
+                      {user?.avatar && user.avatar !== 'default-avatar.jpg' ? (
+                        <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-200">
+                          <img 
+                            src={user.avatar} 
+                            alt={`${user?.firstName || ''} ${user?.lastName || ''}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.parentNode.innerHTML = `<div class="w-20 h-20 rounded-full bg-gray-500 flex items-center justify-center text-white text-2xl font-bold">
+                                ${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}
+                              </div>`;
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 rounded-full bg-gray-500 flex items-center justify-center text-white text-2xl font-bold">
+                          {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                        </div>
+                      )}
+                      
+                      {/* Camera button */}
+                      <button
+                        onClick={handleAvatarClick}
+                        disabled={uploadingAvatar}
+                        className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                      >
+                        {uploadingAvatar ? (
+                          <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Camera className="w-4 h-4 text-gray-600" />
+                        )}
                       </button>
+                      
+                      {/* Hidden file input */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
                     </div>
                     <h3 className="mt-3 text-lg font-semibold text-gray-900">
                       {user?.firstName} {user?.lastName}
@@ -254,15 +372,15 @@ const Profile = () => {
                       {/* Profile Header */}
                       <div className="flex items-center justify-between mb-6">
                         <div>
-                          <h2 className="text-2xl font-semibold text-gray-900">Profile Information</h2>
-                          <p className="text-gray-600">Update your account details and personal information</p>
+                          <h2 className="sm:text-2xl text-xl font-semibold text-gray-900">Profile Information</h2>
+                          <p className="text-gray-600 sm:text-md text-sm">Update your account details and personal information</p>
                         </div>
                         {!isEditing && (
                           <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setIsEditing(true)}
-                            className="flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-700 transition-colors"
+                            className="flex sm:text-md text-sm items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-700 transition-colors"
                           >
                             <Edit3 className="w-4 h-4 mr-2" />
                             Edit Profile
@@ -574,7 +692,7 @@ const Profile = () => {
                                 whileTap={{ scale: 0.98 }}
                                 type="submit"
                                 disabled={loading}
-                                className="flex items-center px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="flex items-center px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                               >
                                 {loading ? (
                                   <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />

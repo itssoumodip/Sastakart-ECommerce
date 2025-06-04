@@ -19,6 +19,16 @@ axios.interceptors.request.use(
       ...config.headers,
       ...headers
     };
+    
+    // Ensure withCredentials is set for all requests
+    config.withCredentials = true;
+    
+    // Log request for debugging (remove in production)
+    console.log(`Request to ${config.url}:`, { 
+      headers: config.headers,
+      withCredentials: config.withCredentials
+    });
+    
     return config;
   },
   (error) => {
@@ -56,6 +66,7 @@ export const API_ENDPOINTS = {
   USERS: '/api/users',
   UPDATE_PROFILE: '/api/users/profile',
   UPDATE_PASSWORD: '/api/users/password',
+  UPDATE_AVATAR: '/api/users/profile/avatar',
   
   // Admin User endpoints
   ADMIN_USERS: '/api/users/admin/users',
