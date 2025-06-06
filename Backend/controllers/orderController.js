@@ -431,3 +431,80 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
     order
   });
 });
+
+// Cancel order => /api/orders/:id/cancel
+// Cancel order => /api/orders/:id/cancel
+exports.cancelOrder = catchAsyncErrors(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return next(new ErrorHandler('Order not found', 404));
+  }
+
+  // Check if order belongs to user (unless admin)
+  if (req.user.role !== 'admin' && order.user.toString() !== req.user._id.toString()) {
+    return next(new ErrorHandler('You are not authorized to cancel this order', 403));
+  }
+
+  // Only allow cancellation of orders in certain states
+  const cancellableStates = ['Pending', 'Processing', 'COD_Pending'];
+  if (!cancellableStates.includes(order.orderStatus)) {
+    return next(new ErrorHandler(`Cannot cancel order in ${order.orderStatus} state`, 400));
+  }
+
+  // For COD orders, no need to handle refunds
+  if (order.paymentMethod !== 'cod' && order.paymentInfo?.status === 'succeeded') {
+    // TODO: Handle refund for paid orders
+    // This should be implemented based on your payment provider
+  }
+
+  // Update order status
+  order.orderStatus = 'Cancelled';
+  
+  // Add to status history with default note if none provided
+  const cancelNote = req.body.note || `Order cancelled by ${req.user.role === 'admin' ? 'admin' : 'customer'}`;
+  
+  if (!order.statusHistory) {
+    order.statusHistory = [];
+  }
+  
+  order.statusHistory.push({
+    status: 'Cancelled',
+    note: cancelNote,
+    timestamp: new Date(),
+    updatedBy: req.user._id
+  });
+
+  await order.save({ validateBeforeSave: false });
+
+  // Fetch user details to send email
+  const populatedOrder = await Order.findById(order._id).populate('user', 'name email');
+
+  // Send cancellation email
+  try {
+    await emailService.sendOrderStatusUpdateEmail({
+      to: populatedOrder.user.email,
+      order: {
+        id: order._id,
+        user: {
+          name: populatedOrder.user.name || 'Customer'
+        }
+      },
+      status: 'Cancelled',
+      additionalInfo: cancelNote
+    });
+  } catch (emailError) {
+    console.error('Failed to send order cancellation email:', emailError);
+    // Don't fail the order cancellation if email sending fails
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Order cancelled successfully',
+    order: {
+      _id: order._id,
+      orderStatus: order.orderStatus,
+      statusHistory: order.statusHistory
+    }
+  });
+});

@@ -92,6 +92,7 @@ const Orders = () => {
     }
   };
 
+  // Update the getStatusClass function to include more states
   const getStatusClass = (status) => {
     switch (status) {
       case 'pending':
@@ -104,6 +105,10 @@ const Orders = () => {
         return 'bg-green-100 text-green-700 border-green-200';
       case 'cancelled':
         return 'bg-red-100 text-red-700 border-red-200';
+      case 'cod_pending':
+        return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'cod_collected':
+        return 'bg-teal-100 text-teal-700 border-teal-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
@@ -128,6 +133,25 @@ const Orders = () => {
 
   const handleDownloadInvoice = (orderId) => {
     toast.success('Invoice downloaded successfully');
+  };
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await axios.put(`/api/orders/${orderId}/cancel`, {
+        note: 'Order cancelled by customer'
+      });
+      if (response.data.success) {
+        toast.success('Order cancelled successfully');
+        // Refresh orders list
+        fetchOrders();
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      toast.error(error.response?.data?.message || 'Failed to cancel order');
+    }
   };
   
   const filteredOrders = orders.filter(order => {
@@ -207,6 +231,7 @@ const Orders = () => {
               getStatusIcon={getStatusIcon}
               getStatusClass={getStatusClass}
               handleDownloadInvoice={handleDownloadInvoice}
+              handleCancelOrder={handleCancelOrder}
             />
           ) : (
             <>
@@ -487,6 +512,23 @@ const Orders = () => {
                             >
                               <Download className="w-4 h-4 mr-2" />
                               Invoice
+                            </button>                            {/* Show Cancel button only for orders that can be cancelled */}
+                            <button
+                              onClick={() => handleCancelOrder(order._id)}
+                              className={`inline-flex items-center px-4 py-2 rounded-lg border ${
+                                ['Pending', 'Processing', 'COD_Pending'].includes(order.orderStatus)
+                                  ? 'bg-red-100 text-red-700 border-red-300 hover:bg-red-200'
+                                  : 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                              }`}
+                              disabled={!['Pending', 'Processing', 'COD_Pending'].includes(order.orderStatus)}
+                              title={
+                                !['Pending', 'Processing', 'COD_Pending'].includes(order.orderStatus)
+                                  ? 'This order cannot be cancelled'
+                                  : 'Cancel this order'
+                              }
+                            >
+                              <X className="w-4 h-4 mr-2" />
+                              Cancel Order
                             </button>
                           </div>
                         </div>
@@ -597,7 +639,8 @@ const SingleOrderView = ({
   formatDate, 
   getStatusIcon, 
   getStatusClass, 
-  handleDownloadInvoice 
+  handleDownloadInvoice,
+  handleCancelOrder
 }) => {
   // Helper function to capitalize status
   const capitalizeStatus = (status) => {

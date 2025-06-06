@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Printer, Mail, Phone, Truck, Package, Clock, CheckCircle, AlertTriangle, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Printer, Mail, Phone, Truck, Package, Clock, CheckCircle, AlertTriangle, MessageSquare, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { getAuthHeaders } from '../../utils/auth';
@@ -205,18 +205,7 @@ function OrderDetail() {
             )}
             Update Status
           </button>
-
-          {/* COD Collection Button */}
-          {order?.paymentMethod === 'cod' && order?.orderStatus === 'COD_Pending' && (
-            <button
-              onClick={handleCODCollection}
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
-            >
-              <CheckCircle className="h-5 w-5 mr-2" />
-              Collect COD
-            </button>
-          )}
-
+   
           <button 
             className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
             onClick={() => window.print()}

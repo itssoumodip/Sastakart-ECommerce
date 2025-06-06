@@ -10,13 +10,15 @@ const {
   collectCOD,
   getCODAnalytics,
   getAdminOrder,
-  updateOrderStatus
+  updateOrderStatus,
+  cancelOrder
 } = require('../controllers/orderController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 
 router.route('/').post(isAuthenticatedUser, newOrder);
 router.route('/me').get(isAuthenticatedUser, myOrders);
-router.route('/:id').get(isAuthenticatedUser, getSingleOrder);
+router.route('/:id').get(isAuthenticatedUser, getSingleOrder)
+router.route('/:id/cancel').put(isAuthenticatedUser, cancelOrder);
 
 // Admin routes
 router.route('/admin/orders').get(isAuthenticatedUser, authorizeRoles('admin'), getAllOrders);
