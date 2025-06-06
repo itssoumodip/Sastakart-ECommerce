@@ -1,13 +1,11 @@
 import { Routes, Route, Outlet } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 
-// Layout Components
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import AdminLayout from './components/layout/AdminLayout'
 import PageLayout from './components/layout/PageLayout'
 
-// Public Pages
 import Home from './pages/Home'
 import Products from './pages/Products'
 import ProductDetail from './pages/ProductDetail'
@@ -18,13 +16,11 @@ import ResetPassword from './pages/auth/ResetPassword'
 import Cart from './pages/Cart'
 import Wishlist from './pages/Wishlist'
 
-// Protected User Pages
 import Profile from './pages/profile/Profile'
 import Orders from './pages/profile/Orders'
 import Checkout from './pages/Checkout'
 import OrderSuccess from './pages/OrderSuccess'
 
-// Admin Pages
 import Dashboard from './pages/admin/Dashboard'
 import ProductsManagement from './pages/admin/ProductsManagement'
 import ProductForm from './pages/admin/ProductForm'
@@ -33,7 +29,6 @@ import OrderDetail from './pages/admin/OrderDetail'
 import UsersManagement from './pages/admin/UsersManagement'
 import CODManagement from './pages/admin/CODManagement'
 
-// Components
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import ScrollToTop from './components/ScrollToTop'
