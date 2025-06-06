@@ -10,10 +10,16 @@ exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
   
   // Check for token in Authorization header if not in cookies
   if (!token && req.headers.authorization) {
-    token = req.headers.authorization.replace('Bearer ', '');
-    tokenSource = 'header';
+    if (req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.replace('Bearer ', '');
+      tokenSource = 'header (Bearer format)';
+    } else {
+      token = req.headers.authorization;
+      tokenSource = 'header (raw format)';
+    }
   }
   
+  console.log(`Request path: ${req.method} ${req.originalUrl}`);
   console.log(`Token found: ${!!token} (from ${tokenSource})`);
   console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
   console.log('Request cookies:', req.cookies);

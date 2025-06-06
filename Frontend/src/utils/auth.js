@@ -22,10 +22,17 @@ export const isAuthenticated = () => {
  */
 export const getAuthHeaders = () => {
   const token = getAuthToken();
-  return token ? { 
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  } : {
-    'Content-Type': 'application/json'
-  };
+  console.log('Auth headers - token exists:', !!token);
+  
+  if (token) {
+    return { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  } else {
+    console.warn('No authentication token found when creating headers');
+    return {
+      'Content-Type': 'application/json'
+    };
+  }
 };

@@ -220,10 +220,16 @@ function ProductForm() {
     
     setShowPreview(true);
   };
-
   const onSubmit = async (data) => {
     try {
       setLoading(true);
+      
+      // Validate required fields
+      if (uploadedImages.length === 0) {
+        toast.error('Please upload at least one product image');
+        setLoading(false);
+        return;
+      }
       
       // Build productData object with all fields
       const productData = {
@@ -236,28 +242,33 @@ function ProductForm() {
         productType: data.productType || '',
         brand: data.brand || 'Generic',
         stock: parseInt(data.stock) || 0,
-        status: data.status,
+        status: data.status || 'Active',
         lowStockAlert: parseInt(data.lowStockAlert) || 10,
         features: data.features ? data.features.split(',').map(f => f.trim()).filter(f => f) : [],
         images: uploadedImages
       };
+      
+      console.log('Submitting product data:', productData);
 
       const url = isEditMode 
         ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}`
-        : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`;
-
+        : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`;      // Get and log the auth token to ensure it's available
+      const token = getAuthToken();
+      console.log('Using auth token:', token ? 'present' : 'missing');
+      
       const response = await fetch(url, {
         method: isEditMode ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
           ...getAuthHeaders()
         },
         credentials: 'include',
         body: JSON.stringify(productData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save product');
+      });      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error response:', errorData);
+        throw new Error(errorData.message || 'Failed to save product');
       }
 
       toast.success(`Product ${isEditMode ? 'updated' : 'created'} successfully`);

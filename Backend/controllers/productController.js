@@ -111,20 +111,41 @@ exports.getProductById = catchAsyncErrors(async (req, res, next) => {
 
 // Create new product => /api/products
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
+  console.log('Creating product: user authenticated:', req.user.id);
+  console.log('Product request body:', JSON.stringify({
+    title: req.body.title,
+    category: req.body.category,
+    price: req.body.price,
+    // Don't log all fields to avoid clutter
+    hasImages: Array.isArray(req.body.images) && req.body.images.length > 0
+  }));
+  
   req.body.user = req.user.id;
   
   // Handle image URLs (if uploaded via Cloudinary)
   if (req.body.images && Array.isArray(req.body.images)) {
     // Images are already processed and we have URLs
     req.body.images = req.body.images;
+  } else {
+    return next(new ErrorHandler('Product images are required', 400));
   }
   
-  const product = await Product.create(req.body);
-
-  res.status(201).json({
-    success: true,
-    product
-  });
+  try {
+    const product = await Product.create(req.body);
+    
+    res.status(201).json({
+      success: true,
+      product
+    });
+  } catch (error) {
+    console.error('Error creating product:', error);
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return next(new ErrorHandler(`Validation Error: ${messages.join(', ')}`, 400));
+    }
+    
+    return next(new ErrorHandler('Failed to create product', 500));
+  }
 });
 
 // Update product => /api/products/:id
