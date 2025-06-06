@@ -4,18 +4,13 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: process.env.SMTP_PORT || 587,
-  secure: false, // true for 465, false for other ports
+  secure: false, 
   auth: {
     user: process.env.SMTP_EMAIL || 'your_email@gmail.com',
     pass: process.env.SMTP_PASSWORD || 'your_app_password'
   }
 });
 
-/**
- * Send order confirmation email
- * @param {Object} options - Email options including to address, order details
- * @returns {Promise} - Email sending result
- */
 exports.sendOrderConfirmationEmail = async (options) => {
   const { to, order } = options;
 
@@ -95,11 +90,6 @@ exports.sendOrderConfirmationEmail = async (options) => {
   }
 };
 
-/**
- * Send shipping confirmation email
- * @param {Object} options - Email options including to address, order details, tracking info
- * @returns {Promise} - Email sending result
- */
 exports.sendShippingConfirmationEmail = async (options) => {
   const { to, order, trackingInfo } = options;
 
@@ -149,11 +139,6 @@ exports.sendShippingConfirmationEmail = async (options) => {
   }
 };
 
-/**
- * Send password reset email
- * @param {Object} options - Email options including to address and reset token/URL
- * @returns {Promise} - Email sending result
- */
 exports.sendPasswordResetEmail = async (options) => {
   const { to, name, resetUrl } = options;
 

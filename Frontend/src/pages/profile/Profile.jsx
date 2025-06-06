@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { API_ENDPOINTS } from '../../config/api';
+import UserAvatar from '../../components/common/UserAvatar';
 import {
   User,
   Mail,
@@ -161,59 +162,45 @@ const Profile = () => {
       fileInputRef.current.click();
     }
   };
-
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     // Check file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Please upload an image file (JPEG, PNG, or GIF)');
+      toast.error('Please upload an image file (JPEG, PNG, GIF or WebP)');
       return;
     }
 
     // Check file size (limit to 2MB)
     const maxSize = 2 * 1024 * 1024; // 2MB
     if (file.size > maxSize) {
-      toast.error('Image size must be less than 2MB');
+      toast.error('Image must be smaller than 2MB');
       return;
     }
 
     try {
       setUploadingAvatar(true);
+      toast.loading('Uploading profile picture...', { id: 'avatar-upload' });
       
       // Convert file to base64
-      const reader = new FileReader();      reader.onloadend = async () => {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
         try {
-          // Get token from cookie
-          const token = Cookies.get('token');
-          if (!token) {
-            toast.error('Authentication token not found. Please log in again.');
-            setUploadingAvatar(false);
-            return;
-          }
-          
-          console.log('Uploading avatar to:', API_ENDPOINTS.UPDATE_AVATAR);
-          console.log('Auth token exists:', !!token);
-          
-          // Send avatar to backend
+          // Send avatar to backend using axios instance
           const response = await axios.post(API_ENDPOINTS.UPDATE_AVATAR, {
             avatar: reader.result
-          }, {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
           });
           
           if (response.data && response.data.success) {
             // Update user state with new avatar
             updateUser({ ...user, avatar: response.data.avatarUrl });
-            toast.success('Profile picture updated successfully!');
+            toast.success('Profile picture updated successfully!', { id: 'avatar-upload' });
+            
             // Reload user data to ensure consistency
-            await loadUser();          } else {
+            await loadUser();
+          } else {
             throw new Error('Failed to update profile picture');
           }
         } catch (error) {
@@ -221,20 +208,26 @@ const Profile = () => {
           console.error('Error details:', error.response?.data || error.message);
           
           if (error.response?.status === 401) {
-            toast.error('Please log in again to update your profile picture.');
+            toast.error('Please log in again to update your profile picture.', { id: 'avatar-upload' });
           } else if (error.response?.status === 413) {
-            toast.error('Image is too large. Please choose a smaller image.');
+            toast.error('Image is too large. Please choose a smaller image.', { id: 'avatar-upload' });
           } else {
-            toast.error(error.response?.data?.message || 'Failed to update profile picture. Please try again.');
+            toast.error(error.response?.data?.message || 'Failed to update profile picture. Please try again.', { id: 'avatar-upload' });
           }
         } finally {
           setUploadingAvatar(false);
         }
       };
+      
+      reader.onerror = () => {
+        toast.error('Error reading file. Please try another image.', { id: 'avatar-upload' });
+        setUploadingAvatar(false);
+      };
+      
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Avatar upload error:', error);
-      toast.error('Failed to upload image');
+      toast.error('Failed to upload image', { id: 'avatar-upload' });
       setUploadingAvatar(false);
     }
   };
@@ -270,33 +263,29 @@ const Profile = () => {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                 {/* Profile Summary */}
-                <div className="p-6 border-b border-gray-100">
-                  <div className="text-center">                    <div className="relative inline-block">
-                      {user?.avatar && user.avatar !== 'default-avatar.jpg' ? (
-                        <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-200">
-                          <img 
-                            src={user.avatar} 
-                            alt={`${user?.firstName || ''} ${user?.lastName || ''}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.parentNode.innerHTML = `<div class="w-20 h-20 rounded-full bg-gray-500 flex items-center justify-center text-white text-2xl font-bold">
-                                ${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}
-                              </div>`;
-                            }}
-                          />
+                <div className="p-6 border-b border-gray-100">                  <div className="text-center">                    <div className="relative inline-block">
+                      <div className="group relative">
+                        <UserAvatar 
+                          avatar={user?.avatar} 
+                          firstName={user?.firstName} 
+                          lastName={user?.lastName} 
+                          size="xl"
+                          className="border-2 border-gray-200 shadow-md"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full">
+                          <div className="text-white text-xs">
+                            {user?.avatar && user.avatar !== 'default-avatar.jpg' ? 'Change Photo' : 'Add Photo'}
+                          </div>
                         </div>
-                      ) : (
-                        <div className="w-20 h-20 rounded-full bg-gray-500 flex items-center justify-center text-white text-2xl font-bold">
-                          {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-                        </div>
-                      )}
+                      </div>
                       
                       {/* Camera button */}
                       <button
                         onClick={handleAvatarClick}
                         disabled={uploadingAvatar}
-                        className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                        className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                        aria-label="Upload profile picture"
+                        title="Upload profile picture"
                       >
                         {uploadingAvatar ? (
                           <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>

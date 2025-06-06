@@ -7,6 +7,7 @@ const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 // Test route for authentication
 router.get('/test', isAuthenticatedUser, testAuth);
 
+// Product image upload route
 router.post(
   '/products/upload',
   isAuthenticatedUser,

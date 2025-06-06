@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useWishlist } from '../../context/WishlistContext'
 import { Search, ShoppingCart, User, Menu, X, LogOut, Package, Settings, Heart } from 'lucide-react'
+import UserAvatar from '../common/UserAvatar'
 
 (() => {
   if (typeof window !== 'undefined' && !window.__navbarScrollHandlerAttached) {
@@ -205,16 +206,18 @@ const NavbarComponent = () => {
 
             {/* User Menu */}
             {isAuthenticated ? (
-              <div className="relative">
-                <button
+              <div className="relative">                <button
                   onClick={toggleUserMenu}
                   className="flex items-center space-x-2 p-2 text-gray-700 hover:text-black transition-colors duration-200"
                 >
-                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5" />
-                  </div>
-                  <span className="hidden xl:block text-sm font-medium">{user?.name}</span>
-                </button>                <AnimatePresence>
+                  <UserAvatar 
+                    avatar={user?.avatar} 
+                    firstName={user?.firstName} 
+                    lastName={user?.lastName} 
+                    size="xs"
+                  />
+                  <span className="hidden xl:block text-sm font-medium">{user?.firstName} {user?.lastName}</span>
+                </button><AnimatePresence>
                   {menus.user && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
@@ -332,11 +335,15 @@ const NavbarComponent = () => {
                 )}
               </Link>
               
-              {isAuthenticated ? (
-                <div className="space-y-4 pt-4 border-t border-gray-200">
+              {isAuthenticated ? (                <div className="space-y-4 pt-4 border-t border-gray-200">
                   <div className="flex items-center space-x-3 pb-2">
-                    <User className="h-6 w-6 text-gray-700" />
-                    <span className="font-medium text-gray-900">{user?.name}</span>
+                    <UserAvatar 
+                      avatar={user?.avatar} 
+                      firstName={user?.firstName} 
+                      lastName={user?.lastName} 
+                      size="sm"
+                    />
+                    <span className="font-medium text-gray-900">{user?.firstName} {user?.lastName}</span>
                   </div>
                   <Link
                     to="/profile"

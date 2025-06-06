@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Package, ShoppingBag, Users, LogOut, Menu, X, ChevronDown, BarChart3, Sparkles, IndianRupee, FileText } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import UserAvatar from '../common/UserAvatar';
 import toast from 'react-hot-toast';
 
 function AdminLayout() {
@@ -147,13 +148,14 @@ function AdminLayout() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
-            >
-              <div className="flex items-center w-full">
+            >              <div className="flex items-center w-full">
                 <div>
-                  <img
-                    className="inline-block h-9 w-9 rounded-full"
-                    src={`https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=6366f1&color=fff`}
-                    alt=""
+                  <UserAvatar 
+                    avatar={user?.avatar} 
+                    firstName={user?.firstName} 
+                    lastName={user?.lastName} 
+                    size="sm"
+                    className="bg-black"
                   />
                 </div>
                 <div className="ml-3 flex-1">
@@ -259,13 +261,14 @@ function AdminLayout() {
                   </nav>
                 </div>
 
-                <div className="flex-shrink-0 flex bg-gray-700 p-4">
-                  <div className="flex items-center">
+                <div className="flex-shrink-0 flex bg-gray-700 p-4">                  <div className="flex items-center">
                     <div>
-                      <img
-                        className="inline-block h-9 w-9 rounded-full"
-                        src={`https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=6366f1&color=fff`}
-                        alt=""
+                      <UserAvatar 
+                        avatar={user?.avatar} 
+                        firstName={user?.firstName} 
+                        lastName={user?.lastName} 
+                        size="sm"
+                        className="bg-indigo-500"
                       />
                     </div>
                     <div className="ml-3">
@@ -326,12 +329,13 @@ function AdminLayout() {
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <span className="sr-only">Open user menu</span>
-                  <img
-                    className="h-8 w-8 rounded-full"
-                    src={`https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=6366f1&color=fff`}
-                    alt=""
+                >                  <span className="sr-only">Open user menu</span>
+                  <UserAvatar 
+                    avatar={user?.avatar} 
+                    firstName={user?.firstName} 
+                    lastName={user?.lastName} 
+                    size="xs"
+                    className="bg-indigo-500"
                   />
                   <span className="ml-2 text-gray-700 hidden lg:block">
                     {user?.firstName} {user?.lastName}
