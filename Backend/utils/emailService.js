@@ -226,3 +226,98 @@ exports.sendPasswordResetEmail = async (options) => {
     return { success: false, error: error.message };
   }
 };
+
+exports.sendOrderStatusUpdateEmail = async (options) => {
+  const { to, order, status, additionalInfo } = options;
+
+  // Create status-specific content
+  let statusTitle, statusMessage;
+
+  switch (status) {
+    case 'Processing':
+      statusTitle = 'Your Order is Being Processed';
+      statusMessage = 'We\'ve started processing your order and will update you when it ships.';
+      break;
+    case 'Shipped':
+      statusTitle = 'Your Order Has Shipped';
+      statusMessage = 'Good news! Your order is on the way to you.';
+      break;
+    case 'Out For Delivery':
+      statusTitle = 'Your Order is Out for Delivery';
+      statusMessage = 'Exciting news! Your order is out for delivery and should arrive today.';
+      break;
+    case 'Delivered':
+      statusTitle = 'Your Order Has Been Delivered';
+      statusMessage = 'Your order has been delivered. We hope you enjoy your purchase!';
+      break;
+    case 'Cancelled':
+      statusTitle = 'Your Order Has Been Cancelled';
+      statusMessage = 'Your order has been cancelled as requested. If you didn\'t request this, please contact our support team.';
+      break;
+    default:
+      statusTitle = `Order Status Update: ${status}`;
+      statusMessage = `Your order status has been updated to: ${status}`;
+  }
+
+  // Create email message
+  const message = {
+    from: `"${process.env.EMAIL_FROM_NAME || 'SastaKart'}" <${process.env.SMTP_EMAIL || 'noreply@ecommerce.com'}>`,
+    to,
+    subject: `${statusTitle} - Order #${order.id}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #000; padding: 20px; text-align: center;">
+          <h1 style="color: #fff; margin: 0;">${statusTitle}</h1>
+        </div>
+        
+        <div style="padding: 20px; border: 1px solid #eee;">
+          <p>Hello ${order.user.name},</p>
+          
+          <p>${statusMessage}</p>
+          
+          <div style="background-color: #f9f9f9; padding: 15px; margin: 20px 0;">
+            <h2 style="margin-top: 0;">Order Summary</h2>
+            <p><strong>Order ID:</strong> ${order.id}</p>
+            ${additionalInfo ? `
+              <div style="background-color: #eaf7ff; padding: 10px; margin-top: 10px; border-left: 4px solid #0066cc;">
+                <p><strong>Additional Information:</strong><br>${additionalInfo}</p>
+              </div>
+            ` : ''}
+          </div>
+          
+          <div style="margin-top: 30px; text-align: center;">
+            <p>If you have any questions, please contact our customer service at support@ecommerce.com</p>
+          </div>
+        </div>
+        
+        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+          <p>&copy; ${new Date().getFullYear()} SastaKart. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+    // Plain text alternative
+    text: `
+      ${statusTitle} - Order #${order.id}
+      
+      Hello ${order.user.name},
+      
+      ${statusMessage}
+      
+      Order ID: ${order.id}
+      ${additionalInfo ? `Additional Information: ${additionalInfo}` : ''}
+      
+      If you have any questions, please contact our customer service at support@ecommerce.com
+      
+      © ${new Date().getFullYear()} SastaKart. All rights reserved.
+    `
+  };
+
+  try {
+    const info = await transporter.sendMail(message);
+    console.log(`Order status update email sent for status ${status}:`, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error(`Order status update email failed for status ${status}:`, error);
+    return { success: false, error: error.message };
+  }
+};

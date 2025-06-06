@@ -2,6 +2,7 @@ const Order = require('../models/order');
 const Product = require('../models/product');
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
+const emailService = require('../utils/emailService');
 
 // Create new order => /api/orders
 exports.newOrder = catchAsyncErrors(async (req, res, next) => {
@@ -90,6 +91,40 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
 
   const order = await Order.create(orderData);
 
+  // Fetch user details to get email
+  const userPopulatedOrder = await Order.findById(order._id).populate('user', 'name email');
+  
+  try {
+    // Send order confirmation email
+    await emailService.sendOrderConfirmationEmail({
+      to: userPopulatedOrder.user.email,
+      order: {
+        id: order._id,
+        createdAt: order.createdAt,
+        total: order.totalPrice,
+        user: {
+          name: userPopulatedOrder.user.name || 'Customer'
+        },
+        items: order.orderItems.map(item => ({
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity
+        })),
+        shippingAddress: {
+          street: order.shippingInfo.address,
+          city: order.shippingInfo.city,
+          state: order.shippingInfo.state,
+          zipCode: order.shippingInfo.postalCode,
+          country: order.shippingInfo.country
+        }
+      }
+    });
+  } catch (emailError) {
+    console.error('Failed to send order confirmation email:', emailError);
+    // Don't fail the order creation if email sending fails
+    // We'll just log the error and continue
+  }
+
   res.status(200).json({
     success: true,
     order
@@ -160,6 +195,39 @@ exports.updateOrder = catchAsyncErrors(async (req, res, next) => {
   }
 
   await order.save({ validateBeforeSave: false });
+
+  // Populate user information to get email address
+  const populatedOrder = await Order.findById(order._id).populate('user', 'name email');
+
+  // Send email notification about status change
+  try {
+    // If it's out for delivery status
+    if (req.body.status === 'Shipped' || req.body.status === 'Out For Delivery') {
+      const trackingInfo = {
+        trackingNumber: req.body.note.includes('tracking:') ? req.body.note.split('tracking:')[1].trim() : 'N/A',
+        carrier: 'Our Delivery Partner',
+        estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 3 days from now
+        trackingUrl: req.body.note.includes('http') ? req.body.note.match(/(https?:\/\/[^\s]+)/g)[0] : null
+      };
+
+      await emailService.sendShippingConfirmationEmail({
+        to: populatedOrder.user.email,
+        order: {
+          id: order._id,
+          user: {
+            name: populatedOrder.user.name || 'Customer'
+          }
+        },
+        trackingInfo
+      });
+    } else {
+      // For other status changes, we could implement additional notifications here
+      console.log(`Status changed to ${req.body.status}, no email template available`);
+    }
+  } catch (emailError) {
+    console.error(`Failed to send order status update email for status ${req.body.status}:`, emailError);
+    // Don't fail the order update if email sending fails
+  }
 
   res.status(200).json({
     success: true
@@ -314,6 +382,48 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
   }
 
   await order.save({ validateBeforeSave: false });
+  // Populate user information to get email address
+  const populatedOrder = await Order.findById(order._id).populate('user', 'name email');
+
+  // Send email notification about status change
+  try {
+    // Special handling for shipping statuses
+    if (status === 'Shipped' || status === 'Out For Delivery') {
+      const trackingInfo = {
+        trackingNumber: note.includes('tracking:') ? note.split('tracking:')[1].trim() : 'N/A',
+        carrier: 'Our Delivery Partner',
+        estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 3 days from now
+        trackingUrl: note.includes('http') ? note.match(/(https?:\/\/[^\s]+)/g)[0] : null
+      };
+
+      await emailService.sendShippingConfirmationEmail({
+        to: populatedOrder.user.email,
+        order: {
+          id: order._id,
+          user: {
+            name: populatedOrder.user.name || 'Customer'
+          }
+        },
+        trackingInfo
+      });
+    } else {
+      // For all other status updates, use the generic email
+      await emailService.sendOrderStatusUpdateEmail({
+        to: populatedOrder.user.email,
+        order: {
+          id: order._id,
+          user: {
+            name: populatedOrder.user.name || 'Customer'
+          }
+        },
+        status: status,
+        additionalInfo: note
+      });
+    }
+  } catch (emailError) {
+    console.error(`Failed to send order status update email for status ${status}:`, emailError);
+    // Don't fail the order update if email sending fails
+  }
 
   res.status(200).json({
     success: true,
