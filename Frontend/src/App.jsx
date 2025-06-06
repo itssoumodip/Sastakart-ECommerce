@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet } from 'react-router-dom'
+import { Routes, Route, Outlet, Link } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 
 import Navbar from './components/layout/Navbar'
@@ -88,7 +88,29 @@ function App() {
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/orders" element={<Orders />} />
+          <Route path="/profile/orders/:id" element={<Orders />} />
         </Route>
+
+        {/* Catch-all route for handling 404s */}
+        <Route
+          path="*"
+          element={
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                Page Not Found
+              </h1>
+              <p className="text-lg text-gray-600 mb-8">
+                The page you're looking for doesn't exist or has been moved.
+              </p>
+              <Link
+                to="/"
+                className="px-5 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition"
+              >
+                Back to Home
+              </Link>
+            </div>
+          }
+        />
       </Route>
     </Routes>
   )

@@ -2,6 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
+// Determine if we're in development mode
+const isDevelopment = import.meta.env.MODE === 'development';
+
+// Suppress Stripe warnings in development
+if (isDevelopment && window.console && window.console.warn) {
+  const originalWarn = window.console.warn;
+  window.console.warn = (...args) => {
+    // Skip Stripe HTTPS warnings in development
+    if (args.length > 0 && typeof args[0] === 'string' && 
+        args[0].includes('Stripe.js integrations must use HTTPS')) {
+      return;
+    }
+    originalWarn.apply(window.console, args);
+  };
+}
+
 // Load the Stripe publishable key from environment variables
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 

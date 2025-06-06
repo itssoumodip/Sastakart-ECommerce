@@ -46,3 +46,30 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </HelmetProvider>
   </BrowserRouter>
 )
+
+// Add global error handler for uncaught errors from third-party scripts
+window.addEventListener('error', (event) => {
+  // Check if error is from a third-party script like Copilot
+  if (event.filename && 
+      (event.filename.includes('copilot') || 
+       event.filename.includes('extension') ||
+       event.message.includes('v[b] is not a function'))) {
+    
+    // Prevent the error from appearing in console
+    event.preventDefault();
+    return true;
+  }
+  return false;
+}, true);
+
+// Suppress specific console logs that are cluttering the console
+const originalConsoleLog = console.log;
+console.log = (...args) => {
+  // Skip logs about "PC plat undefined"
+  if (args.length > 0 && 
+      ((typeof args[0] === 'string' && args[0].includes('PC plat')) || 
+       (args.length > 1 && args[0] === 'PC' && args[1] === 'plat'))) {
+    return;
+  }
+  originalConsoleLog.apply(console, args);
+};
