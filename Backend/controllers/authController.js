@@ -84,16 +84,35 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
   // Set token expire time
   user.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
-
   await user.save({ validateBeforeSave: false });
 
-  // In a real application, we would send an email with the reset token
-  // For demo purposes, we'll just return the token
-  res.status(200).json({
-    success: true,
-    message: 'Password reset token sent to email',
-    token: resetToken
-  });
+  // Create the reset URL
+  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+  
+  // Import the email service
+  const emailService = require('../utils/emailService');
+  
+  try {
+    // Send the password reset email
+    await emailService.sendPasswordResetEmail({
+      to: user.email,
+      name: user.name || user.firstName,
+      resetUrl: resetUrl
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset instructions sent to your email'
+    });
+  } catch (error) {
+    // If email sending fails, reset the token fields
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    
+    await user.save({ validateBeforeSave: false });
+    
+    return next(new ErrorHandler('Email could not be sent', 500));
+  }
 });
 
 // Reset password => /api/auth/password/reset/:token

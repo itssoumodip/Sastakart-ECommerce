@@ -15,14 +15,24 @@ const ForgotPassword = () => {
     handleSubmit,
     formState: { errors, isSubmitting }
   } = useForm()
-
   const onSubmit = async (data) => {
     try {
-      await axios.post('/api/auth/password/forgot', { email: data.email })
+      const response = await axios.post('/api/auth/password/forgot', { email: data.email })
       setIsSubmitted(true)
       toast.success('Password reset instructions sent to your email')
+      
+      // Remove this log in production - only for testing
+      console.log('Password reset response:', response.data)
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to send reset email')
+      console.error('Password reset error:', error)
+      
+      if (error.response?.status === 404) {
+        // Don't reveal if email exists or not (for security)
+        toast.success('If your email exists in our system, you will receive reset instructions shortly')
+        setIsSubmitted(true)
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to process your request')
+      }
     }
   }
 
@@ -37,7 +47,7 @@ const ForgotPassword = () => {
         {/* Left Panel - Hero Image */}
         <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
           <img 
-            src="https://images.unsplash.com/photo-1581583813508-636c134aeef0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0"
+            src="https://images.unsplash.com/photo-1726443221449-5e3727606f7b?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             className="object-cover h-full w-full"
             alt="Forgot password illustration"
           />

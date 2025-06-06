@@ -6,8 +6,19 @@ const transporter = nodemailer.createTransport({
   port: process.env.SMTP_PORT || 587,
   secure: false, 
   auth: {
-    user: process.env.SMTP_EMAIL || 'your_email@gmail.com',
-    pass: process.env.SMTP_PASSWORD || 'your_app_password'
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD
+  },
+  logger: true, // Enable logging
+  debug: process.env.NODE_ENV !== 'production' // Debug in non-production environments
+});
+
+// Verify transporter configuration
+transporter.verify(function(error, success) {
+  if (error) {
+    console.error('SMTP server connection error:', error);
+  } else {
+    console.log('SMTP server connection verified and ready to send emails');
   }
 });
 
@@ -142,11 +153,17 @@ exports.sendShippingConfirmationEmail = async (options) => {
 exports.sendPasswordResetEmail = async (options) => {
   const { to, name, resetUrl } = options;
 
+  // Log the attempt (not in production)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Attempting to send password reset email to: ${to}`);
+    console.log(`Reset URL: ${resetUrl}`);
+  }
+
   // Create email message
   const message = {
-    from: `"${process.env.EMAIL_FROM_NAME || 'E-Commerce Store'}" <${process.env.EMAIL_FROM || 'noreply@ecommerce.com'}>`,
+    from: `"${process.env.EMAIL_FROM_NAME || 'SastaKart'}" <${process.env.SMTP_EMAIL || 'noreply@ecommerce.com'}>`,
     to,
-    subject: `Password Reset Request`,
+    subject: `Password Reset Request - SastaKart`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #000; padding: 20px; text-align: center;">
@@ -173,17 +190,39 @@ exports.sendPasswordResetEmail = async (options) => {
         </div>
         
         <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-          <p>&copy; ${new Date().getFullYear()} E-Commerce Store. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} SastaKart. All rights reserved.</p>
         </div>
       </div>
+    `,
+    // Plain text alternative for email clients that don't support HTML
+    text: `
+      Password Reset - SastaKart
+      
+      Hello ${name},
+      
+      You requested a password reset. Please visit the following link to create a new password:
+      
+      ${resetUrl}
+      
+      This link will expire in 30 minutes.
+      
+      If you didn't request this, you can safely ignore this email.
+      
+      SastaKart Team
     `
   };
 
   try {
-    await transporter.sendMail(message);
-    return { success: true };
+    const info = await transporter.sendMail(message);
+    console.log('Password reset email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error('Email sending failed:', error);
-    return { success: false, error };
+    console.error('Password reset email sending failed:', error);
+    // Log more detailed information about the error
+    if (error.response) {
+      console.error('SMTP Response Code:', error.responseCode);
+      console.error('SMTP Response:', error.response);
+    }
+    return { success: false, error: error.message };
   }
 };

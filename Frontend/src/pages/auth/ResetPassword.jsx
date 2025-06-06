@@ -21,17 +21,35 @@ const ResetPassword = () => {
   } = useForm()
 
   const password = watch('password')
-
   const onSubmit = async (data) => {
     try {
-      await axios.put(`/api/auth/password/reset/${token}`, {
+      if (data.password !== data.confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
+      }
+      
+      const response = await axios.put(`/api/auth/password/reset/${token}`, {
         password: data.password,
         confirmPassword: data.confirmPassword
-      })
-      toast.success('Password reset successfully')
-      navigate('/login')
+      });
+      
+      toast.success('Password reset successfully');
+      console.log('Password reset successful:', response.data);
+      
+      // Redirect to login after a brief delay so the user sees the success message
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to reset password')
+      console.error('Password reset error:', error);
+      
+      if (error.response?.status === 400 && error.response?.data?.message?.includes('expired')) {
+        toast.error('Password reset link has expired. Please request a new one.');
+      } else if (error.response?.status === 400 && error.response?.data?.message?.includes('invalid')) {
+        toast.error('Invalid password reset link. Please request a new one.');
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to reset password');
+      }
     }
   }
 
