@@ -33,10 +33,10 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
     
     // Track GST by category
     if (item.category) {
-      const currentAmount = categoryWiseGst.get(item.category) || 0;
+      const currentAmount = categoryWiseGst.get(item.category) || 0; 
       categoryWiseGst.set(item.category, currentAmount + itemGst);
-    }
-    
+    }   
+          
     return {
       ...item,
       gst: itemGst
