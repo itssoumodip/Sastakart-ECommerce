@@ -13,12 +13,14 @@ const {
   updateOrderStatus,
   cancelOrder
 } = require('../controllers/orderController');
+const { generateInvoice } = require('../controllers/invoiceController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 
 router.route('/').post(isAuthenticatedUser, newOrder);
 router.route('/me').get(isAuthenticatedUser, myOrders);
 router.route('/:id').get(isAuthenticatedUser, getSingleOrder)
 router.route('/:id/cancel').put(isAuthenticatedUser, cancelOrder);
+router.route('/:id/invoice').get(isAuthenticatedUser, generateInvoice);
 
 // Admin routes
 router.route('/admin/orders').get(isAuthenticatedUser, authorizeRoles('admin'), getAllOrders);

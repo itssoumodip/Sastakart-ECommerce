@@ -131,8 +131,54 @@ const Orders = () => {
     }
   };
 
-  const handleDownloadInvoice = (orderId) => {
-    toast.success('Invoice downloaded successfully');
+  const handleDownloadInvoice = async (orderId) => {
+    try {
+      // Find the order to check if it's delivered
+      const order = orders.find(o => o._id === orderId);
+      if (!order) {
+        toast.error('Order not found');
+        return;
+      }
+
+      if (order.orderStatus !== 'Delivered') {
+        toast.error('Invoice can only be downloaded for delivered orders');
+        return;
+      }
+
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/orders/${orderId}/invoice`, {
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Extract filename from response headers or use default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `invoice-${orderId}.pdf`;
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Invoice downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to download invoice';
+      toast.error(errorMessage);
+    }
   };
   const handleCancelOrder = async (orderId) => {
     if (!window.confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
@@ -412,7 +458,13 @@ const Orders = () => {
                         </button>
                         <button
                           onClick={() => handleDownloadInvoice(currentOrder._id)}
-                          className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-200"
+                          className={`inline-flex items-center px-4 py-2 rounded-lg border ${
+                            currentOrder.orderStatus === 'Delivered'
+                              ? 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
+                              : 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                          }`}
+                          disabled={currentOrder.orderStatus !== 'Delivered'}
+                          title={currentOrder.orderStatus !== 'Delivered' ? 'Invoice available only for delivered orders' : 'Download Invoice'}
                         >
                           <Download className="w-4 h-4 mr-2" />
                           Invoice
@@ -508,7 +560,13 @@ const Orders = () => {
                             </button>
                             <button
                               onClick={() => handleDownloadInvoice(order._id)}
-                              className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-200"
+                              className={`inline-flex items-center px-4 py-2 rounded-lg border ${
+                                order.orderStatus === 'Delivered'
+                                  ? 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
+                                  : 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                              }`}
+                              disabled={order.orderStatus !== 'Delivered'}
+                              title={order.orderStatus !== 'Delivered' ? 'Invoice available only for delivered orders' : 'Download Invoice'}
                             >
                               <Download className="w-4 h-4 mr-2" />
                               Invoice
@@ -661,7 +719,13 @@ const SingleOrderView = ({
           </button>
           <button
             onClick={() => handleDownloadInvoice(order._id)}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50"
+            className={`inline-flex items-center px-4 py-2 border rounded-md shadow-sm ${
+              order.orderStatus === 'Delivered'
+                ? 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                : 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+            disabled={order.orderStatus !== 'Delivered'}
+            title={order.orderStatus !== 'Delivered' ? 'Invoice available only for delivered orders' : 'Download Invoice'}
           >
             <Download className="w-4 h-4 mr-2" />
             <span>Download Invoice</span>
