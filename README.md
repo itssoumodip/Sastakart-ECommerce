@@ -1,137 +1,273 @@
-# ClassyShop - Modern E-Commerce Platform
+# SastaKart E-Commerce Platform
 
-A full-stack e-commerce platform built with the MERN stack (MongoDB, Express.js, React, Node.js), featuring a modern UI with Tailwind CSS and comprehensive e-commerce functionality.
+SastaKart is a full-featured e-commerce platform built with modern web technologies, providing a complete online shopping experience.
 
-![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)
-![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Environment Configuration](#environment-configuration)
+- [Usage](#usage)
+- [API Endpoints](#api-endpoints)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
-## 🌟 Features
+## Overview
+
+SastaKart is a comprehensive e-commerce solution with separate frontend and backend codebases. The platform includes user authentication, product management, shopping cart functionality, order processing, payment integration, and an admin dashboard.
+
+## Features
 
 ### User Features
-- 🔐 Secure Authentication with JWT
-- 👤 User Profile Management with Avatar Upload
-- 🛒 Shopping Cart & Wishlist
-- 💳 Stripe Payment Integration
-- 📦 Order Tracking
-- 🔍 Product Search & Filtering
-- 📱 Responsive Design
+- User registration and authentication
+- Product browsing and searching with filters
+- Product details with images, specifications, and reviews
+- Shopping cart and wishlist management
+- Secure checkout with multiple payment options (Card, COD)
+- Order tracking and history
+- User profile management
 
 ### Admin Features
-- 📊 Admin Dashboard
-- 📦 Product Management
-- 👥 User Management
-- 📜 Order Management
-- 💰 COD (Cash on Delivery) Management
-- 📈 Sales Analytics
+- Dashboard with sales analytics
+- Product management (Add, Edit, Delete)
+- Order management and status updates
+- Customer management
+- GST and invoice management
+- COD payment handling
+- Image upload functionality
 
-## 🚀 Tech Stack
+## Technologies Used
 
 ### Frontend
-- React.js with Vite
+- React (v18)
+- Vite for build tooling
+- React Router for navigation
 - Tailwind CSS for styling
-- React Context for state management
-- Framer Motion for animations
-- React Hook Form for form handling
+- React Query for data fetching
 - Axios for API requests
+- Stripe for payment processing
+- Various React UI libraries (Headless UI, Hero Icons, etc.)
 
 ### Backend
-- Node.js & Express.js
+- Node.js with Express
 - MongoDB with Mongoose
-- JWT Authentication
-- Cloudinary for image uploads
-- Stripe Payment Integration
-- Email Service Integration
+- JWT for authentication
+- Bcrypt for password hashing
+- Cloudinary for image storage
+- Nodemailer for email notifications
+- Stripe API for payment processing
+- PDFKit for invoice generation
 
-## 🛠️ Setup & Installation
+## Project Structure
+
+The project is organized into two main directories:
+
+### Backend
+```
+Backend/
+├── controllers/       # Request handlers
+├── middleware/        # Authentication and error handling
+├── models/            # Database schemas
+├── routes/            # API routes
+├── utils/             # Helper functions
+├── index.js           # Entry point
+├── emailTest.js       # Email configuration testing
+└── package.json       # Dependencies
+```
+
+### Frontend
+```
+Frontend/
+├── public/            # Static assets
+├── src/
+│   ├── assets/        # Images, fonts, etc.
+│   ├── components/    # Reusable UI components
+│   ├── config/        # Configuration files
+│   ├── context/       # React context providers
+│   ├── pages/         # Page components
+│   ├── services/      # API service functions
+│   ├── utils/         # Helper functions
+│   ├── App.jsx        # Main application component
+│   ├── index.css      # Global styles
+│   └── main.jsx       # Entry point
+├── index.html         # HTML template
+└── package.json       # Dependencies
+```
+
+## Installation
+
+### Prerequisites
+- Node.js (v20.x recommended)
+- MongoDB
+- Cloudinary account
+- Stripe account
+
+### Setting up the Backend
 
 1. Clone the repository:
-   ```bash
-   git clone [repository-url]
-   ```
+```bash
+git clone https://github.com/itssoumodip/Sastakart-ECommerce.git
+cd Sastakart-ECommerce/Backend
+```
 
-2. Install dependencies for both frontend and backend:
-   ```bash
-   # Install backend dependencies
-   cd Backend
-   npm install
+2. Install dependencies:
+```bash
+npm install
+```
 
-   # Install frontend dependencies
-   cd ../Frontend
-   npm install
-   ```
+3. Create a `.env` file (see Environment Configuration section)
 
-3. Set up environment variables:
-   Create .env files in both Frontend and Backend directories with necessary configurations.
+4. Start the development server:
+```bash
+npm run dev
+```
 
-4. Run the development servers:
-   ```bash
-   # Start backend server
-   cd Backend
-   npm run dev
+### Setting up the Frontend
 
-   # Start frontend server
-   cd Frontend
-   npm run dev
-   ```
+1. Navigate to the frontend directory:
+```bash
+cd ../Frontend
+```
 
-## 🌍 Environment Variables
+2. Install dependencies:
+```bash
+npm install
+```
 
-### Backend
-```env
-MONGODB_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
-STRIPE_SECRET_KEY=your_stripe_secret_key
+3. Start the development server:
+```bash
+npm run dev
+```
+
+## Environment Configuration
+
+### Backend (.env)
+```
+PORT=5000
+NODE_ENV=development
+DB_URI=mongodb://localhost:27017/sastakart
+
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRE=7d
+COOKIE_EXPIRE=7
+
 CLOUDINARY_CLOUD_NAME=your_cloudinary_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_EMAIL=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 ```
 
 ### Frontend
-```env
-VITE_API_URL=your_backend_api_url
-VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key
+Configuration is handled through the Vite config and API client setup.
+
+## Usage
+
+### Running in Development Mode
+
+#### Backend
+```bash
+cd Backend
+npm run dev
 ```
 
-## 📁 Project Structure
-
-The project follows a clean and modular architecture:
-
-```
-Frontend/
-├── src/
-│   ├── components/     # Reusable UI components
-│   ├── context/        # React Context providers
-│   ├── pages/          # Route components
-│   ├── services/       # API service layers
-│   └── utils/          # Utility functions
-Backend/
-├── controllers/        # Route controllers
-├── models/            # Mongoose models
-├── routes/            # API routes
-├── middleware/        # Custom middleware
-└── utils/             # Utility functions
+#### Frontend
+```bash
+cd Frontend
+npm run dev
 ```
 
-## 🔒 Security Features
+### Building for Production
 
-- JWT Authentication
-- Password Hashing
-- Protected Routes
-- Input Validation
-- XSS Protection
-- CORS Configuration
+#### Backend
+```bash
+cd Backend
+npm start
+```
 
-## 🤝 Contributing
+#### Frontend
+```bash
+cd Frontend
+npm run build
+```
 
-Contributions, issues, and feature requests are welcome! Feel free to check [issues page](link_to_issues).
+## API Endpoints
 
-## 📝 License
+### Authentication
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - User login
+- `GET /api/auth/logout` - User logout
+- `POST /api/auth/password/forgot` - Forgot password
+- `PUT /api/auth/password/reset/:token` - Reset password
+- `GET /api/auth/me` - Get user profile
+- `PUT /api/auth/password/update` - Update password
+- `PUT /api/auth/me/update` - Update profile
 
-This project is [MIT](link_to_license) licensed.
+### Products
+- `GET /api/products` - Get all products
+- `GET /api/products/:id` - Get single product
+- `POST /api/products` - Create product (Admin)
+- `PUT /api/products/:id` - Update product (Admin)
+- `DELETE /api/products/:id` - Delete product (Admin)
+- `PUT /api/products/review` - Create/update review
 
-## 👨‍💻 Author
+### Orders
+- `POST /api/orders` - Create new order
+- `GET /api/orders/:id` - Get single order
+- `GET /api/orders/me` - Get logged in user orders
+- `GET /api/admin/orders` - Get all orders (Admin)
+- `PUT /api/admin/order/:id` - Update order (Admin)
+- `DELETE /api/admin/order/:id` - Delete order (Admin)
+- `PUT /api/admin/order/:id/collect-cod` - Collect COD payment (Admin)
+- `GET /api/admin/orders/cod-analytics` - Get COD analytics (Admin)
+- `GET /api/orders/:id/invoice` - Generate invoice
 
-Made with ❤️ by Soumodip Das
+### Payments
+- `POST /api/payment/create` - Create payment intent
+- `POST /api/payment/confirm` - Confirm payment
+- `GET /api/payment/verify/:id` - Verify payment status
+- `POST /api/payment/refund` - Process refund
+
+### Dashboard (Admin)
+- `GET /api/dashboard/stats` - Get dashboard statistics
+
+### GST (Admin)
+- `GET /api/gst/settings` - Get GST settings
+- `PUT /api/gst/settings` - Update GST settings
+- `GET /api/gst/analytics` - Get GST analytics
+
+### Image Upload
+- `POST /api/upload/products/upload` - Upload product images
+
+## Deployment
+
+The application is configured for deployment on Vercel:
+
+### Backend
+- Deploy using Vercel's Node.js runtime
+- Configure environment variables in Vercel dashboard
+
+### Frontend
+- Deploy using Vercel's static site hosting
+- API proxying is configured in the `vercel.json` file
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the ISC License.
