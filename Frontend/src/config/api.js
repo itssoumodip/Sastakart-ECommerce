@@ -61,6 +61,8 @@ export const API_ENDPOINTS = {
   ME: '/api/auth/me',
   FORGOT_PASSWORD: '/api/auth/password/forgot',
   RESET_PASSWORD: '/api/auth/password/reset',
+  GOOGLE_AUTH: '/api/auth/google/login',
+  GOOGLE_VERIFY: '/api/auth/google/verify-token',
   
   // User endpoints
   USERS: '/api/users',

@@ -10,12 +10,13 @@ import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import googleIcon from '../../assets/google-icon.svg'
 import { toastConfig, formatToastMessage } from '../../utils/toastConfig'
+import { GoogleLogin } from '@react-oauth/google'
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { register: registerUser, isAuthenticated, loading } = useAuth()
+  const { register: registerUser, googleLogin, isAuthenticated, loading } = useAuth()
   const navigate = useNavigate()
 
   const {
@@ -91,13 +92,34 @@ const Register = () => {
             
             {/* Social Login Buttons */}
             <div className="flex gap-4 mb-6">
-              <button 
-                className="flex-1 border border-gray-300 rounded-md py-3 flex justify-center items-center gap-2 hover:bg-gray-50 transition-all"
-              >
-                <img src={googleIcon} alt="Google" className="w-5 h-5" />
-                <span className="text-sm">Sign up with Google</span>
-              </button>
-              
+              <div className="w-full flex justify-center">
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    console.log('Google login success:', credentialResponse);
+                    setIsLoading(true);
+                    try {
+                      const result = await googleLogin(credentialResponse);
+                      if (result.success) {
+                        toast.success('Account created successfully! Welcome to SastaKart', toastConfig.success);
+                        navigate('/');
+                      }
+                    } catch (error) {
+                      console.error('Google sign up error:', error);
+                      toast.error('Google sign up failed. Please try again.', toastConfig.error);
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
+                  onError={(error) => {
+                    console.error('Google login error:', error);
+                    toast.error('Google sign up failed. Please try again.', toastConfig.error);
+                  }}
+                  useOneTap
+                  text="signup_with"
+                  shape="rectangular"
+                  width="300"
+                />
+              </div>
             </div>
             
             {/* OR Divider */}

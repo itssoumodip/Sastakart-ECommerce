@@ -3,6 +3,7 @@ const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const sendToken = require('../utils/jwtToken');
 const crypto = require('crypto');
+const passport = require('../utils/passport');
 
 // Register a user => /api/auth/register
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
@@ -193,4 +194,51 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     success: true,
     user
   });
+});
+
+// Google Authentication callbacks
+exports.googleCallback = catchAsyncErrors(async (req, res, next) => {
+  // This function will be called after successful Google authentication
+  sendToken(req.user, 200, res);
+});
+
+// Handle Google Auth verification
+exports.verifyGoogleToken = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    
+    // Verify the token with Google's OAuth2 API
+    const { OAuth2Client } = require('google-auth-library');
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+    
+    const payload = ticket.getPayload();
+    const { email, name, given_name, family_name, picture } = payload;
+    
+    // Check if user exists
+    let user = await User.findOne({ email });
+    
+    if (user) {
+      // User exists, return token
+      sendToken(user, 200, res);
+    } else {
+      // Create new user
+      user = await User.create({
+        name,
+        firstName: given_name,
+        lastName: family_name,
+        email,
+        password: crypto.randomBytes(16).toString('hex'),
+        avatar: picture
+      });
+      
+      sendToken(user, 201, res);
+    }
+  } catch (error) {
+    return next(new ErrorHandler('Google authentication failed', 401));
+  }
 });

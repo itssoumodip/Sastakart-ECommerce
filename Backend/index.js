@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const passport = require('./utils/passport');
 const errorMiddleware = require('./middleware/errorMiddleware');
 
 // Import routes
@@ -36,6 +37,9 @@ app.use(cors({
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
+
+// Initialize Passport middleware
+app.use(passport.initialize());
 
 // Root route
 app.get('/', (req, res) => {

@@ -234,6 +234,51 @@ export const AuthProvider = ({ children }) => {
       toast.error('Failed to update profile')
     }
   }
+  
+  const googleLogin = async (credentialResponse) => {
+    try {
+      dispatch({ type: 'LOGIN_REQUEST' })
+      
+      console.log('Sending Google token to backend for verification:', credentialResponse.credential);
+      
+      // Send the ID token to your backend for verification
+      const { data } = await axios.post(API_ENDPOINTS.GOOGLE_VERIFY, {
+        token: credentialResponse.credential
+      })
+      
+      console.log('Google auth response from backend:', data);
+      
+      // Set the token in cookies
+      if (data.token) {
+        Cookies.set('token', data.token, { 
+          expires: 7,
+          path: '/',
+          secure: window.location.protocol === 'https:',
+          sameSite: 'Lax'
+        })
+        axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
+      } else {
+        console.error('No token received from backend after Google login');
+      }
+      
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: data.user,
+      })
+      
+      toast.success('Logged in with Google successfully', toastConfig.success)
+      return { success: true }
+    } catch (error) {
+      console.error('Google login error details:', error);
+      const message = formatToastMessage(error.response?.data?.message || 'Google login failed')
+      dispatch({
+        type: 'LOGIN_FAIL',
+        payload: message,
+      })
+      toast.error(message, toastConfig.error)
+      return { success: false, error: message }
+    }
+  }
 
   const value = {
     ...state,
@@ -243,6 +288,7 @@ export const AuthProvider = ({ children }) => {
     loadUser,
     clearErrors,
     updateUser,
+    googleLogin,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { HelmetProvider } from 'react-helmet-async'
 import { Toaster } from 'react-hot-toast'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import App from './App.jsx'
 import './index.css'
 import { AuthProvider } from './context/AuthContext.jsx'
@@ -29,19 +30,21 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   >
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <App />
-              <Toaster
-                position="top-right"
-                reverseOrder={false}
-                gutter={8}
-                toastOptions={toastConfig}
-              />
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <App />
+                <Toaster
+                  position="top-right"
+                  reverseOrder={false}
+                  gutter={8}
+                  toastOptions={toastConfig}
+                />
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
+        </GoogleOAuthProvider>
       </QueryClientProvider>
     </HelmetProvider>
   </BrowserRouter>
