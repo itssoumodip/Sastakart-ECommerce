@@ -98,7 +98,7 @@ const Cart = () => {
     return (
       <>
         <Helmet>
-          <title>My Bag - ClassyShop</title>
+          <title>My Bag - Sastakart</title>
           <meta name="description" content="Your shopping bag is empty. Discover our latest fashion collections." />
         </Helmet>
         
@@ -138,7 +138,7 @@ const Cart = () => {
   return (
     <>
       <Helmet>
-        <title>{`My Bag (${getCartItemsCount() || 0}) - ClassyShop`}</title>
+        <title>{`My Bag (${getCartItemsCount() || 0}) - Sastakart`}</title>
         <meta name="description" content={`${getCartItemsCount() || 0} items in your shopping bag.`} />
       </Helmet>
 

@@ -10,24 +10,34 @@ axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
-// Add a request interceptor to add auth headers
+// Import the auth utility functions
+import { getAuthToken } from '../utils/auth';
+
+// Add a request interceptor with improved token management
 axios.interceptors.request.use(
   (config) => {
-    // Add auth headers to every request
-    const headers = getAuthHeaders();
-    config.headers = {
-      ...config.headers,
-      ...headers
-    };
-    
-    // Ensure withCredentials is set for all requests
-    config.withCredentials = true;
-    
-    // Log request for debugging (remove in production)
-    console.log(`Request to ${config.url}:`, { 
-      headers: config.headers,
-      withCredentials: config.withCredentials
-    });
+    try {
+      // First get the current token (this will also ensure it's synchronized)
+      const token = getAuthToken();
+      
+      if (token) {
+        // Set authorization header with token
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      // Always ensure withCredentials is set for all requests
+      config.withCredentials = true;
+      
+      // Only log non-auth check requests to reduce noise
+      if (!config.url?.includes('/api/auth/me')) {
+        console.log(`Request to ${config.url}:`, { 
+          headers: { Authorization: token ? 'Bearer [TOKEN]' : 'None' },
+          withCredentials: config.withCredentials
+        });
+      }
+    } catch (error) {
+      console.error('Error setting up request headers:', error);
+    }
     
     return config;
   },
@@ -40,9 +50,22 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.log('API Error:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      message: error.message,
+      currentPath: window.location.pathname
+    });
+    
     if (error.response?.status === 401) {
-      // Handle unauthorized access
-      window.location.href = '/login';
+      // Handle unauthorized access but don't redirect if we're in checkout
+      if (!window.location.pathname.includes('/checkout')) {
+        console.warn('401 error - redirecting to login (skipped for checkout pages)');
+        window.location.href = '/login';
+      } else {
+        console.warn('401 error on checkout page - not redirecting automatically');
+        // Maybe show a modal or notification instead of redirecting
+      }
     } else if (error.response?.status === 403) {
       // Handle forbidden access
       if (window.location.pathname.startsWith('/admin')) {

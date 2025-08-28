@@ -242,7 +242,7 @@ const Profile = () => {
   return (
     <>
       <Helmet>
-        <title>Profile - ClassyShop</title>
+        <title>Profile - Sastakart</title>
         <meta name="description" content="Manage your account information and settings" />
       </Helmet>
 

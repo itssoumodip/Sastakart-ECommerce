@@ -2,18 +2,22 @@ const express = require('express');
 const router = express.Router();
 
 const {
-  createPaymentIntent,
-  confirmPayment,
-  stripeWebhook,
-  getPaymentStatus
+  createOrderPayment,
+  paymentCallback,
+  checkOrderPaymentStatus,
+  processRefund,
+  saveOrder,
+  getPaymentMethods
 } = require('../controllers/paymentController');
 
 const { isAuthenticatedUser } = require('../middleware/auth');
 
-// Payment routes
-router.route('/create').post(isAuthenticatedUser, createPaymentIntent);
-router.route('/confirm').post(isAuthenticatedUser, confirmPayment);
-router.route('/webhook').post(express.raw({ type: 'application/json' }), stripeWebhook);
-router.route('/:paymentId').get(isAuthenticatedUser, getPaymentStatus);
+// PhonePe Payment routes
+router.route('/create').post(isAuthenticatedUser, createOrderPayment);
+router.route('/callback').post(paymentCallback);
+router.route('/status/:merchantTransactionId').get(isAuthenticatedUser, checkOrderPaymentStatus);
+router.route('/refund').post(isAuthenticatedUser, processRefund);
+router.route('/save-order').post(isAuthenticatedUser, saveOrder);
+router.route('/methods').get(isAuthenticatedUser, getPaymentMethods);
 
 module.exports = router;

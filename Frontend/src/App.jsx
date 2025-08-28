@@ -20,6 +20,7 @@ import Profile from './pages/profile/Profile'
 import Orders from './pages/profile/Orders'
 import Checkout from './pages/Checkout'
 import OrderSuccess from './pages/OrderSuccess'
+import PaymentStatus from './pages/PaymentStatus'
 
 import Dashboard from './pages/admin/Dashboard'
 import ProductsManagement from './pages/admin/ProductsManagement'
@@ -86,6 +87,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/payment-status/:orderId" element={<PaymentStatus />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/orders" element={<Orders />} />
           <Route path="/profile/orders/:id" element={<Orders />} />

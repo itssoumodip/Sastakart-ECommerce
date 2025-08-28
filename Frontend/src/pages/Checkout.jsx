@@ -4,10 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
+import Cookies from 'js-cookie';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import { getAuthToken, getAuthHeaders, syncToken } from '../utils/auth';
 import CheckoutPayment from '../components/payment/CheckoutPayment';
+import phonePeLogo from '../assets/payment/phonepe-logo.svg';
+import phonePeIcon from '../assets/payment/phonepeicon.svg';
 import {
   CreditCard,
   MapPin,
@@ -32,14 +36,16 @@ import {
 
 const Checkout = () => {
   const { items: cartItems, getCartTotal, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState('phonepe');
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [paymentIntent, setPaymentIntent] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authToken, setAuthToken] = useState(null);
 
   const shippingForm = useForm({
     defaultValues: {
@@ -66,13 +72,56 @@ const Checkout = () => {
       billingAddress: 'same'
     }
   });
+  // Effect to check cart items
   useEffect(() => {
     if ((!cartItems || cartItems.length === 0) && !orderPlaced) {
       navigate('/cart');
       toast.error('Your cart is empty');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderPlaced]);  // Calculate with proper parsing and formatting for all monetary values
+  }, [orderPlaced]);
+  
+  // Effect to check authentication and store token for use in checkout
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        // Import auth utilities - using the imported functions from the top
+        // First, check if the user is authenticated via AuthContext
+        if (!isAuthenticated) {
+          console.warn('User is not authenticated according to AuthContext, redirecting to login');
+          navigate('/login', { state: { from: '/checkout' } });
+          return;
+        }
+        
+        // Get token from all storage mechanisms with improved utility
+        const token = getAuthToken();
+        
+        if (!token) {
+          console.error('No token found despite being "authenticated" in AuthContext');
+          toast.error('Authentication required. Please log in again.');
+          navigate('/login', { state: { from: '/checkout' } });
+          return;
+        }
+        
+        // Synchronize token across all storage mechanisms
+        syncToken(token);
+        
+        // Store in component state for direct access to child components
+        setAuthToken(token);
+        
+        // Mark authentication check as complete
+        setAuthChecked(true);
+        
+        console.log('Authentication verified successfully for checkout');
+      } catch (error) {
+        console.error('Error during authentication check:', error);
+        toast.error('Authentication error. Please log in again.');
+        navigate('/login', { state: { from: '/checkout' } });
+      }
+    };
+    
+    checkAuthentication();
+  }, [isAuthenticated, navigate]);  // Calculate with proper parsing and formatting for all monetary values
   const subtotal = getCartTotal(); 
   const { totalGstAmount, categoryWiseGst } = useCart().getCartGstDetails();
   const shipping = subtotal > 3500 ? 0 : 299;
@@ -170,34 +219,70 @@ const Checkout = () => {
         name: item.name,
         quantity: parseInt(item.quantity) || 1,
         image: item.image,
-        price: parseFloat((parseFloat(item.price) || 0).toFixed(2)) // Double parse to ensure proper number
+        price: parseFloat((parseFloat(item.price) || 0).toFixed(2)), // Double parse to ensure proper number
+        gstRate: item.gstRate || 18, // Default GST rate if not present
+        gstAmount: item.gstAmount || 0 // Default GST amount if not present
       })),
       shippingInfo: {
-        firstName: shippingData.firstName,
-        lastName: shippingData.lastName,
         address: shippingData.address,
         city: shippingData.city,
         state: shippingData.state,
         country: shippingData.country,
         postalCode: shippingData.postalCode,
-        phoneNo: shippingData.phone, // Changed from phone to phoneNo to match backend schema
+        phoneNo: shippingData.phone // Make sure we use phoneNo as the backend expects
       },
       paymentInfo: {
-        ...paymentData
+        id: paymentData.id || 'GST-' + Date.now(), // Generate an ID if one isn't provided
+        status: paymentData.status || 'pending'
       },
       paymentMethod: paymentMethod,
       itemsPrice: subtotalFormatted,
       taxPrice: taxFormatted,
       shippingPrice: shippingFormatted,
-      totalPrice: total
+      totalPrice: total,
+      gstSummary: {
+        totalGstAmount: taxFormatted,
+        categoryWiseGst: {},
+        invoiceNumber: 'INV-' + Date.now() // Generate an invoice number
+      }
     };
 
-    const response = await axios.post('/api/orders', orderData, {
+    // Get token with improved utility (checks all sources and synchronizes)
+    const token = authToken || getAuthToken();
+    
+    if (!token) {
+      console.error('No authentication token found before order submission');
+      toast.error('Authentication required. Please log in again to complete your purchase.');
+      navigate('/login', { state: { from: '/checkout' } });
+      return;
+    }
+    
+    // Ensure token is properly synchronized across all storage mechanisms
+    syncToken(token);
+    
+    // Log order preparation
+    console.log('Preparing to submit order with authentication token');
+    
+    // Create axios instance specifically for this critical request
+    const secureAxios = axios.create({
+      baseURL: axios.defaults.baseURL,
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true
     });
+    
+    // Log the data we're submitting (basic info only, for privacy)
+    console.log('Submitting order with data:', {
+      orderItems: orderData.orderItems.length,
+      shippingInfo: 'present',
+      paymentMethod: orderData.paymentMethod,
+      totalAmount: orderData.totalPrice
+    });
+    
+    // Submit order with our secure axios instance
+    const response = await secureAxios.post('/api/orders', orderData);
 
     if (response.data.success) {
       clearCart();
@@ -449,26 +534,27 @@ const Checkout = () => {
             <input
               type="radio"
               name="paymentMethod"
-              value="card"
-              checked={paymentMethod === 'card'}
+              value="phonepe"
+              checked={paymentMethod === 'phonepe'}
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="sr-only"
             />
             <div className={`w-4 h-4 md:w-5 md:h-5 border-2 rounded-full mr-2 md:mr-3 flex items-center justify-center ${
-              paymentMethod === 'card' ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
+              paymentMethod === 'phonepe' ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
             }`}>
-              {paymentMethod === 'card' && (
+              {paymentMethod === 'phonepe' && (
                 <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full"></div>
               )}
             </div>
             <div className="flex items-center">
-              <CreditCard className="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3 text-gray-700" />
-              <span className="font-medium text-sm md:text-base">Credit Card</span>
+              <img 
+                src={phonePeLogo} 
+                alt="PhonePe Logo" 
+                className="w-40 h-8 -ml-7 md:w-40 md:h-7 md:-ml-8 mr-2 md:mr-3" 
+              />
             </div>
-            <div className="ml-auto flex items-center space-x-1 md:space-x-2">
-              <span className="w-6 h-4 md:w-8 md:h-5 bg-blue-600 rounded"></span>
-              <span className="w-6 h-4 md:w-8 md:h-5 bg-yellow-500 rounded"></span>
-              <span className="w-6 h-4 md:w-8 md:h-5 bg-red-500 rounded"></span>
+            <div className="ml-auto text-xs md:text-sm text-purple-700 font-medium">
+              Recommended
             </div>
           </label>
           
@@ -480,7 +566,7 @@ const Checkout = () => {
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="sr-only"
             />
-            <div className={`w-4 h-4 md:w-5 md:h-5 border-2 rounded-full mr-2 md:mr-3 flex items-center justify-center ${
+            <div className={`w-4 h-4 ml-1 md:w-5 md:h-5 border-2 rounded-full mr-2 md:mr-3 md:ml-1 flex items-center justify-center ${
               paymentMethod === 'cod' ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
             }`}>
               {paymentMethod === 'cod' && (
@@ -523,19 +609,33 @@ const Checkout = () => {
           </div>
         </div>
           {/* Conditional Payment Processing */}
-        {paymentMethod === 'card' ? (
-          <CheckoutPayment 
-            paymentMethod={paymentMethod}
-            paymentError={paymentError}
-            calculateTotal={calculateTotal}
-            handlePaymentSuccess={handlePaymentSuccess}
-            handlePaymentError={handlePaymentError}
-            shippingData={{
-              email: shippingForm.getValues('email'),
-              firstName: shippingForm.getValues('firstName'),
-              lastName: shippingForm.getValues('lastName')
-            }}
-          />        ) : (
+        {paymentMethod === 'phonepe' ? (
+          <div className="p-4 md:p-5 bg-purple-50 rounded-lg md:rounded-xl">
+            <div className="flex items-center mb-2">
+              <div className="w-6 h-6 flex items-center justify-center mr-2">
+                <img src={phonePeIcon} alt="PhonePe Logo" className="h-5 -ml-2 w-5" />
+              </div>
+              <div>
+                <h4 className="text-sm md:text-base font-medium text-purple-800">PhonePe Secure Gateway</h4>
+                <p className="text-xs text-purple-600">End-to-end encryption with RBI compliance</p>
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center mt-2">
+                <Lock className="w-3 h-3 mr-2 text-green-600" />
+                <span className="text-xs">Military-grade AES-256 encryption</span>
+              </div>
+              <div className="flex items-center mt-1">
+                <Shield className="w-3 h-3 mr-2 text-green-600" />
+                <span className="text-xs">RBI & NPCI certified payment gateway</span>
+              </div>
+              <div className="flex items-center mt-1">
+                <Check className="w-3 h-3 mr-2 text-green-600" />
+                <span className="text-xs">Bank-level fraud protection system</span>
+              </div>
+            </div>
+          </div>
+        ) : paymentMethod === 'cod' ? (
           <div className="bg-green-50 border border-green-200 rounded-lg md:rounded-xl p-3 md:p-4">
             <div className="flex items-center mb-3">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
@@ -555,7 +655,7 @@ const Checkout = () => {
               </ul>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
         <div className="flex sm:flex-row items-center flex-col gap-3 justify-between pt-4 md:pt-6">        <button
           type="button"
@@ -566,11 +666,13 @@ const Checkout = () => {
           Back to Shipping
         </button>          <button
           type="button"
-          onClick={paymentMethod === 'cod' ? handleCODOrder : undefined}
+          onClick={paymentMethod === 'cod' ? handleCODOrder : handleNextStep}
           disabled={loading}
           className={`px-4 md:px-6 py-2.5 md:py-3 rounded-full text-sm md:text-base font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center gap-1.5 shadow-md w-full sm:w-auto ${
             paymentMethod === 'cod' 
               ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500' 
+              : paymentMethod === 'phonepe'
+              ? 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500'
               : 'bg-gray-500 text-white focus:ring-gray-500'
           } ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
@@ -584,17 +686,181 @@ const Checkout = () => {
               <Banknote className="w-4 h-4 md:w-5 md:h-5" />
               Place COD Order
             </>
+          ) : paymentMethod === 'phonepe' ? (
+            <>
+              <img 
+                src={phonePeIcon} 
+                alt="PhonePe" 
+                className="w-4 h-4 md:w-5 md:h-5 mr-1.5" 
+              />
+              
+              Continue with PhonePe
+            </>
           ) : (
             <>
               <Lock className="w-4 h-4 md:w-5 md:h-5" />
-              Use Card Payment
+              Continue
             </>
           )}
         </button>
       </div>
+
     </motion.div>
   );
 
+  // Review step component moved here to fix the initialization error
+  const ReviewStep = () => {
+    // Ensure token is refreshed before rendering
+    useEffect(() => {
+      const refreshToken = () => {
+        const token = getAuthToken();
+        if (token) {
+          console.log('ReviewStep: Refreshing token storage');
+          Cookies.set('token', token, { 
+            expires: 7, 
+            path: '/',
+            secure: window.location.protocol === 'https:',
+            sameSite: 'Lax' 
+          });
+          localStorage.setItem('authToken', token);
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        } else {
+          console.warn('ReviewStep: No token found for refresh');
+        }
+      };
+      
+      refreshToken();
+    }, []);
+    
+    return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6">Complete Your Order</h2>
+      
+      <div className="mb-6 bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm">
+        <div className="flex items-center mb-4 pb-4 border-b border-gray-100">
+          <h3 className="text-lg font-semibold">Order Details</h3>
+        </div>
+        
+        <div className="space-y-3">
+          {/* Shipping Information */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-sm font-medium text-gray-700">Shipping Address</h4>
+              <button 
+                onClick={() => setStep(1)}
+                className="text-xs text-indigo-600 hover:text-indigo-800"
+              >
+                Edit
+              </button>
+            </div>
+            <div className="text-sm text-gray-600">
+              <p>{shippingForm.getValues('firstName')} {shippingForm.getValues('lastName')}</p>
+              <p>{shippingForm.getValues('address')}</p>
+              <p>{shippingForm.getValues('city')}, {shippingForm.getValues('state')} {shippingForm.getValues('postalCode')}</p>
+              <p>Phone: {shippingForm.getValues('phone')}</p>
+            </div>
+          </div>
+          
+          {/* Payment Method */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-sm font-medium text-gray-700">Payment Method</h4>
+              <button 
+                onClick={() => setStep(2)}
+                className="text-xs text-indigo-600 hover:text-indigo-800"
+              >
+                Change
+              </button>
+            </div>
+            <div className="flex items-center">
+              {paymentMethod === 'phonepe' ? (
+                <>
+                  <img src={phonePeIcon} alt="PhonePe" className="h-5 w-5 mr-2" />
+                  <span className="text-sm text-purple-800 font-bold">PhonePe</span>
+                </>
+              ) : (
+                <>
+                  <Banknote className="h-4 w-4 mr-2 text-gray-600" />
+                  <span className="text-sm text-gray-600">Cash on Delivery (+ ₹50 charge)</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Final Payment Processing */}
+      <div className="border border-gray-200 rounded-xl overflow-hidden">
+        {paymentMethod === 'phonepe' ? (
+          <CheckoutPayment 
+            paymentMethod={paymentMethod}
+            paymentError={paymentError}
+            calculateTotal={calculateTotal}
+            handlePaymentSuccess={handlePaymentSuccess}
+            handlePaymentError={handlePaymentError}
+            authToken={authToken} // Pass authToken directly from state
+            shippingData={{
+              email: shippingForm.getValues('email'),
+              firstName: shippingForm.getValues('firstName'),
+              lastName: shippingForm.getValues('lastName'),
+              address: shippingForm.getValues('address'),
+              city: shippingForm.getValues('city'),
+              state: shippingForm.getValues('state'),
+              country: shippingForm.getValues('country'),
+              postalCode: shippingForm.getValues('postalCode'),
+              phone: shippingForm.getValues('phone')
+            }}
+          />
+        ) : (
+          <div className="p-6 bg-white">
+            <div className="bg-green-50 border border-green-100 p-4 rounded-lg mb-4">
+              <div className="flex items-center">
+                <Check className="w-5 h-5 text-green-500 mr-2" />
+                <span className="text-green-700 font-medium">Your order is ready for placement</span>
+              </div>
+              <p className="text-sm text-green-600 mt-1">You will pay ₹{calculateTotal().toFixed(2)} upon delivery</p>
+            </div>
+            
+            <button
+              onClick={handleCODOrder}
+              disabled={loading}
+              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center"
+            >
+              {loading ? (
+                <>
+                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Banknote className="w-4 h-4 mr-2" />
+                  Place COD Order - ₹{calculateTotal().toFixed(2)}
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+      
+      <div className="flex justify-between pt-6">
+        <button
+          type="button"
+          onClick={() => setStep(2)}
+          className="bg-white text-gray-700 px-6 py-3 rounded-full text-sm font-medium border border-gray-300 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center gap-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Payment
+        </button>
+      </div>
+    </motion.div>
+  );
+  };
+  
   const OrderSummary = () => (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit sticky top-6">
       <div className="flex items-center justify-between mb-6">
@@ -673,36 +939,62 @@ const Checkout = () => {
         </div>
       </div>
 
-      {/* Trust Indicators */}
+      {/* Enhanced Trust Indicators */}
       <div className="mt-6 pt-6 border-t border-gray-200">
+        <h4 className="text-sm font-medium text-gray-700 mb-3">Our Sastakart Promise</h4>
         <div className="grid grid-cols-1 gap-3">
-          <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
+          <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
             <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
               <Shield className="w-4 h-4 text-green-600" />
             </div>
-            <span className="text-sm text-green-800">256-bit SSL encryption</span>
+            <div>
+              <span className="text-sm font-medium text-green-800">Secure Shopping Guarantee</span>
+              <p className="text-xs text-green-700 mt-0.5">Advanced encryption protects your personal data</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+          <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl border border-blue-100">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
               <Truck className="w-4 h-4 text-blue-600" />
             </div>
-            <span className="text-sm text-blue-800">Free returns within 30 days</span>
-          </div>
-          <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-xl">
-            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-              <Lock className="w-4 h-4 text-purple-600" />
+            <div>
+              <span className="text-sm font-medium text-blue-800">Hassle-free Returns</span>
+              <p className="text-xs text-blue-700 mt-0.5">No questions asked returns within 30 days</p>
             </div>
-            <span className="text-sm text-purple-800">Secure payment processing</span>
           </div>
+          <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
+            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+              <Star className="w-4 h-4 text-purple-600" />
+            </div>
+            <div>
+              <span className="text-sm font-medium text-purple-800">Premium Customer Support</span>
+              <p className="text-xs text-purple-700 mt-0.5">Available 24/7 for any questions or concerns</p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100 text-center">
+          <p className="text-xs text-gray-500">By completing your purchase, you agree to our <span className="text-indigo-600 font-medium">Terms of Service</span> and acknowledge our <span className="text-indigo-600 font-medium">Privacy Policy</span></p>
         </div>
       </div>
     </div>
   );
 
+  // Render loading state until auth is checked
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center p-8 max-w-md">
+          <div className="inline-block w-12 h-12 border-4 border-gray-300 border-t-gray-800 rounded-full animate-spin mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">Preparing Your Checkout...</h2>
+          <p className="text-gray-500">Please wait while we verify your account.</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <>      
       <Helmet>
-        <title>Checkout - ClassyShop</title>
+        <title>Checkout - Sastakart</title>
         <meta name="description" content="Complete your purchase securely with our checkout process." />
       </Helmet>
 
@@ -722,6 +1014,7 @@ const Checkout = () => {
                 <AnimatePresence mode="wait">
                   {step === 1 && <ShippingStep key="shipping" />}
                   {step === 2 && <PaymentStep key="payment" />}
+                  {step === 3 && <ReviewStep key="review" />}
                 </AnimatePresence>
               </div>
             </div>
@@ -734,6 +1027,7 @@ const Checkout = () => {
       </div>
     </>
   );
+
 };
 
 export default Checkout;

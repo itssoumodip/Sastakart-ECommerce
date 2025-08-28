@@ -23,7 +23,7 @@
     overflow-x: hidden;
     font-weight: 400;
   }
-  /* ClassyShop Brand Typography - Exact Match */
+  /* Sastakart Brand Typography - Exact Match */
   .font-brand {
     font-family: 'Playfair Display', serif;
     font-weight: 700;
@@ -35,7 +35,7 @@
     letter-spacing: -0.02em;
   }
 
-  /* Typography Utilities for ClassyShop */
+  /* Typography Utilities for Sastakart */
   .text-outline {
     -webkit-text-stroke: 3px #e5e7eb;
     -webkit-text-fill-color: transparent;

@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import { CreditCard, AlertTriangle } from 'lucide-react';
-import StripeProvider from './StripeProvider';
-import StripePaymentForm from './StripePaymentForm';
+import PhonePePayment from './PhonePePayment';
 
 const LoadingPaymentForm = () => (
   <div className="animate-pulse">
@@ -16,32 +15,60 @@ const CheckoutPayment = ({
   calculateTotal, 
   handlePaymentSuccess, 
   handlePaymentError,
-  shippingData
-}) => {  // Format total amount for display
+  shippingData,
+  authToken // Add authToken parameter
+}) => {  
+  // Format total amount for display
   const formattedTotal = typeof calculateTotal === 'function' ? 
     calculateTotal().toLocaleString('en-IN', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }) : '0.00';
     
+  // Log shipping data for debugging
+  console.log("CheckoutPayment received shipping data:", shippingData);
+    
   return (
     <div>
       {/* No duplicate payment method selection here */}
 
       {/* Payment Form */}
-      {paymentMethod === 'card' && (
+      {paymentMethod === 'phonepe' && (
         <Suspense fallback={<LoadingPaymentForm />}>
-          <StripeProvider>          <StripePaymentForm
-            amount={Math.round(calculateTotal() * 100)} // Convert to cents and round to avoid floating point issues
-            onPaymentSuccess={handlePaymentSuccess}
+          <PhonePePayment
+            amount={calculateTotal()} // Total amount in rupees
+            onPaymentInitiated={(orderId) => {
+              console.log('Payment initiated with order ID:', orderId);
+              // You can store orderId in localStorage/sessionStorage here if needed
+            }}
             onPaymentError={handlePaymentError}
             metadata={{
-              shipping_name: shippingData?.name,
+              shipping_name: `${shippingData?.firstName} ${shippingData?.lastName}`,
               shipping_email: shippingData?.email,
             }}
+            shippingData={shippingData}
+            authToken={authToken} // Pass down the auth token directly
           />
-          </StripeProvider>
         </Suspense>
+      )}
+
+      {/* COD option */}
+      {paymentMethod === 'cod' && (
+        <div className="mt-4 border border-gray-300 rounded-lg p-4 bg-gray-50">
+          <div className="flex items-center mb-2">
+            <CreditCard className="w-5 h-5 text-gray-500 mr-2" />
+            <h3 className="text-sm font-medium">Cash on Delivery</h3>
+          </div>
+          <p className="text-xs text-gray-500 mb-3">
+            Pay with cash when your order is delivered.
+          </p>
+          <button
+            onClick={() => handlePaymentSuccess({ paymentMethod: 'cod' })}
+            className="w-full bg-indigo-600 text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          >
+            Place Order - ₹{formattedTotal}
+          </button>
+        </div>
       )}
 
       {/* Error Display */}

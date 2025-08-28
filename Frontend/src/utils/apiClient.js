@@ -13,19 +13,39 @@ const apiClient = axios.create({
   }
 });
 
-// Add a request interceptor to attach authentication headers
+// Import necessary functions for token management
+import { getAuthToken } from './auth';
+
+// Add a request interceptor with improved token handling
 apiClient.interceptors.request.use(
   config => {
-    // Add auth headers to all requests
-    const headers = getAuthHeaders();
-    config.headers = {
-      ...config.headers,
-      ...headers,
-    };
+    try {
+      // Get the current token and ensure it's synchronized across storage
+      const token = getAuthToken();
+      
+      if (token) {
+        // Add Authorization header
+        config.headers = {
+          ...config.headers,
+          'Authorization': `Bearer ${token}`,
+        };
+        
+        // For debugging only
+        if (!config.url.includes('/api/auth/me')) { // Avoid logging auth check requests
+          console.log(`API Request with auth token to: ${config.url}`);
+        }
+      } else if (!config.url.includes('/api/auth')) {
+        // If not an auth endpoint and we have no token, log a warning
+        console.warn(`API Request without auth token to: ${config.url}`);
+      }
+    } catch (error) {
+      console.error('Auth header setup error:', error);
+    }
+    
     return config;
   },
   error => {
-    console.error('Request error:', error);
+    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );

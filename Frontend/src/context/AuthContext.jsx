@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import API_BASE_URL, { API_ENDPOINTS } from '../config/api';
 import { toastConfig, formatToastMessage } from '../utils/toastConfig';
+import { getAuthToken, syncToken, clearAuthToken } from '../utils/auth';
 
 const AuthContext = createContext()
 
@@ -72,33 +73,49 @@ const initialState = {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
-  // Configure axios defaults
+  // Configure axios defaults and initialize authentication
   useEffect(() => {
     const initAuth = async () => {
-      const token = Cookies.get('token')
-      
+      // Import functions directly from the top of the file
       // Set base URL and enable credentials
-      axios.defaults.baseURL = import.meta.env.VITE_API_URL
-      axios.defaults.withCredentials = true
+      axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+      axios.defaults.withCredentials = true;
 
-      // Set Authorization header if token exists
-      if (token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-        // Load user data if token exists
-        await loadUser()
-      } else {
-        dispatch({ type: 'LOAD_USER_FAIL' })
+      try {
+        // Get token from any source (automatically synchronizes across all storage locations)
+        const token = getAuthToken();
+        
+        if (token) {
+          console.log('AuthContext: Found valid authentication token');
+          
+          // Apply token synchronization one more time to be sure
+          syncToken(token);
+          
+          // Load user data if token exists
+          await loadUser();
+        } else {
+          console.log('AuthContext: No token found in any storage location');
+          dispatch({ type: 'LOAD_USER_FAIL' });
+        }
+      } catch (error) {
+        console.error('AuthContext initialization error:', error);
+        dispatch({ type: 'LOAD_USER_FAIL' });
       }
-    }
+    };
 
-    initAuth()
+    initAuth();
   }, []) // Run only once on component mount
 
   const loadUser = async () => {
     try {
+      console.log('AuthContext: Loading user data...');
       dispatch({ type: 'LOAD_USER_REQUEST' })
       
+      const token = Cookies.get('token');
+      console.log('AuthContext: Token exists?', !!token);
+      
       const { data } = await axios.get(API_ENDPOINTS.ME)
+      console.log('AuthContext: User data received:', !!data?.user);
       
       if (data.user) {
         localStorage.setItem('user', JSON.stringify(data.user))
@@ -106,12 +123,16 @@ export const AuthProvider = ({ children }) => {
           type: 'LOAD_USER_SUCCESS',
           payload: data.user,
         })
+        console.log('AuthContext: User loaded successfully:', data.user.email);
       } else {
+        console.warn('AuthContext: No user data in response');
         throw new Error('No user data received')
       }
     } catch (error) {
+      console.error('AuthContext: Load user error:', error.message, error.response?.status);
       // Clear token if it's an authentication error
       if (error.response?.status === 401) {
+        console.warn('AuthContext: 401 error detected - clearing auth data');
         Cookies.remove('token', { path: '/' })
         localStorage.removeItem('user')
       }
@@ -124,35 +145,35 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      dispatch({ type: 'LOGIN_REQUEST' })
+      dispatch({ type: 'LOGIN_REQUEST' });
       
-      const { data } = await axios.post(API_ENDPOINTS.LOGIN, { email, password })
+      const { data } = await axios.post(API_ENDPOINTS.LOGIN, { email, password });
       
       if (data.token) {
-        Cookies.set('token', data.token, { 
-          expires: 7,
-          path: '/',
-          secure: window.location.protocol === 'https:',
-          sameSite: 'Lax'
-        })
-        axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
+        console.log('Login successful, storing auth token');
+        
+        // Synchronize token across all storage mechanisms
+        syncToken(data.token);
+      } else {
+        console.error('Login response missing token:', data);
       }
       
       dispatch({
         type: 'LOGIN_SUCCESS',
         payload: data.user,
-      })
+      });
       
-      toast.success('Logged in successfully', toastConfig.success)
-      return { success: true }
+      toast.success('Logged in successfully', toastConfig.success);
+      return { success: true };
     } catch (error) {
-      const message = formatToastMessage(error.response?.data?.message || 'Login failed')
+      console.error('Login error:', error);
+      const message = formatToastMessage(error.response?.data?.message || 'Login failed');
       dispatch({
         type: 'LOGIN_FAIL',
         payload: message,
-      })
-      toast.error(message, toastConfig.error)
-      return { success: false, error: message }
+      });
+      toast.error(message, toastConfig.error);
+      return { success: false, error: message };
     }
   }
   const register = async (firstName, lastName, email, phone, password) => {
@@ -199,19 +220,20 @@ export const AuthProvider = ({ children }) => {
   }
   const logout = async () => {
     try {
-      await axios.get(API_ENDPOINTS.LOGOUT)
+      // Call logout endpoint
+      await axios.get(API_ENDPOINTS.LOGOUT);
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error('Logout error:', error);
     } finally {
-      Cookies.remove('token', { 
-        path: '/',
-        secure: window.location.protocol === 'https:',
-        sameSite: 'Lax' 
-      })
-      localStorage.removeItem('user')
-      delete axios.defaults.headers.common['Authorization']
-      dispatch({ type: 'LOGOUT_SUCCESS' })
-      toast.success('Logged out successfully', toastConfig.success)
+      // Clear token from all storage locations
+      clearAuthToken();
+      
+      // Also remove user data
+      localStorage.removeItem('user');
+      
+      // Update state
+      dispatch({ type: 'LOGOUT_SUCCESS' });
+      toast.success('Logged out successfully', toastConfig.success);
     }
   }
   const clearErrors = () => {
@@ -237,46 +259,42 @@ export const AuthProvider = ({ children }) => {
   
   const googleLogin = async (credentialResponse) => {
     try {
-      dispatch({ type: 'LOGIN_REQUEST' })
+      dispatch({ type: 'LOGIN_REQUEST' });
       
       console.log('Sending Google token to backend for verification:', credentialResponse.credential);
       
       // Send the ID token to your backend for verification
       const { data } = await axios.post(API_ENDPOINTS.GOOGLE_VERIFY, {
         token: credentialResponse.credential
-      })
+      });
       
       console.log('Google auth response from backend:', data);
       
-      // Set the token in cookies
+      // Set the token across all storage locations
       if (data.token) {
-        Cookies.set('token', data.token, { 
-          expires: 7,
-          path: '/',
-          secure: window.location.protocol === 'https:',
-          sameSite: 'Lax'
-        })
-        axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
+        // Synchronize token across all storage mechanisms (cookie, localStorage, memory)
+        syncToken(data.token);
       } else {
         console.error('No token received from backend after Google login');
+        throw new Error('Authentication failed: No token received from server');
       }
       
       dispatch({
         type: 'LOGIN_SUCCESS',
         payload: data.user,
-      })
+      });
       
-      toast.success('Logged in with Google successfully', toastConfig.success)
-      return { success: true }
+      toast.success('Logged in with Google successfully', toastConfig.success);
+      return { success: true };
     } catch (error) {
       console.error('Google login error details:', error);
-      const message = formatToastMessage(error.response?.data?.message || 'Google login failed')
+      const message = formatToastMessage(error.response?.data?.message || 'Google login failed');
       dispatch({
         type: 'LOGIN_FAIL',
         payload: message,
-      })
-      toast.error(message, toastConfig.error)
-      return { success: false, error: message }
+      });
+      toast.error(message, toastConfig.error);
+      return { success: false, error: message };
     }
   }
 

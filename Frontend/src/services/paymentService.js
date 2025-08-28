@@ -22,62 +22,79 @@ api.interceptors.request.use(
 );
 
 /**
- * Create a payment intent with Stripe
- * @param {number} amount - The payment amount
- * @param {string} currency - The currency code (default: INR)
+ * Create a payment order with PhonePe
+ * @param {number} totalAmount - The payment amount in rupees
  * @param {object} metadata - Additional metadata for the payment
- * @returns {Promise<{clientSecret: string, paymentIntentId: string}>} - Client secret and payment intent ID
+ * @returns {Promise<{url: string, orderId: string}>} - PhonePe redirect URL and order ID
  */
-export const createPaymentIntent = async (amount, currency = 'INR', metadata = {}) => {
+export const createPaymentOrder = async (totalAmount, metadata = {}) => {
   try {
     const response = await api.post(API_ENDPOINTS.PROCESS_PAYMENT, {
-      amount,
-      currency,
+      totalAmount,
       metadata
     });
     return response.data;
   } catch (error) {
-    console.error("Payment intent creation error:", error);
-    throw error;
-  }
-};
-
-/**
- * Confirm a payment intent after successful card processing
- * @param {string} paymentIntentId - The Stripe payment intent ID
- * @param {string} paymentMethod - The payment method ID
- * @returns {Promise<object>} - The confirmed payment intent
- */
-export const confirmPayment = async (paymentIntentId, paymentMethod) => {
-  try {
-    const response = await api.post(`${API_ENDPOINTS.PAYMENTS}/confirm`, {
-      paymentIntentId,
-      paymentMethod
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Payment confirmation error:", error);
+    console.error("Payment order creation error:", error);
     throw error;
   }
 };
 
 /**
  * Get the status of a payment
- * @param {string} paymentId - The payment ID
- * @returns {Promise<{status: string}>} - The payment status
+ * @param {string} merchantTransactionId - The merchant transaction ID (order ID)
+ * @returns {Promise<{paymentStatus: {id: string, status: string, amount: number, transactionId: string}}>} 
  */
-export const getPaymentStatus = async (paymentId) => {
+export const checkPaymentStatus = async (merchantTransactionId) => {
   try {
-    const response = await api.get(`${API_ENDPOINTS.PAYMENTS}/${paymentId}`);
+    const response = await api.get(`${API_ENDPOINTS.PAYMENTS}/status/${merchantTransactionId}`);
     return response.data;
   } catch (error) {
-    console.error("Payment status fetch error:", error);
+    console.error("Payment status check error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Save order details after successful payment
+ * @param {string} merchantTransactionId - The merchant transaction ID
+ * @param {Array} cartItems - Cart items
+ * @param {number} totalAmount - Total amount
+ * @param {Object} shippingInfo - Shipping information
+ * @returns {Promise<{order: Object}>} - The saved order
+ */
+export const saveOrder = async (merchantTransactionId, cartItems, totalAmount, shippingInfo) => {
+  try {
+    const response = await api.post(`${API_ENDPOINTS.PAYMENTS}/save-order`, {
+      merchantTransactionId,
+      cartItems,
+      totalAmount,
+      shippingInfo
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Order save error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get available payment methods
+ * @returns {Promise<{paymentMethods: Array}>} - Available payment methods
+ */
+export const getPaymentMethods = async () => {
+  try {
+    const response = await api.get(`${API_ENDPOINTS.PAYMENTS}/methods`);
+    return response.data;
+  } catch (error) {
+    console.error("Payment methods fetch error:", error);
     throw error;
   }
 };
 
 export default {
-  createPaymentIntent,
-  confirmPayment,
-  getPaymentStatus
+  createPaymentOrder,
+  checkPaymentStatus,
+  saveOrder,
+  getPaymentMethods
 };
