@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Package, ShoppingBag, Users, LogOut, Menu, X, ChevronDown, BarChart3, Sparkles, IndianRupee, FileText } from 'lucide-react';
+import { Home, Package, ShoppingBag, Users, LogOut, Menu, X, ChevronDown, BarChart3, Sparkles, IndianRupee, FileText, Wrench } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import UserAvatar from '../common/UserAvatar';
 import toast from 'react-hot-toast';
@@ -59,6 +59,9 @@ function AdminLayout() {
     { to: '/admin/products', icon: Package, label: 'Products' },
     { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
     { to: '/admin/users', icon: Users, label: 'Users' },
+    { to: '/admin/gst-settings', icon: IndianRupee, label: 'GST Settings' },
+    { to: '/admin/coupons', icon: Sparkles, label: 'Coupons' },
+    { to: '/admin/api-config-check', icon: Wrench, label: 'API Config Check' },
   ];
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -335,7 +338,7 @@ function AdminLayout() {
                     firstName={user?.firstName} 
                     lastName={user?.lastName} 
                     size="xs"
-                    className="bg-indigo-500"
+                    className="bg-gray-500"
                   />
                   <span className="ml-2 text-gray-700 hidden lg:block">
                     {user?.firstName} {user?.lastName}

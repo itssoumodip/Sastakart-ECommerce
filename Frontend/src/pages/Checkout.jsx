@@ -8,6 +8,7 @@ import Cookies from 'js-cookie';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 import { getAuthToken, getAuthHeaders, syncToken } from '../utils/auth';
 import CheckoutPayment from '../components/payment/CheckoutPayment';
 import phonePeLogo from '../assets/payment/phonepe-logo.svg';
@@ -124,6 +125,7 @@ const Checkout = () => {
   }, [isAuthenticated, navigate]);  // Calculate with proper parsing and formatting for all monetary values
   const subtotal = getCartTotal(); 
   const { totalGstAmount, categoryWiseGst } = useCart().getCartGstDetails();
+  const { coupon, discountAmount } = useCart();
   const shipping = subtotal > 3500 ? 0 : 299;
   
   const calculateTax = () => {
@@ -132,11 +134,15 @@ const Checkout = () => {
 
   const calculateShipping = () => {
     return parseFloat(subtotal > 3500 ? 0 : 299);
-  };  
+  };
+  
+  const calculateDiscount = () => {
+    return parseFloat(discountAmount || 0);
+  };
   
   const calculateTotal = () => {
     const codCharge = paymentMethod === 'cod' ? 50 : 0;
-    const total = subtotal + calculateShipping() + calculateTax() + codCharge;
+    const total = subtotal - calculateDiscount() + calculateShipping() + calculateTax() + codCharge;
     return parseFloat(total.toFixed(2));
   };
 
@@ -206,6 +212,7 @@ const Checkout = () => {
     const subtotalFormatted = parseFloat(getCartTotal().toFixed(2));
     const taxFormatted = parseFloat(calculateTax().toFixed(2));
     const shippingFormatted = parseFloat(calculateShipping().toFixed(2));
+    const discountFormatted = parseFloat(calculateDiscount().toFixed(2));
     
     // Validate amounts to prevent unrealistic values
     if (total > 100000 || subtotalFormatted > 100000) {
@@ -239,7 +246,14 @@ const Checkout = () => {
       itemsPrice: subtotalFormatted,
       taxPrice: taxFormatted,
       shippingPrice: shippingFormatted,
+      discountPrice: discountFormatted,
       totalPrice: total,
+      couponInfo: coupon ? {
+        code: coupon.code,
+        discountAmount: discountFormatted,
+        discountType: coupon.discountType,
+        discountValue: coupon.discountValue
+      } : null,
       gstSummary: {
         totalGstAmount: taxFormatted,
         categoryWiseGst: {},
@@ -285,13 +299,27 @@ const Checkout = () => {
     const response = await secureAxios.post('/api/orders', orderData);
 
     if (response.data.success) {
+      // If coupon was applied, record its usage
+      if (coupon && coupon.code) {
+        try {
+          await secureAxios.post(API_ENDPOINTS.RECORD_COUPON_USAGE, { 
+            code: coupon.code 
+          });
+          console.log('Coupon usage recorded successfully');
+        } catch (error) {
+          console.error('Failed to record coupon usage:', error);
+          // Continue with order success flow even if coupon recording fails
+        }
+      }
+      
       clearCart();
       setOrderPlaced(true);
       navigate('/order-success', { 
         state: { 
           orderId: response.data.order._id,
           total: calculateTotal(),
-          paymentMethod: paymentMethod
+          paymentMethod: paymentMethod,
+          couponApplied: coupon ? coupon.code : null
         } 
       });
     }
@@ -909,6 +937,15 @@ const Checkout = () => {
           <span className="text-gray-600">Subtotal</span>
           <span className="font-medium">₹{subtotal.toFixed(2)}</span>
         </div>
+        
+        {coupon && discountAmount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-green-600 flex items-center">
+              <span>Coupon ({coupon.code})</span>
+            </span>
+            <span className="font-medium text-green-600">-₹{discountAmount.toFixed(2)}</span>
+          </div>
+        )}
         
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Shipping</span>

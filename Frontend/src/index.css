@@ -70,6 +70,15 @@
     @apply border-2 border-gray-900 text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-900 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2;
   }
 
+  /* Admin Dashboard Button Styles */
+  .admin-btn-primary {
+    @apply px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-all duration-300;
+  }
+  
+  .admin-btn-outline {
+    @apply px-4 py-2 border border-gray-300 hover:border-gray-400 bg-white text-gray-700 font-medium rounded-md shadow-sm transition-all duration-300;
+  }
+
   /* Input Styles */
   .input {
     @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200;
@@ -78,6 +87,11 @@
   /* Card Styles */
   .card {
     @apply bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200;
+  }
+  
+  /* Admin Card Style */
+  .admin-card {
+    @apply bg-white rounded-lg border border-gray-200 shadow-sm;
   }
 
   .card-hover {

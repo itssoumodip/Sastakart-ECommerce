@@ -15,6 +15,10 @@ const orderRoutes = require('./routes/order');
 const paymentRoutes = require('./routes/payment');
 const uploadRoutes = require('./routes/upload');
 const dashboardRoutes = require('./routes/dashboard');
+const gstRoutes = require('./routes/gst');
+const couponRoutes = require('./routes/coupon');
+const debugRoutes = require('./routes/debug');
+const destinationRoutes = require('./routes/travel/destinations');
 
 const app = express();
 
@@ -46,6 +50,22 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to E-Commerce API' });
 });
 
+// Debug routes
+app.get('/api/debug/routes', (req, res) => {
+  const routes = {
+    coupons: {
+      adminCoupons: '/api/coupons/admin/coupons',
+      applyCoupon: '/api/coupons/apply',
+      verifyCoupon: '/api/coupons/code/:code',
+    },
+    gst: {
+      settings: '/api/gst/settings',
+      analytics: '/api/gst/analytics',
+    }
+  };
+  res.json({ success: true, routes });
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -54,6 +74,10 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/gst', gstRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/debug', debugRoutes);
+app.use('/api/travel', destinationRoutes);
  
 // Database connection with improved configuration
 const connectDB = async () => {
@@ -105,6 +129,18 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`API root available at http://localhost:${PORT}`);
+  console.log(`API routes registered:`);
+  console.log(` - Auth: /api/auth`);
+  console.log(` - Products: /api/products`);
+  console.log(` - Users: /api/users`);
+  console.log(` - Orders: /api/orders`);
+  console.log(` - Payment: /api/payment`);
+  console.log(` - Upload: /api/upload`);
+  console.log(` - Dashboard: /api/dashboard`);
+  console.log(` - GST: /api/gst`);
+  console.log(` - Coupons: /api/coupons`);
+  console.log(` - Travel: /api/travel`);
 });
 
 module.exports = app;

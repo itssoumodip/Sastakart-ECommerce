@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
@@ -32,22 +34,14 @@ import {
   IndianRupee
 } from 'lucide-react';
 import { toastConfig } from '../utils/toastConfig';
+import CouponForm from '../components/cart/CouponForm';
+import CouponCode from '../components/cart/CouponCode';
 
 const Cart = () => {
   const { items: cartItems, updateQuantity, removeFromCart, getCartTotal, getCartItemsCount } = useCart();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [promoCode, setPromoCode] = useState('');
-  const [discount, setDiscount] = useState(0);
-  const [appliedPromo, setAppliedPromo] = useState('');
   const [isAdmin, setIsAdmin] = useState(true); // Temporary admin state, replace with actual auth logic
-
-  const promoCodes = {
-    'SAVE10': 10,
-    'WELCOME20': 20,
-    'SUMMER15': 15,
-    'NEWBIE25': 25
-  };
 
   const handleQuantityChange = (id, newQuantity) => {
     if (newQuantity < 1) return;
@@ -58,28 +52,16 @@ const Cart = () => {
     removeFromCart(id);
   };
 
-  const handleApplyPromo = () => {
-    const upperPromo = promoCode.toUpperCase();
-    if (promoCodes[upperPromo]) {
-      setDiscount(promoCodes[upperPromo]);
-      setAppliedPromo(upperPromo);
-      toast.success(`${promoCodes[upperPromo]}% discount applied to your order`, toastConfig.success);
-      setPromoCode('');
-    } else {
-      toast.error('Invalid promo code', toastConfig.error);
-    }
-  };
-
-  const removePromo = () => {
-    setDiscount(0);
-    setAppliedPromo('');
-    toast.success('Promo code removed', toastConfig.success);
-  };  // Calculate with proper parsing and formatting for all monetary values
+  const { applyCoupon, removeCoupon, coupon, discountAmount } = useCart();
   const subtotal = getCartTotal();
+  
+  // Calculate GST only on amount after discount
+  const discountedSubtotal = subtotal - (discountAmount || 0);
   const { totalGstAmount, categoryWiseGst } = useCart().getCartGstDetails();
-  const discountAmount = parseFloat(((subtotal * discount) / 100).toFixed(2));
+  const gstAmount = discountedSubtotal === 0 ? 0 : totalGstAmount;
+  
   const shipping = subtotal > 3500 ? 0 : 299;
-  const total = parseFloat((subtotal - discountAmount + shipping + totalGstAmount).toFixed(2));
+  const total = parseFloat((discountedSubtotal + shipping + gstAmount).toFixed(2));
   
   const handleCheckout = () => {
     if (!cartItems || cartItems.length === 0) {
@@ -306,49 +288,17 @@ const Cart = () => {
                 >
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Order Summary</h2>
                   
-                  {/* Promo Code */}
+                  {/* Coupon Code Form */}
                   <div className="mb-8">
-                    <h3 className="font-medium text-gray-900 mb-3">Promo Code</h3>
-                    {appliedPromo ? (
-                      <motion.div 
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="flex items-center justify-between p-4 bg-green-50 border border-green-100 rounded-xl"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                            <Check className="w-4 h-4 text-green-600" />
-                          </div>
-                          <span className="font-medium text-green-800">{appliedPromo}</span>
-                        </div>
-                        <motion.button
-                          onClick={removePromo}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="text-green-600 hover:text-green-700 w-8 h-8 rounded-full hover:bg-green-100 flex items-center justify-center transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </motion.button>
-                      </motion.div>
+                    <h3 className="font-medium text-gray-900 mb-3">Coupon Code</h3>
+                    {coupon ? (
+                      <CouponCode coupon={coupon} onRemove={removeCoupon} />
                     ) : (
-                      <div className="flex rounded-xl overflow-hidden shadow-sm">
-                        <input
-                          type="text"
-                          value={promoCode}
-                          onChange={(e) => setPromoCode(e.target.value)}
-                          placeholder="Enter code"
-                          className="flex-1 px-4 py-3 border border-gray-200 bg-white focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
-                        />
-                        <motion.button 
-                          onClick={handleApplyPromo}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="px-6 py-3 bg-black text-white hover:bg-gray-800 font-medium transition-colors"
-                        >
-                          Apply
-                        </motion.button>
-                      </div>
+                      <CouponForm 
+                        cartTotal={subtotal} 
+                        onCouponApplied={applyCoupon}
+                        cartItems={cartItems}
+                      />
                     )}
                   </div>
 
@@ -358,7 +308,7 @@ const Cart = () => {
                       <span className="font-medium">₹{subtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     </div>
                     
-                    {discount > 0 && (
+                    {discountAmount > 0 && coupon && (
                       <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -367,7 +317,9 @@ const Cart = () => {
                       >
                         <span className="flex items-center gap-2">
                           <Tag className="w-4 h-4" /> 
-                          Discount ({discount}%)
+                          {coupon.discountType === 'percentage' 
+                            ? `Discount (${coupon.discountValue}%)` 
+                            : 'Discount (Fixed)'}
                         </span>
                         <span className="font-medium">-₹{discountAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </motion.div>
@@ -385,10 +337,28 @@ const Cart = () => {
                       <div className="flex justify-between text-gray-600 items-center py-1">
                         <span className="flex items-center gap-2">
                           <IndianRupee className="w-4 h-4" />
-                          GST
+                          GST (18%)
                         </span>
-                        <span className="font-medium">₹{totalGstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        {discountAmount > 0 ? (
+                          <div className="text-right">
+                            <span className="font-medium line-through text-gray-400 text-sm mr-2">
+                              ₹{(subtotal * 0.18).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                            </span>
+                            <span className="font-medium text-green-600">
+                              ₹{gstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="font-medium">
+                            ₹{gstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                          </span>
+                        )}
                       </div>
+                      {discountAmount > 0 && (
+                        <p className="text-xs text-green-600 mt-1">
+                          GST calculated on discounted amount
+                        </p>
+                      )}
                     </div>
                     
                     <div className="border-t border-gray-100 pt-4 mt-2">

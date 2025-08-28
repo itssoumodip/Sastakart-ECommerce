@@ -22,11 +22,17 @@ const cartReducer = (state, action) => {
               ? { ...item, quantity: item.quantity + action.payload.quantity }
               : item
           ),
+          // Reset coupon when cart changes
+          coupon: null,
+          discountAmount: 0
         }
       } else {
         return {
           ...state,
           items: [...state.items, action.payload],
+          // Reset coupon when cart changes
+          coupon: null,
+          discountAmount: 0
         }
       }
     }
@@ -34,6 +40,9 @@ const cartReducer = (state, action) => {
       return {
         ...state,
         items: state.items.filter(item => item.id !== action.payload),
+        // Reset coupon when cart changes
+        coupon: null,
+        discountAmount: 0
       }
     case 'UPDATE_QUANTITY':
       return {
@@ -43,11 +52,28 @@ const cartReducer = (state, action) => {
             ? { ...item, quantity: action.payload.quantity }
             : item
         ),
+        // Reset coupon when cart changes
+        coupon: null,
+        discountAmount: 0
       }
     case 'CLEAR_CART':
       return {
         ...state,
         items: [],
+        coupon: null,
+        discountAmount: 0
+      }
+    case 'APPLY_COUPON':
+      return {
+        ...state,
+        coupon: action.payload,
+        discountAmount: action.payload ? action.payload.discountAmount : 0
+      }
+    case 'REMOVE_COUPON':
+      return {
+        ...state,
+        coupon: null,
+        discountAmount: 0
       }
     default:
       return state
@@ -56,6 +82,8 @@ const cartReducer = (state, action) => {
 
 const initialState = {
   items: [],
+  coupon: null,
+  discountAmount: 0,
 }
 
 export const CartProvider = ({ children }) => {
@@ -72,14 +100,31 @@ export const CartProvider = ({ children }) => {
         console.error('Error loading cart from localStorage:', error)
       }
     }
+    
+    // Load saved coupon if exists
+    const savedCoupon = localStorage.getItem('cartCoupon')
+    if (savedCoupon) {
+      try {
+        const parsedCoupon = JSON.parse(savedCoupon)
+        dispatch({ type: 'APPLY_COUPON', payload: parsedCoupon })
+      } catch (error) {
+        console.error('Error loading coupon from localStorage:', error)
+      }
+    }
   }, [])
   // Save cart to localStorage whenever items change using debounce
   useEffect(() => {
     const saveTimeout = setTimeout(() => {
       localStorage.setItem('cart', JSON.stringify(state.items));
+      // Store coupon info separately
+      if (state.coupon) {
+        localStorage.setItem('cartCoupon', JSON.stringify(state.coupon));
+      } else {
+        localStorage.removeItem('cartCoupon');
+      }
     }, 300); // 300ms debounce
     return () => clearTimeout(saveTimeout);
-  }, [state.items]);
+  }, [state.items, state.coupon]);
   const addToCart = (product, quantity = 1) => {
     // Handle both direct product objects and product data passed from ProductCard
     let cartItem;
@@ -178,6 +223,14 @@ export const CartProvider = ({ children }) => {
   };  const getCartGstDetails = () => {
     let totalGstAmount = 0;
     const categoryWiseGst = {};
+    
+    // If there's a 100% discount, return 0 GST
+    if (state.coupon?.discountValue === 100) {
+      return {
+        totalGstAmount: 0,
+        categoryWiseGst: {}
+      };
+    }
 
     state.items.forEach(item => {
       // Use product's GST rate or default to 18% if not specified
@@ -188,7 +241,14 @@ export const CartProvider = ({ children }) => {
       const quantity = parseInt(item.quantity) || 0;
       
       if (itemPrice > 0 && quantity > 0) {
-        const itemGstAmount = (itemPrice * quantity * gstRate) / 100;
+        // If there's a discount, calculate GST on discounted price
+        let basePrice = itemPrice;
+        if (state.discountAmount) {
+          const discountRatio = state.discountAmount / getCartTotal();
+          basePrice = itemPrice * (1 - discountRatio);
+        }
+        
+        const itemGstAmount = (basePrice * quantity * gstRate) / 100;
         totalGstAmount += itemGstAmount;
         
         // Track GST by category if needed
@@ -203,6 +263,26 @@ export const CartProvider = ({ children }) => {
       categoryWiseGst
     };
   };
+  // Coupon functions
+  const applyCoupon = (couponData) => {
+    if (couponData) {
+      dispatch({ type: 'APPLY_COUPON', payload: couponData });
+    } else {
+      dispatch({ type: 'REMOVE_COUPON' });
+    }
+  };
+
+  const removeCoupon = () => {
+    dispatch({ type: 'REMOVE_COUPON' });
+    toast.success('Coupon removed', toastConfig.success);
+  };
+
+  // Calculate final total after discount
+  const getFinalTotal = () => {
+    const cartTotal = getCartTotal();
+    return state.discountAmount ? parseFloat((cartTotal - state.discountAmount).toFixed(2)) : cartTotal;
+  };
+
   const value = {
     ...state,
     addToCart,
@@ -211,7 +291,10 @@ export const CartProvider = ({ children }) => {
     clearCart,
     getCartTotal,
     getCartItemsCount,
-    getCartGstDetails
+    getCartGstDetails,
+    applyCoupon,
+    removeCoupon,
+    getFinalTotal
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

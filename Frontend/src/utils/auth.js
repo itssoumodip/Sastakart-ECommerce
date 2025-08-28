@@ -101,11 +101,22 @@ export const getAuthHeaders = () => {
   // Get token using our utility with synchronization
   const token = getAuthToken();
   
+  // More detailed debug information
+  console.log('Auth State:', {
+    hasToken: !!token,
+    tokenLength: token ? token.length : 0,
+    tokenStart: token ? `${token.substring(0, 10)}...` : null,
+    currentPage: window.location.pathname,
+    isAdminPage: window.location.pathname.startsWith('/admin')
+  });
+  
   if (token) {
-    return { 
+    const headers = { 
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     };
+    console.log('Auth Headers Set:', Object.keys(headers));
+    return headers;
   } else {
     console.error('No authentication token found in any storage location');
     return {

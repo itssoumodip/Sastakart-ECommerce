@@ -28,22 +28,42 @@ exports.getGSTSettings = catchAsyncErrors(async (req, res, next) => {
 
 // Update GST settings
 exports.updateGSTSettings = catchAsyncErrors(async (req, res, next) => {
+    console.log('Updating GST Settings:', req.body);
     const { category, rate } = req.body;
 
     if (!category || rate === undefined) {
+        console.error('Missing required fields:', { category, rate });
         return next(new ErrorHandler('Category and rate are required', 400));
     }
 
-    // Update GST rate for all products in the category
-    await Product.updateMany(
-        { category: category },
-        { $set: { gstRate: rate } }
-    );
+    try {
+        // First check if the category exists
+        const categoryExists = await Product.exists({ category: category });
+        if (!categoryExists) {
+            console.error('Category not found:', category);
+            return next(new ErrorHandler('Category not found', 404));
+        }
 
-    res.status(200).json({
-        success: true,
-        message: `GST rate updated for category: ${category}`
-    });
+        // Update GST rate for all products in the category
+        const result = await Product.updateMany(
+            { category: category },
+            { $set: { gstRate: rate } }
+        );
+
+        console.log('Update result:', result);
+
+        res.status(200).json({
+            success: true,
+            message: `GST rate updated for category: ${category}`,
+            updateInfo: {
+                matchedCount: result.matchedCount,
+                modifiedCount: result.modifiedCount
+            }
+        });
+    } catch (error) {
+        console.error('Error updating GST rate:', error);
+        return next(new ErrorHandler('Error updating GST rate', 500));
+    }
 });
 
 // Get GST analytics

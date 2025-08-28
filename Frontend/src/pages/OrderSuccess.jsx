@@ -141,7 +141,18 @@ const OrderSuccess = () => {
                       })}
                     </span>
                   </div>
-                    <div className="flex justify-between items-center py-3">
+                  
+                  {location.state?.couponApplied && (
+                    <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                      <span className="text-gray-600 font-medium">Coupon Applied:</span>
+                      <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
+                        <Gift className="w-4 h-4 mr-1" />
+                        {location.state.couponApplied}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center py-3">
                     <span className="text-gray-600 font-medium">Payment Status:</span>
                     <span className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${
                       location.state?.paymentMethod === 'cod' 

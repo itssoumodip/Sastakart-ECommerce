@@ -179,7 +179,7 @@ const Footer = () => {
           </div>        </div>
         
         {/* Newsletter Subscription */}
-        <div className="mt-7 pt-8 border-t border-gray-200">
+        {/* <div className="mt-7 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-1">Subscribe to our newsletter</h3>
@@ -196,7 +196,7 @@ const Footer = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </footer>
   )
