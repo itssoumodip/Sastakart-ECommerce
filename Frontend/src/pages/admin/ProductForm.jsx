@@ -130,6 +130,7 @@ function ProductForm() {
           setValue('stock', product.stock);
           setValue('status', product.status);
           setValue('lowStockAlert', product.lowStockAlert || 10);
+          setValue('gstRate', product.gstRate || 18);
           setValue('features', product.features?.join(', '));
           setUploadedImages(product.images || []);
         } catch (error) {
@@ -244,6 +245,7 @@ function ProductForm() {
         stock: parseInt(data.stock) || 0,
         status: data.status || 'Active',
         lowStockAlert: parseInt(data.lowStockAlert) || 10,
+        gstRate: parseFloat(data.gstRate || 18),
         features: data.features ? data.features.split(',').map(f => f.trim()).filter(f => f) : [],
         images: uploadedImages
       };
@@ -884,6 +886,26 @@ function ProductForm() {
                       className="input"
                       placeholder="10"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      GST Rate (%) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      {...register('gstRate', { 
+                        required: 'GST rate is required',
+                        min: { value: 0, message: 'GST rate cannot be negative' },
+                        max: { value: 100, message: 'GST rate cannot exceed 100%' }
+                      })}
+                      className="input"
+                      placeholder="18"
+                    />
+                    {errors.gstRate && (
+                      <p className="text-red-600 text-sm mt-1">{errors.gstRate.message}</p>
+                    )}
                   </div>
                 </div>
               </div>

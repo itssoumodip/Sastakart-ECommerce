@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
-const { getGSTSettings, updateGSTSettings, getGSTAnalytics } = require('../controllers/gstController');
+const { 
+    getGSTSettings, 
+    updateGSTSettings, 
+    getGSTAnalytics,
+    initializeGSTRates 
+} = require('../controllers/gstController');
 
 // Log all requests to this router
 router.use((req, res, next) => {
@@ -9,13 +14,22 @@ router.use((req, res, next) => {
     next();
 });
 
-// Debug routes (no auth required) - must be defined BEFORE authenticated routes
-router.route('/test/settings').get(getGSTSettings).put(updateGSTSettings);
-router.route('/test/analytics').get(getGSTAnalytics);
+// Initialize route should be first to ensure it's accessible
+router.route('/initialize')
+  .post(isAuthenticatedUser, authorizeRoles('admin'), initializeGSTRates);
 
-// GST Management Routes
-router.route('/settings').get(isAuthenticatedUser, authorizeRoles('admin'), getGSTSettings);
-router.route('/settings').put(isAuthenticatedUser, authorizeRoles('admin'), updateGSTSettings);
-router.route('/analytics').get(isAuthenticatedUser, authorizeRoles('admin'), getGSTAnalytics);
+// Regular routes
+router.route('/settings')
+  .get(isAuthenticatedUser, authorizeRoles('admin'), getGSTSettings)
+  .put(isAuthenticatedUser, authorizeRoles('admin'), updateGSTSettings);
+
+router.route('/analytics')
+  .get(isAuthenticatedUser, authorizeRoles('admin'), getGSTAnalytics);
+
+// Debug routes
+router.post('/test/initialize', initializeGSTRates);
+router.get('/test/settings', getGSTSettings);
+router.put('/test/settings', updateGSTSettings);
+router.get('/test/analytics', getGSTAnalytics);
 
 module.exports = router;

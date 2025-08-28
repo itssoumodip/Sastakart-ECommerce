@@ -136,6 +136,9 @@ export const CartProvider = ({ children }) => {
         return;
       }
       
+      // Ensure gstRate is included from ProductCard data
+      const gstRate = product.gstRate || (product._id ? parseFloat(product.gstRate) : 18);
+      
       // Data already formatted from ProductCard
       cartItem = {
         id: product.id,
@@ -149,7 +152,8 @@ export const CartProvider = ({ children }) => {
         subcategory: product.subcategory || '',
         productType: product.productType || '',
         selectedSize: product.selectedSize || '',
-        selectedColor: product.selectedColor || ''
+        selectedColor: product.selectedColor || '',
+        gstRate: gstRate // Add GST rate here
       };    } else {
       // Raw product object from database
       if (product.stock < quantity) {
@@ -164,13 +168,20 @@ export const CartProvider = ({ children }) => {
         return;
       }
       
+      // Ensure we get the gstRate from the database product
+      const gstRate = parseFloat(product.gstRate);
+      if (isNaN(gstRate)) {
+        toast.error('Invalid GST rate for product', toastConfig.error);
+        return;
+      }
+      
       cartItem = {
         id: product._id,
         name: product.title,
         price: validatedPrice,
         image: (product.images && product.images[0]) || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
         stock: parseInt(product.stock) || 0,
-        gstRate: parseFloat(product.gstRate) || 18,
+        gstRate: gstRate, // Store the validated GST rate
         quantity: parseInt(quantity) || 1,
         brand: product.brand || '',
         category: product.category || '',
@@ -220,65 +231,69 @@ export const CartProvider = ({ children }) => {
   };
   const getCartItemsCount = () => {
     return state.items.reduce((total, item) => total + item.quantity, 0);
-  };  // GST rates by category
-  const getCategoryGstRate = (category) => {
-    const gstRates = {
-      'Clothing': 18,
-      'Jewelry': 18,
-      'Electronics': 18,
-      'Beauty & Personal Care': 18,
-      'Home & Kitchen': 18,
-      'Toys & Games': 1,
-      // Add more categories as needed
-      'default': 18
-    };
-    return gstRates[category] || gstRates.default;
-  };
-
-  const getCartGstDetails = () => {
+  };  // Get GST rate based on category
+  const getCartGstDetails = async () => {
     let totalGstAmount = 0;
-    const categoryWiseGst = {};
     
     // If there's a 100% discount, return 0 GST
     if (state.coupon?.discountValue === 100) {
       return {
-        totalGstAmount: 0,
-        categoryWiseGst: {}
+        totalGstAmount: 0
       };
     }
 
-    state.items.forEach(item => {
-      // Use category-specific GST rate
-      const gstRate = getCategoryGstRate(item.category);
-      
-      // Calculate GST amount with proper validation
-      const itemPrice = parseFloat(item.price) || 0;
-      const quantity = parseInt(item.quantity) || 0;
-      
-      if (itemPrice > 0 && quantity > 0) {
-        // If there's a discount, calculate GST on discounted price
-        let basePrice = itemPrice;
-        if (state.discountAmount) {
-          const discountRatio = state.discountAmount / getCartTotal();
-          basePrice = itemPrice * (1 - discountRatio);
-        }
+    try {
+      // Fetch current GST rates
+      const response = await fetch('/api/gst/settings', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const { settings } = await response.json();
+      const currentGstRates = settings.rates || {};
+
+      state.items.forEach(item => {
+        // Get the current GST rate for the item's category
+        const gstRate = currentGstRates[item.category] || 18;
         
-        const itemGstAmount = (basePrice * quantity * gstRate) / 100;
-        totalGstAmount += itemGstAmount;
+        // Calculate GST amount with proper validation
+        const itemPrice = parseFloat(item.price) || 0;
+        const quantity = parseInt(item.quantity) || 0;
         
-        // Track GST by category
-        if (item.category) {
-          categoryWiseGst[item.category] = {
-            amount: (categoryWiseGst[item.category]?.amount || 0) + itemGstAmount,
-            rate: gstRate
-          };
+        if (itemPrice > 0 && quantity > 0) {
+          // If there's a discount, calculate GST on discounted price
+          let basePrice = itemPrice;
+          if (state.discountAmount) {
+            const discountRatio = state.discountAmount / getCartTotal();
+            basePrice = itemPrice * (1 - discountRatio);
+          }
+          
+          const itemGstAmount = (basePrice * quantity * gstRate) / 100;
+          totalGstAmount += itemGstAmount;
         }
-      }
-    });
+      });
+    } catch (error) {
+      console.error('Error fetching current GST rates:', error);
+      // Fallback to stored rates if fetch fails
+      state.items.forEach(item => {
+        const gstRate = parseFloat(item.gstRate) || 18;
+        
+        const itemPrice = parseFloat(item.price) || 0;
+        const quantity = parseInt(item.quantity) || 0;
+        
+        if (itemPrice > 0 && quantity > 0) {
+          let basePrice = itemPrice;
+          if (state.discountAmount) {
+            const discountRatio = state.discountAmount / getCartTotal();
+            basePrice = itemPrice * (1 - discountRatio);
+          }
+          
+          const itemGstAmount = (basePrice * quantity * gstRate) / 100;
+          totalGstAmount += itemGstAmount;
+        }
+      });
+    }
 
     return {
-      totalGstAmount: parseFloat(totalGstAmount.toFixed(2)),
-      categoryWiseGst
+      totalGstAmount: parseFloat(totalGstAmount.toFixed(2))
     };
   };
   // Coupon functions

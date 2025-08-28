@@ -29,7 +29,7 @@ import OrdersManagement from './pages/admin/OrdersManagement'
 import OrderDetail from './pages/admin/OrderDetail'
 import UsersManagement from './pages/admin/UsersManagement'
 import CODManagement from './pages/admin/CODManagement'
-import GSTSettings from './pages/admin/GSTSettings'
+import GSTManagement from './pages/admin/GSTManagement'
 import CouponManager from './pages/admin/CouponManager'
 import ApiConfigCheck from './pages/admin/ApiConfigCheck'
 
@@ -57,7 +57,7 @@ function App() {
           <Route path="orders/:id" element={<OrderDetail />} />
           <Route path="users" element={<UsersManagement />} />
           <Route path="cod" element={<CODManagement />} />
-          <Route path="gst-settings" element={<GSTSettings />} />
+          <Route path="gst" element={<GSTManagement />} />
           <Route path="coupons" element={<CouponManager />} />
           <Route path="api-config-check" element={<ApiConfigCheck />} />
         </Route>

@@ -1,27 +1,59 @@
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const ErrorHandler = require('../utils/errorHandler');
 const Product = require('../models/product');
+const GSTRate = require('../models/gstRate');
+
+// Initialize GST rates for all categories
+exports.initializeGSTRates = catchAsyncErrors(async (req, res, next) => {
+    const categories = [
+        'Electronics',
+        'Clothing',
+        'Home & Kitchen',
+        'Beauty & Personal Care',
+        'Books',
+        'Sports & Outdoors',
+        'Toys & Games',
+        'Health & Wellness',
+        'Jewelry',
+        'Automotive',
+        'Others'
+    ];
+
+    // Create default GST rates for all categories if they don't exist
+    for (const category of categories) {
+        await GSTRate.findOneAndUpdate(
+            { category },
+            { category, rate: 18 }, // Default 18% GST
+            { upsert: true, new: true }
+        );
+    }
+
+    res.status(200).json({
+        success: true,
+        message: 'GST rates initialized for all categories'
+    });
+});
 
 // Get GST settings
 exports.getGSTSettings = catchAsyncErrors(async (req, res, next) => {
-    // Get GST rates from products
-    const products = await Product.find();
-    const gstRates = {};
+    const gstRates = await GSTRate.find();
+    
+    const ratesByCategory = {};
     const exemptCategories = [];
     
-    products.forEach(product => { 
-        if (product.gstRate === 0) {
-            exemptCategories.push(product.category);
+    gstRates.forEach(rate => {
+        ratesByCategory[rate.category] = rate.rate;
+        if (rate.rate === 0) {
+            exemptCategories.push(rate.category);
         }
-        gstRates[product.category] = product.gstRate || 0;
     });
 
     res.status(200).json({
         success: true,
         settings: {
             defaultRate: 18,
-            exemptCategories: [...new Set(exemptCategories)],
-            rates: gstRates
+            exemptCategories,
+            rates: ratesByCategory
         }
     });
 });
@@ -37,28 +69,23 @@ exports.updateGSTSettings = catchAsyncErrors(async (req, res, next) => {
     }
 
     try {
-        // First check if the category exists
-        const categoryExists = await Product.exists({ category: category });
-        if (!categoryExists) {
-            console.error('Category not found:', category);
-            return next(new ErrorHandler('Category not found', 404));
-        }
-
-        // Update GST rate for all products in the category
-        const result = await Product.updateMany(
-            { category: category },
-            { $set: { gstRate: rate } }
+        // Update GST rate in GSTRate collection
+        const gstRate = await GSTRate.findOneAndUpdate(
+            { category },
+            { rate, updatedAt: Date.now() },
+            { new: true, upsert: true }
         );
 
-        console.log('Update result:', result);
+        // Update products with new GST rate
+        await Product.updateMany(
+            { category },
+            { $set: { gstRate: rate } }
+        );
 
         res.status(200).json({
             success: true,
             message: `GST rate updated for category: ${category}`,
-            updateInfo: {
-                matchedCount: result.matchedCount,
-                modifiedCount: result.modifiedCount
-            }
+            gstRate
         });
     } catch (error) {
         console.error('Error updating GST rate:', error);
@@ -68,31 +95,36 @@ exports.updateGSTSettings = catchAsyncErrors(async (req, res, next) => {
 
 // Get GST analytics
 exports.getGSTAnalytics = catchAsyncErrors(async (req, res, next) => {
+    const gstRates = await GSTRate.find();
     const products = await Product.find();
     
     let totalGstCollected = 0;
     let monthlyGst = 0;
     let yearlyGst = 0;
-    let exemptOrders = 0;
+    let exemptCategories = 0;
 
-    // Calculate totals
+    // Count exempt categories
+    gstRates.forEach(rate => {
+        if (rate.rate === 0) {
+            exemptCategories++;
+        }
+    });
+
+    // Calculate GST amounts
     products.forEach(product => {
-        const gstAmount = (product.price * (product.gstRate || 0)) / 100;
+        const gstRate = gstRates.find(rate => rate.category === product.category)?.rate || 18;
+        const gstAmount = (product.price * gstRate) / 100;
+        
         totalGstCollected += gstAmount;
 
-        // Monthly (assuming last 30 days)
+        // Monthly (last 30 days)
         if (product.updatedAt > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) {
             monthlyGst += gstAmount;
         }
 
-        // Yearly (assuming last 365 days)
+        // Yearly (last 365 days)
         if (product.updatedAt > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)) {
             yearlyGst += gstAmount;
-        }
-
-        // Exempt orders
-        if (product.gstRate === 0) {
-            exemptOrders++;
         }
     });
 
@@ -102,7 +134,8 @@ exports.getGSTAnalytics = catchAsyncErrors(async (req, res, next) => {
             totalGstCollected,
             monthlyGst,
             yearlyGst,
-            exemptOrders
+            exemptCategories,
+            totalCategories: gstRates.length
         }
     });
 });

@@ -54,11 +54,30 @@ const Cart = () => {
 
   const { applyCoupon, removeCoupon, coupon, discountAmount } = useCart();
   const subtotal = getCartTotal();
-  
-  // Calculate GST only on amount after discount
+  const [gstDetails, setGstDetails] = useState({ totalGstAmount: 0, gstRates: [] });
+  const [isLoadingGst, setIsLoadingGst] = useState(true);
+  const { getCartGstDetails } = useCart();
+
+  useEffect(() => {
+    const loadGstDetails = async () => {
+      setIsLoadingGst(true);
+      try {
+        const details = await getCartGstDetails();
+        console.log('Loaded GST details:', details);
+        console.log('Cart items:', cartItems);
+        setGstDetails(details);
+      } catch (error) {
+        console.error('Error loading GST details:', error);
+        toast.error('Error loading GST details. Using fallback rates.', toastConfig.error);
+      } finally {
+        setIsLoadingGst(false);
+      }
+    };
+    loadGstDetails();
+  }, [cartItems, discountAmount, getCartGstDetails]);
+
   const discountedSubtotal = subtotal - (discountAmount || 0);
-  const { totalGstAmount, categoryWiseGst } = useCart().getCartGstDetails();
-  const gstAmount = discountedSubtotal === 0 ? 0 : totalGstAmount;
+  const gstAmount = discountedSubtotal === 0 ? 0 : gstDetails.totalGstAmount;
   
   const shipping = subtotal > 3500 ? 0 : 299;
   const total = parseFloat((discountedSubtotal + shipping + gstAmount).toFixed(2));
@@ -334,30 +353,63 @@ const Cart = () => {
                       </span>
                     </div>                    {/* GST Section */}
                     <div className="border-t border-gray-100 pt-3">
-                      <div className="flex justify-between text-gray-600 items-center py-1">
-                        <span className="flex items-center gap-2">
-                          <IndianRupee className="w-4 h-4" />
-                          GST (18%)
-                        </span>
-                        {discountAmount > 0 ? (
-                          <div className="text-right">
-                            <span className="font-medium line-through text-gray-400 text-sm mr-2">
-                              ₹{(subtotal * 0.18).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                      {isLoadingGst ? (
+                        <div className="space-y-2">
+                          <div className="h-6 bg-gray-100 rounded animate-pulse"></div>
+                          <div className="h-6 bg-gray-100 rounded animate-pulse"></div>
+                          <div className="h-6 bg-gray-100 rounded animate-pulse w-2/3"></div>
+                        </div>
+                      ) : (
+                        <>
+                          {cartItems.map(item => {
+                            const basePrice = item.price * item.quantity;
+                            // Calculate discounted price if there's a discount
+                            const discountedPrice = discountAmount ? 
+                              basePrice * (1 - (discountAmount / subtotal)) : 
+                              basePrice;
+                            // Get current GST rate from gstDetails
+                            const itemGstRate = gstDetails.gstRates?.find(rate => rate.itemId === item.id)?.rate;
+                            // Calculate GST on discounted price with proper null handling
+                            const itemGstAmount = (discountedPrice * (typeof itemGstRate === 'number' ? itemGstRate : 18)) / 100; // Default to 18% if no rate found
+                            
+                            return (
+                              <div key={item.id} className="flex justify-between text-gray-600 items-center py-1">
+                                <span className="flex items-center gap-2 text-sm">
+                                  <IndianRupee className="w-4 h-4" />
+                                  GST ({itemGstRate}%) - {item.name}
+                                </span>
+                                <span className="text-sm">
+                                  ₹{itemGstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                </span>
+                              </div>
+                            );
+                          })}
+                          <div className="flex justify-between text-gray-600 items-center py-1 mt-2 border-t border-gray-100">
+                            <span className="flex items-center gap-2 font-medium">
+                              <IndianRupee className="w-4 h-4" />
+                              Total GST
                             </span>
-                            <span className="font-medium text-green-600">
-                              ₹{gstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                            </span>
+                            {discountAmount > 0 ? (
+                              <div className="text-right">
+                                <span className="font-medium line-through text-gray-400 text-sm mr-2">
+                                  ₹{(gstAmount * (1 / (1 - (discountAmount / subtotal)))).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                </span>
+                                <span className="font-medium text-green-600">
+                                  ₹{gstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="font-medium">
+                                ₹{gstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                              </span>
+                            )}
                           </div>
-                        ) : (
-                          <span className="font-medium">
-                            ₹{gstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                          </span>
-                        )}
-                      </div>
-                      {discountAmount > 0 && (
-                        <p className="text-xs text-green-600 mt-1">
-                          GST calculated on discounted amount
-                        </p>
+                          {discountAmount > 0 && (
+                            <p className="text-xs text-green-600 mt-1">
+                              GST calculated on discounted amount
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
                     
