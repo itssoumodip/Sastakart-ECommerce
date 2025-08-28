@@ -220,7 +220,22 @@ export const CartProvider = ({ children }) => {
   };
   const getCartItemsCount = () => {
     return state.items.reduce((total, item) => total + item.quantity, 0);
-  };  const getCartGstDetails = () => {
+  };  // GST rates by category
+  const getCategoryGstRate = (category) => {
+    const gstRates = {
+      'Clothing': 18,
+      'Jewelry': 18,
+      'Electronics': 18,
+      'Beauty & Personal Care': 18,
+      'Home & Kitchen': 18,
+      'Toys & Games': 1,
+      // Add more categories as needed
+      'default': 18
+    };
+    return gstRates[category] || gstRates.default;
+  };
+
+  const getCartGstDetails = () => {
     let totalGstAmount = 0;
     const categoryWiseGst = {};
     
@@ -233,8 +248,8 @@ export const CartProvider = ({ children }) => {
     }
 
     state.items.forEach(item => {
-      // Use product's GST rate or default to 18% if not specified
-      const gstRate = item.gstRate || 18; 
+      // Use category-specific GST rate
+      const gstRate = getCategoryGstRate(item.category);
       
       // Calculate GST amount with proper validation
       const itemPrice = parseFloat(item.price) || 0;
@@ -251,9 +266,12 @@ export const CartProvider = ({ children }) => {
         const itemGstAmount = (basePrice * quantity * gstRate) / 100;
         totalGstAmount += itemGstAmount;
         
-        // Track GST by category if needed
+        // Track GST by category
         if (item.category) {
-          categoryWiseGst[item.category] = (categoryWiseGst[item.category] || 0) + itemGstAmount;
+          categoryWiseGst[item.category] = {
+            amount: (categoryWiseGst[item.category]?.amount || 0) + itemGstAmount,
+            rate: gstRate
+          };
         }
       }
     });
