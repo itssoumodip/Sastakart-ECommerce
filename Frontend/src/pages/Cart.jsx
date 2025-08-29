@@ -54,7 +54,7 @@ const Cart = () => {
 
   const { applyCoupon, removeCoupon, coupon, discountAmount } = useCart();
   const subtotal = getCartTotal();
-  const [gstDetails, setGstDetails] = useState({ totalGstAmount: 0, gstRates: [] });
+  const [gstDetails, setGstDetails] = useState({ totalGstAmount: 0, gstRates: {} });
   const [isLoadingGst, setIsLoadingGst] = useState(true);
   const { getCartGstDetails } = useCart();
 
@@ -62,15 +62,21 @@ const Cart = () => {
     const loadGstDetails = async () => {
       setIsLoadingGst(true);
       try {
+        // Fetch the GST details including itemized rates
         const details = await getCartGstDetails();
-        setGstDetails(details);
+        if (details) {
+          setGstDetails(details);
+        }
       } catch (error) {
-        toast.error('Error loading GST details. Using fallback rates.', toastConfig.error);
+        console.error('Error loading GST details:', error);
+        toast.error('Error loading GST details', toastConfig.error);
       } finally {
         setIsLoadingGst(false);
       }
     };
-    loadGstDetails();
+    if (cartItems.length > 0) {
+      loadGstDetails();
+    }
   }, [cartItems, discountAmount, getCartGstDetails]);
 
   const discountedSubtotal = subtotal - (discountAmount || 0);
@@ -359,24 +365,28 @@ const Cart = () => {
                       ) : (
                         <>
                           {cartItems.map(item => {
-                            const basePrice = item.price * item.quantity;
+                            const basePrice = parseFloat(item.price || 0) * parseInt(item.quantity || 0);
                             // Calculate discounted price if there's a discount
                             const discountedPrice = discountAmount ? 
                               basePrice * (1 - (discountAmount / subtotal)) : 
                               basePrice;
-                            // Get current GST rate from gstDetails
-                            const itemGstRate = gstDetails.gstRates?.find(rate => rate.itemId === item.id)?.rate;
-                            // Calculate GST on discounted price with proper null handling
-                            const itemGstAmount = (discountedPrice * (typeof itemGstRate === 'number' ? itemGstRate : 18)) / 100; // Default to 18% if no rate found
+                            
+                            // Get GST rate from the item, defaulting to 18% if not set
+                            const itemGstRate = typeof item.gstRate === 'number' ? item.gstRate : 18;
+                            
+                            // Calculate GST on discounted price
+                            const itemGstAmount = (discountedPrice * itemGstRate) / 100;
                             
                             return (
-                              <div key={item.id} className="flex justify-between text-gray-600 items-center py-1">
+                              <div key={item.id} className="flex justify-between text-gray-600 items-center py-2">
                                 <span className="flex items-center gap-2 text-sm">
                                   <IndianRupee className="w-4 h-4" />
-                                  GST ({itemGstRate}%) - {item.name}
+                                  <span className="truncate max-w-[200px]">
+                                    GST ({itemGstRate}%) - {item.name}
+                                  </span>
                                 </span>
-                                <span className="text-sm">
-                                  ₹{itemGstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                <span className="text-sm font-medium">
+                                  ₹{itemGstAmount.toFixed(2)}
                                 </span>
                               </div>
                             );
@@ -389,18 +399,23 @@ const Cart = () => {
                             {discountAmount > 0 ? (
                               <div className="text-right">
                                 <span className="font-medium line-through text-gray-400 text-sm mr-2">
-                                  ₹{(gstAmount * (1 / (1 - (discountAmount / subtotal)))).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                  ₹{Number(gstDetails.totalGstAmount || 0).toFixed(2)}
                                 </span>
                                 <span className="font-medium text-green-600">
-                                  ₹{gstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                  ₹{Number(gstAmount || 0).toFixed(2)}
                                 </span>
                               </div>
                             ) : (
                               <span className="font-medium">
-                                ₹{gstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                ₹{Number(gstAmount || 0).toFixed(2)}
                               </span>
                             )}
                           </div>
+                          {discountAmount > 0 && (
+                            <p className="text-xs text-green-600 mt-1">
+                              GST calculated on discounted amount
+                            </p>
+                          )}
                           {discountAmount > 0 && (
                             <p className="text-xs text-green-600 mt-1">
                               GST calculated on discounted amount

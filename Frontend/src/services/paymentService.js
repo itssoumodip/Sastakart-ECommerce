@@ -35,6 +35,7 @@ export const createPaymentOrder = async (totalAmount, metadata = {}) => {
     });
     return response.data;
   } catch (error) {
+    console.error("Payment order creation error:", error);
     throw error;
   }
 };
@@ -49,6 +50,7 @@ export const checkPaymentStatus = async (merchantTransactionId) => {
     const response = await api.get(`${API_ENDPOINTS.PAYMENTS}/status/${merchantTransactionId}`);
     return response.data;
   } catch (error) {
+    console.error("Payment status check error:", error);
     throw error;
   }
 };
@@ -71,6 +73,7 @@ export const saveOrder = async (merchantTransactionId, cartItems, totalAmount, s
     });
     return response.data;
   } catch (error) {
+    console.error("Order save error:", error);
     throw error;
   }
 };
@@ -84,6 +87,7 @@ export const getPaymentMethods = async () => {
     const response = await api.get(`${API_ENDPOINTS.PAYMENTS}/methods`);
     return response.data;
   } catch (error) {
+    console.error("Payment methods fetch error:", error);
     throw error;
   }
 };

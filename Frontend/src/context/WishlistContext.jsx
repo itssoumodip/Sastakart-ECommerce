@@ -76,7 +76,7 @@ export const WishlistProvider = ({ children }) => {
           });
         }
       } catch (error) {
-        // Silent fail - will start with empty wishlist
+        console.error('Failed to load wishlist:', error);
       } finally {
         // Set loading to false after a short delay to prevent flickering
         setTimeout(() => {
@@ -93,7 +93,7 @@ export const WishlistProvider = ({ children }) => {
     try {
       localStorage.setItem('wishlist', JSON.stringify(state.items));
     } catch (error) {
-      // Silent fail - next page load will try again
+      console.error('Failed to save wishlist to localStorage:', error);
     }  }, [state.items]);
   
   // Add item to wishlist

@@ -97,7 +97,7 @@ export const CartProvider = ({ children }) => {
         const parsedCart = JSON.parse(savedCart)
         dispatch({ type: 'LOAD_CART', payload: parsedCart })
       } catch (error) {
-        toast.error('Error loading cart. Cart has been reset.', toastConfig.error);
+        console.error('Error loading cart from localStorage:', error)
       }
     }
     
@@ -108,7 +108,7 @@ export const CartProvider = ({ children }) => {
         const parsedCoupon = JSON.parse(savedCoupon)
         dispatch({ type: 'APPLY_COUPON', payload: parsedCoupon })
       } catch (error) {
-        toast.error('Error loading coupon. Coupon has been removed.', toastConfig.error);
+        console.error('Error loading coupon from localStorage:', error)
       }
     }
   }, [])
@@ -231,71 +231,58 @@ export const CartProvider = ({ children }) => {
   };
   const getCartItemsCount = () => {
     return state.items.reduce((total, item) => total + item.quantity, 0);
-  };  // Get GST rate based on category
+  };  // Get GST details including individual item rates
   const getCartGstDetails = async () => {
     let totalGstAmount = 0;
+    const itemizedGst = {};
     
     // If there's a 100% discount, return 0 GST
     if (state.coupon?.discountValue === 100) {
       return {
-        totalGstAmount: 0
+        totalGstAmount: 0,
+        itemizedGst: {}
       };
     }
 
     try {
-      // Fetch current GST rates
-      const response = await fetch('/api/gst/settings', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      const { settings } = await response.json();
-      const currentGstRates = settings.rates || {};
-
-      state.items.forEach(item => {
-        // Get the current GST rate for the item's category
-        const gstRate = currentGstRates[item.category] || 18;
-        
-        // Calculate GST amount with proper validation
-        const itemPrice = parseFloat(item.price) || 0;
-        const quantity = parseInt(item.quantity) || 0;
-        
-        if (itemPrice > 0 && quantity > 0) {
-          // If there's a discount, calculate GST on discounted price
-          let basePrice = itemPrice;
-          if (state.discountAmount) {
-            const discountRatio = state.discountAmount / getCartTotal();
-            basePrice = itemPrice * (1 - discountRatio);
-          }
-          
-          const itemGstAmount = (basePrice * quantity * gstRate) / 100;
-          totalGstAmount += itemGstAmount;
-        }
-      });
-    } catch (error) {
-      // Fallback to stored rates if fetch fails
-      toast.error('Error fetching GST rates. Using default rates.', toastConfig.error);
+      // Calculate GST for each item using their stored rates
       state.items.forEach(item => {
         const gstRate = parseFloat(item.gstRate) || 18;
-        
         const itemPrice = parseFloat(item.price) || 0;
         const quantity = parseInt(item.quantity) || 0;
         
         if (itemPrice > 0 && quantity > 0) {
-          let basePrice = itemPrice;
+          let basePrice = itemPrice * quantity;
+          
+          // Apply discount if exists
           if (state.discountAmount) {
             const discountRatio = state.discountAmount / getCartTotal();
-            basePrice = itemPrice * (1 - discountRatio);
+            basePrice = basePrice * (1 - discountRatio);
           }
           
-          const itemGstAmount = (basePrice * quantity * gstRate) / 100;
+          const itemGstAmount = (basePrice * gstRate) / 100;
           totalGstAmount += itemGstAmount;
+          
+          itemizedGst[item.id] = {
+            rate: gstRate,
+            amount: parseFloat(itemGstAmount.toFixed(2))
+          };
         }
       });
-    }
 
-    return {
-      totalGstAmount: parseFloat(totalGstAmount.toFixed(2))
-    };
+      return {
+        totalGstAmount: parseFloat(totalGstAmount.toFixed(2)),
+        itemizedGst
+      };
+    } catch (error) {
+      console.error('Error calculating GST:', error);
+      return {
+        totalGstAmount: 0,
+        itemizedGst: {}
+      };
+    }
   };
+
   // Coupon functions
   const applyCoupon = (couponData) => {
     if (couponData) {

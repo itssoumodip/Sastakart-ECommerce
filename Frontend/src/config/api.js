@@ -8,6 +8,10 @@ import { getAuthHeaders } from '../utils/auth';
 // Set default base URL
 axios.defaults.baseURL = API_BASE_URL;
 
+// Log API configuration at startup
+console.log('API Configuration Loaded:');
+console.log('API_BASE_URL:', API_BASE_URL);
+console.log('Environment Variable:', import.meta.env.VITE_API_URL);
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
@@ -29,7 +33,15 @@ axios.interceptors.request.use(
       // Always ensure withCredentials is set for all requests
       config.withCredentials = true;
       
+      // Only log non-auth check requests to reduce noise
+      if (!config.url?.includes('/api/auth/me')) {
+        console.log(`Request to ${config.url}:`, { 
+          headers: { Authorization: token ? 'Bearer [TOKEN]' : 'None' },
+          withCredentials: config.withCredentials
+        });
+      }
     } catch (error) {
+      console.error('Error setting up request headers:', error);
     }
     
     return config;
@@ -43,10 +55,27 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && !window.location.pathname.includes('/checkout')) {
-      window.location.href = '/login';
-    } else if (error.response?.status === 403 && window.location.pathname.startsWith('/admin')) {
-      window.location.href = '/';
+    console.log('API Error:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      message: error.message,
+      currentPath: window.location.pathname
+    });
+    
+    if (error.response?.status === 401) {
+      // Handle unauthorized access but don't redirect if we're in checkout
+      if (!window.location.pathname.includes('/checkout')) {
+        console.warn('401 error - redirecting to login (skipped for checkout pages)');
+        window.location.href = '/login';
+      } else {
+        console.warn('401 error on checkout page - not redirecting automatically');
+        // Maybe show a modal or notification instead of redirecting
+      }
+    } else if (error.response?.status === 403) {
+      // Handle forbidden access
+      if (window.location.pathname.startsWith('/admin')) {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }
