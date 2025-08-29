@@ -25,8 +25,7 @@ const CheckoutPayment = ({
       maximumFractionDigits: 2
     }) : '0.00';
     
-  // Log shipping data for debugging
-  console.log("CheckoutPayment received shipping data:", shippingData);
+
     
   return (
     <div>
@@ -38,7 +37,7 @@ const CheckoutPayment = ({
           <PhonePePayment
             amount={calculateTotal()} // Total amount in rupees
             onPaymentInitiated={(orderId) => {
-              console.log('Payment initiated with order ID:', orderId);
+
               // You can store orderId in localStorage/sessionStorage here if needed
             }}
             onPaymentError={handlePaymentError}

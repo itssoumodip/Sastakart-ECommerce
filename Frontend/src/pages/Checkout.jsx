@@ -87,10 +87,8 @@ const Checkout = () => {
       setIsLoadingGst(true);
       try {
         const details = await getCartGstDetails();
-        console.log('Checkout: Loaded GST details:', details);
         setGstDetails(details);
       } catch (error) {
-        console.error('Error loading GST details:', error);
         toast.error('Error loading GST details. Using default rates.');
       } finally {
         setIsLoadingGst(false);
@@ -104,36 +102,23 @@ const Checkout = () => {
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        // Import auth utilities - using the imported functions from the top
-        // First, check if the user is authenticated via AuthContext
         if (!isAuthenticated) {
-          console.warn('User is not authenticated according to AuthContext, redirecting to login');
           navigate('/login', { state: { from: '/checkout' } });
           return;
         }
         
-        // Get token from all storage mechanisms with improved utility
         const token = getAuthToken();
         
         if (!token) {
-          console.error('No token found despite being "authenticated" in AuthContext');
           toast.error('Authentication required. Please log in again.');
           navigate('/login', { state: { from: '/checkout' } });
           return;
         }
         
-        // Synchronize token across all storage mechanisms
         syncToken(token);
-        
-        // Store in component state for direct access to child components
         setAuthToken(token);
-        
-        // Mark authentication check as complete
         setAuthChecked(true);
-        
-        console.log('Authentication verified successfully for checkout');
       } catch (error) {
-        console.error('Error during authentication check:', error);
         toast.error('Authentication error. Please log in again.');
         navigate('/login', { state: { from: '/checkout' } });
       }
@@ -176,10 +161,8 @@ const Checkout = () => {
       setStep(step - 1);
     }
   };  const handleShippingSubmit = (data) => {
-    console.log('Shipping data:', data);
     handleNextStep();
   };  const handlePaymentError = (error) => {
-    console.error('Payment error:', error);
     setPaymentError(error.message || error?.response?.data?.message || 'Payment processing failed');
     setLoading(false);
     const errorMsg = error.message || error?.response?.data?.message;
@@ -298,10 +281,6 @@ const Checkout = () => {
     // Ensure token is properly synchronized across all storage mechanisms
     syncToken(token);
     
-    // Log order preparation
-    console.log('Preparing to submit order with authentication token');
-    
-    // Create axios instance specifically for this critical request
     const secureAxios = axios.create({
       baseURL: axios.defaults.baseURL,
       headers: {
@@ -309,14 +288,6 @@ const Checkout = () => {
         'Content-Type': 'application/json'
       },
       withCredentials: true
-    });
-    
-    // Log the data we're submitting (basic info only, for privacy)
-    console.log('Submitting order with data:', {
-      orderItems: orderData.orderItems.length,
-      shippingInfo: 'present',
-      paymentMethod: orderData.paymentMethod,
-      totalAmount: orderData.totalPrice
     });
     
     // Submit order with our secure axios instance
@@ -329,9 +300,8 @@ const Checkout = () => {
           await secureAxios.post(API_ENDPOINTS.RECORD_COUPON_USAGE, { 
             code: coupon.code 
           });
-          console.log('Coupon usage recorded successfully');
         } catch (error) {
-          console.error('Failed to record coupon usage:', error);
+          // Silently handle coupon recording error
           // Continue with order success flow even if coupon recording fails
         }
       }
@@ -767,7 +737,6 @@ const Checkout = () => {
       const refreshToken = () => {
         const token = getAuthToken();
         if (token) {
-          console.log('ReviewStep: Refreshing token storage');
           Cookies.set('token', token, { 
             expires: 7, 
             path: '/',
@@ -776,8 +745,6 @@ const Checkout = () => {
           });
           localStorage.setItem('authToken', token);
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        } else {
-          console.warn('ReviewStep: No token found for refresh');
         }
       };
       

@@ -45,10 +45,7 @@ const PhonePePayment = ({
       }
       
       // Debug token presence
-      console.log('PhonePePayment - Token exists:', !!token);
-      
       if (!token) {
-        console.error('No authentication token found before payment initiation');
         throw new Error('Authentication required. Please log in again to complete your purchase.');
       }
       
@@ -87,8 +84,7 @@ const PhonePePayment = ({
       };
       
       // Log complete shipping information for debugging
-      console.log('Sending payment request with data:', paymentData);
-      console.log('Shipping information details:', paymentData.shippingInfo);
+
       
       // Store shipping info in localStorage for use during order completion
       try {
@@ -106,9 +102,7 @@ const PhonePePayment = ({
           email: paymentData.shippingInfo.email
         };
         localStorage.setItem('shippingInfo', JSON.stringify(formattedShippingInfo));
-        console.log('Saved shipping info to localStorage for order completion:', formattedShippingInfo);
       } catch (storageError) {
-        console.error('Error saving shipping info to localStorage:', storageError);
       }
       
       // Make API request with our dedicated axios instance that has proper auth
@@ -132,7 +126,7 @@ const PhonePePayment = ({
         throw new Error(response.data.message || 'Failed to initiate payment');
       }
     } catch (error) {
-      console.error('PhonePe payment error:', error);
+
       const errorMessage = error.response?.data?.message || error.message || 'Payment initiation failed';
       setPaymentError(errorMessage);
       

@@ -97,7 +97,7 @@ export const CartProvider = ({ children }) => {
         const parsedCart = JSON.parse(savedCart)
         dispatch({ type: 'LOAD_CART', payload: parsedCart })
       } catch (error) {
-        console.error('Error loading cart from localStorage:', error)
+        toast.error('Error loading cart. Cart has been reset.', toastConfig.error);
       }
     }
     
@@ -108,7 +108,7 @@ export const CartProvider = ({ children }) => {
         const parsedCoupon = JSON.parse(savedCoupon)
         dispatch({ type: 'APPLY_COUPON', payload: parsedCoupon })
       } catch (error) {
-        console.error('Error loading coupon from localStorage:', error)
+        toast.error('Error loading coupon. Coupon has been removed.', toastConfig.error);
       }
     }
   }, [])
@@ -271,8 +271,8 @@ export const CartProvider = ({ children }) => {
         }
       });
     } catch (error) {
-      console.error('Error fetching current GST rates:', error);
       // Fallback to stored rates if fetch fails
+      toast.error('Error fetching GST rates. Using default rates.', toastConfig.error);
       state.items.forEach(item => {
         const gstRate = parseFloat(item.gstRate) || 18;
         

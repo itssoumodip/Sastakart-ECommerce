@@ -63,11 +63,8 @@ const Cart = () => {
       setIsLoadingGst(true);
       try {
         const details = await getCartGstDetails();
-        console.log('Loaded GST details:', details);
-        console.log('Cart items:', cartItems);
         setGstDetails(details);
       } catch (error) {
-        console.error('Error loading GST details:', error);
         toast.error('Error loading GST details. Using fallback rates.', toastConfig.error);
       } finally {
         setIsLoadingGst(false);
