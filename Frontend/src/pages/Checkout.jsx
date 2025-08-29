@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 
 const Checkout = () => {
-  const { items: cartItems, getCartTotal, clearCart } = useCart();
+  const { items: cartItems, getCartTotal, clearCart, getCartGstDetails } = useCart();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -47,6 +47,8 @@ const Checkout = () => {
   const [paymentIntent, setPaymentIntent] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [authToken, setAuthToken] = useState(null);
+  const [gstDetails, setGstDetails] = useState({ totalGstAmount: 0, gstRates: [] });
+  const [isLoadingGst, setIsLoadingGst] = useState(true);
 
   const shippingForm = useForm({
     defaultValues: {
@@ -73,14 +75,30 @@ const Checkout = () => {
       billingAddress: 'same'
     }
   });
-  // Effect to check cart items
+  // Effect to check cart items and load GST details
   useEffect(() => {
     if ((!cartItems || cartItems.length === 0) && !orderPlaced) {
       navigate('/cart');
       toast.error('Your cart is empty');
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderPlaced]);
+
+    const loadGstDetails = async () => {
+      setIsLoadingGst(true);
+      try {
+        const details = await getCartGstDetails();
+        console.log('Checkout: Loaded GST details:', details);
+        setGstDetails(details);
+      } catch (error) {
+        console.error('Error loading GST details:', error);
+        toast.error('Error loading GST details. Using default rates.');
+      } finally {
+        setIsLoadingGst(false);
+      }
+    };
+
+    loadGstDetails();
+  }, [cartItems, orderPlaced, getCartGstDetails, navigate]);
   
   // Effect to check authentication and store token for use in checkout
   useEffect(() => {
@@ -124,12 +142,11 @@ const Checkout = () => {
     checkAuthentication();
   }, [isAuthenticated, navigate]);  // Calculate with proper parsing and formatting for all monetary values
   const subtotal = getCartTotal(); 
-  const { totalGstAmount, categoryWiseGst } = useCart().getCartGstDetails();
   const { coupon, discountAmount } = useCart();
   const shipping = subtotal > 3500 ? 0 : 299;
   
   const calculateTax = () => {
-    return parseFloat(totalGstAmount);
+    return parseFloat(gstDetails.totalGstAmount || 0);
   };
 
   const calculateShipping = () => {
@@ -142,7 +159,8 @@ const Checkout = () => {
   
   const calculateTotal = () => {
     const codCharge = paymentMethod === 'cod' ? 50 : 0;
-    const total = subtotal - calculateDiscount() + calculateShipping() + calculateTax() + codCharge;
+    const gstAmount = isLoadingGst ? 0 : (gstDetails.totalGstAmount || 0);
+    const total = subtotal - calculateDiscount() + calculateShipping() + gstAmount + codCharge;
     return parseFloat(total.toFixed(2));
   };
 
@@ -221,15 +239,21 @@ const Checkout = () => {
     }
     
     const orderData = {
-      orderItems: (cartItems || []).map(item => ({
-        product: item.id,
-        name: item.name,
-        quantity: parseInt(item.quantity) || 1,
-        image: item.image,
-        price: parseFloat((parseFloat(item.price) || 0).toFixed(2)), // Double parse to ensure proper number
-        gstRate: item.gstRate || 18, // Default GST rate if not present
-        gstAmount: item.gstAmount || 0 // Default GST amount if not present
-      })),
+      orderItems: (cartItems || []).map(item => {
+        const itemGstRate = gstDetails.gstRates?.find(rate => rate.itemId === item.id)?.rate || 18;
+        const basePrice = parseFloat((parseFloat(item.price) || 0).toFixed(2));
+        const itemGstAmount = (basePrice * itemGstRate) / 100;
+        
+        return {
+          product: item.id,
+          name: item.name,
+          quantity: parseInt(item.quantity) || 1,
+          image: item.image,
+          price: basePrice,
+          gstRate: itemGstRate,
+          gstAmount: itemGstAmount
+        };
+      }),
       shippingInfo: {
         address: shippingData.address,
         city: shippingData.city,
@@ -255,8 +279,8 @@ const Checkout = () => {
         discountValue: coupon.discountValue
       } : null,
       gstSummary: {
-        totalGstAmount: taxFormatted,
-        categoryWiseGst: {},
+        totalGstAmount: gstDetails.totalGstAmount,
+        gstRates: gstDetails.gstRates || [],
         invoiceNumber: 'INV-' + Date.now() // Generate an invoice number
       }
     };
@@ -889,7 +913,16 @@ const Checkout = () => {
   );
   };
   
-  const OrderSummary = () => (
+  const OrderSummary = ({ 
+    gstDetails, 
+    isLoadingGst, 
+    calculateTotal,
+    subtotal,
+    discountAmount,
+    shipping,
+    coupon,
+    paymentMethod 
+  }) => (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit sticky top-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-900">Order Summary</h3>
@@ -933,6 +966,14 @@ const Checkout = () => {
           </div>
         ))}
       </div>      <div className="border-t border-gray-200 pt-4 space-y-3">
+        {isLoadingGst && (
+          <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-2 mb-4">
+            <div className="flex items-center">
+              <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin mr-2"></div>
+              <p className="text-sm text-yellow-700">Calculating GST...</p>
+            </div>
+          </div>
+        )}
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Subtotal</span>
           <span className="font-medium">₹{subtotal.toFixed(2)}</span>
@@ -956,9 +997,33 @@ const Checkout = () => {
               `₹${shipping.toFixed(2)}`
             )}
           </span>
-        </div>        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">GST</span>
-          <span className="font-medium">₹{totalGstAmount.toFixed(2)}</span>
+        </div>        {/* GST Details */}
+        <div className="space-y-2">
+          {isLoadingGst ? (
+            <div className="w-full h-6 bg-gray-100 rounded animate-pulse"></div>
+          ) : (
+            <>
+              {cartItems.map(item => {
+                const itemGstRate = gstDetails.gstRates?.find(rate => rate.itemId === item.id)?.rate || 0;
+                const basePrice = item.price * item.quantity;
+                const discountedPrice = discountAmount ? 
+                  basePrice * (1 - (discountAmount / subtotal)) : 
+                  basePrice;
+                const itemGstAmount = (discountedPrice * itemGstRate) / 100;
+                
+                return itemGstAmount > 0 ? (
+                  <div key={item.id} className="flex justify-between text-xs text-gray-500">
+                    <span>GST ({itemGstRate}%) - {item.name}</span>
+                    <span>₹{itemGstAmount.toFixed(2)}</span>
+                  </div>
+                ) : null;
+              })}
+              <div className="flex justify-between text-sm font-medium border-t border-gray-100 pt-2 mt-2">
+                <span className="text-gray-600">Total GST</span>
+                <span>₹{gstDetails.totalGstAmount.toFixed(2)}</span>
+              </div>
+            </>
+          )}
         </div>
         
         {paymentMethod === 'cod' && (
@@ -1057,7 +1122,16 @@ const Checkout = () => {
             </div>
             
             <div className="lg:col-span-1">
-              <OrderSummary />
+              <OrderSummary 
+                gstDetails={gstDetails}
+                isLoadingGst={isLoadingGst}
+                calculateTotal={calculateTotal}
+                subtotal={subtotal}
+                discountAmount={discountAmount}
+                shipping={shipping}
+                coupon={coupon}
+                paymentMethod={paymentMethod}
+              />
             </div>
           </div>
         </div>
