@@ -1,11 +1,12 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
+const logger = require('./utils/logger');
 
-console.log('Starting email test...');
-console.log('SMTP_HOST:', process.env.SMTP_HOST);
-console.log('SMTP_PORT:', process.env.SMTP_PORT);
-console.log('SMTP_EMAIL:', process.env.SMTP_EMAIL);
-console.log('SMTP_PASSWORD:', process.env.SMTP_PASSWORD ? 'Set (masked)' : 'Not set');
+logger.debug('Starting email test...');
+logger.debug('SMTP_HOST:', process.env.SMTP_HOST);
+logger.debug('SMTP_PORT:', process.env.SMTP_PORT);
+logger.debug('SMTP_EMAIL:', process.env.SMTP_EMAIL);
+logger.debug('SMTP_PASSWORD:', process.env.SMTP_PASSWORD ? 'Set (masked)' : 'Not set');
 
 // Create a transporter object with the same settings as your app
 const transporter = nodemailer.createTransport({
@@ -23,9 +24,9 @@ const transporter = nodemailer.createTransport({
 // Verify transporter configuration
 transporter.verify(function(error, success) {
   if (error) {
-    console.error('SMTP server connection error:', error);
+    logger.error('SMTP server connection error:', error);
   } else {
-    console.log('SMTP server connection verified and ready to send emails');
+    logger.debug('SMTP server connection verified and ready to send emails');
     
     // Try sending a test email
     const message = {
@@ -38,9 +39,9 @@ transporter.verify(function(error, success) {
     
     transporter.sendMail(message, (err, info) => {
       if (err) {
-        console.error('Test email sending failed:', err);
+        logger.error('Test email sending failed:', err);
       } else {
-        console.log('Test email sent successfully:', info);
+        logger.debug('Test email sent successfully:', info);
       }
     });
   }

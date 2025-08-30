@@ -1,5 +1,18 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../utils/logger');
+
+// Development-only request logger for these routes
+if (process.env.NODE_ENV === 'development') {
+  router.use((req, res, next) => {
+    try {
+      logger.debug(`[Order routes] ${req.method} ${req.originalUrl}`);
+    } catch (e) {
+      // Safe no-op in case logger isn't available
+    }
+    next();
+  });
+}
 const { 
   newOrder, 
   getSingleOrder, 

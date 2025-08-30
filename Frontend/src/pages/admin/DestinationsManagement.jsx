@@ -70,7 +70,7 @@ const DestinationsManagement = () => {
         throw new Error('Failed to fetch destinations');
       }
     } catch (error) {
-      console.error('Error fetching destinations:', error);
+      logger.error('Error fetching destinations:', error);
       setError('Failed to load destinations. Please try again.');
     } finally {
       setLoading(false);
@@ -154,7 +154,7 @@ const DestinationsManagement = () => {
       // Reset form and close it
       resetForm();
     } catch (error) {
-      console.error('Error saving destination:', error);
+      logger.error('Error saving destination:', error);
       toast.error(error.response?.data?.message || 'Failed to save destination');
     }
   };
@@ -201,7 +201,7 @@ const DestinationsManagement = () => {
         setDestinations(destinations.filter(dest => dest._id !== id));
       }
     } catch (error) {
-      console.error('Error deleting destination:', error);
+      logger.error('Error deleting destination:', error);
       toast.error(error.response?.data?.message || 'Failed to delete destination');
     }
   };

@@ -120,7 +120,7 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
       }
     });
   } catch (emailError) {
-    console.error('Failed to send order confirmation email:', emailError);
+    logger.error('Failed to send order confirmation email:', emailError);
     // Don't fail the order creation if email sending fails
     // We'll just log the error and continue
   }
@@ -222,10 +222,10 @@ exports.updateOrder = catchAsyncErrors(async (req, res, next) => {
       });
     } else {
       // For other status changes, we could implement additional notifications here
-      console.log(`Status changed to ${req.body.status}, no email template available`);
+      logger.debug(`Status changed to ${req.body.status}, no email template available`);
     }
   } catch (emailError) {
-    console.error(`Failed to send order status update email for status ${req.body.status}:`, emailError);
+    logger.error(`Failed to send order status update email for status ${req.body.status}:`, emailError);
     // Don't fail the order update if email sending fails
   }
 
@@ -421,7 +421,7 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
       });
     }
   } catch (emailError) {
-    console.error(`Failed to send order status update email for status ${status}:`, emailError);
+    logger.error(`Failed to send order status update email for status ${status}:`, emailError);
     // Don't fail the order update if email sending fails
   }
 
@@ -494,7 +494,7 @@ exports.cancelOrder = catchAsyncErrors(async (req, res, next) => {
       additionalInfo: cancelNote
     });
   } catch (emailError) {
-    console.error('Failed to send order cancellation email:', emailError);
+    logger.error('Failed to send order cancellation email:', emailError);
     // Don't fail the order cancellation if email sending fails
   }
 

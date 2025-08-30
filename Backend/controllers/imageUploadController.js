@@ -17,24 +17,24 @@ exports.testAuth = catchAsyncErrors(async (req, res, next) => {
 
 // Upload product images => /api/upload/products/upload
 exports.uploadProductImages = catchAsyncErrors(async (req, res, next) => {
-  console.log('Upload request received');
-  console.log('Request body keys:', Object.keys(req.body));
-  console.log('User:', req.user ? req.user.email : 'No user');
+  logger.debug('Upload request received');
+  logger.debug('Request body keys:', Object.keys(req.body));
+  logger.debug('User:', req.user ? req.user.email : 'No user');
   
   if (!req.body.images) {
-    console.log('No images provided in request body');
+    logger.debug('No images provided in request body');
     return next(new ErrorHandler('Please provide image files', 400));
   }
 
-  console.log('Number of images to upload:', req.body.images.length);
+  logger.debug('Number of images to upload:', req.body.images.length);
 
   const uploadPromises = req.body.images.map(async (base64Image, index) => {
     try {
-      console.log(`Uploading image ${index + 1}`);
+      logger.debug(`Uploading image ${index + 1}`);
       
       // Skip if the image is already a URL (already uploaded)
       if (base64Image.startsWith('http')) {
-        console.log(`Image ${index + 1} is already a URL, skipping upload`);
+        logger.debug(`Image ${index + 1} is already a URL, skipping upload`);
         return base64Image;
       }
 
@@ -46,16 +46,16 @@ exports.uploadProductImages = catchAsyncErrors(async (req, res, next) => {
         ]
       });
       
-      console.log(`Image ${index + 1} uploaded successfully:`, result.secure_url);
+      logger.debug(`Image ${index + 1} uploaded successfully:`, result.secure_url);
       return result.secure_url;
     } catch (error) {
-      console.error(`Error uploading image ${index + 1}:`, error);
+      logger.error(`Error uploading image ${index + 1}:`, error);
       throw error;
     }
   });
 
   const uploadedImageUrls = await Promise.all(uploadPromises);
-  console.log('All images uploaded successfully:', uploadedImageUrls);
+  logger.debug('All images uploaded successfully:', uploadedImageUrls);
 
   res.status(200).json({
     success: true,

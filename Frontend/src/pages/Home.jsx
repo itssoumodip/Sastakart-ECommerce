@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
-import { Leaf, Shield, Truck, Heart } from 'lucide-react';
+import { Shield, Truck, Heart } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
+import { logger } from '../utils/logger';
 
 // Add this to your CSS file or add it inline in the component
 const textShadowStyle = {
@@ -73,7 +74,7 @@ const Home = () => {
         }
       } catch (err) {
         setError(err.message);
-        console.error('Error fetching bestselling products:', err);
+        logger.error('Error fetching bestselling products:', err);
       } finally {
         setLoading(false);
       }

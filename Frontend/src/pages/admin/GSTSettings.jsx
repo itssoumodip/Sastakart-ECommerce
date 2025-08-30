@@ -19,6 +19,7 @@ import axios from 'axios';
 import { getAuthHeaders } from '../../utils/auth';
 import API_BASE_URL, { API_ENDPOINTS } from '../../config/api';
 import toast from 'react-hot-toast';
+import { logger } from '../../utils/logger';
 
 const GSTSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -63,15 +64,15 @@ const GSTSettings = () => {
     const fetchGSTData = async () => {
       setLoading(true);
       try {
-        console.log('Fetching GST settings from:', API_BASE_URL + API_ENDPOINTS.GST_SETTINGS);
-        console.log('Auth Headers:', getAuthHeaders());
+        logger.debug('Fetching GST settings from:', API_BASE_URL + API_ENDPOINTS.GST_SETTINGS);
+        logger.debug('Auth Headers:', getAuthHeaders());
         // Fetch GST settings
         try {
           const settingsResponse = await axios.get(
             `${API_BASE_URL}${API_ENDPOINTS.GST_SETTINGS}`
             // No auth headers for test endpoint
           );
-          console.log('GST Settings Response:', settingsResponse.status, settingsResponse.data);
+          logger.debug('GST Settings Response:', settingsResponse.status, settingsResponse.data);
           
           if (settingsResponse.data.success) {
             setGstSettings(settingsResponse.data.settings);
@@ -81,7 +82,7 @@ const GSTSettings = () => {
             setCategories(uniqueCategories);
           }
         } catch (error) {
-          console.error('GST Settings Error:', error.response ? {
+          logger.error('GST Settings Error:', error.response ? {
             status: error.response.status,
             statusText: error.response.statusText,
             data: error.response.data
@@ -92,20 +93,20 @@ const GSTSettings = () => {
 
         
         // Fetch GST analytics
-        console.log('Fetching GST analytics from:', API_BASE_URL + API_ENDPOINTS.GST_ANALYTICS);
+        logger.debug('Fetching GST analytics from:', API_BASE_URL + API_ENDPOINTS.GST_ANALYTICS);
         try {
           const analyticsResponse = await axios.get(
             `${API_BASE_URL}${API_ENDPOINTS.GST_ANALYTICS}`
             // No auth headers for test endpoint
           );
           
-          console.log('GST Analytics Response:', analyticsResponse.status, analyticsResponse.data);
+          logger.debug('GST Analytics Response:', analyticsResponse.status, analyticsResponse.data);
           
           if (analyticsResponse.data.success) {
             setAnalytics(analyticsResponse.data.analytics);
           }
         } catch (error) {
-          console.error('GST Analytics Error:', error.response ? {
+          logger.error('GST Analytics Error:', error.response ? {
             status: error.response.status,
             statusText: error.response.statusText,
             data: error.response.data
@@ -113,7 +114,7 @@ const GSTSettings = () => {
           toast.error(`GST Analytics API Error: ${error.response ? error.response.status + ' ' + error.response.statusText : error.message}`);
         }
       } catch (error) {
-        console.error('Error fetching GST data:', error);
+        logger.error('Error fetching GST data:', error);
         toast.error('Failed to fetch GST settings. Please try again.');
       } finally {
         setLoading(false);
@@ -145,7 +146,7 @@ const GSTSettings = () => {
         toast.success(`GST rate updated for ${category}`);
       }
     } catch (error) {
-      console.error('Error updating GST rate:', error);
+      logger.error('Error updating GST rate:', error);
       toast.error('Failed to update GST rate. Please try again.');
     }
   };
@@ -182,7 +183,7 @@ const GSTSettings = () => {
         setShowModal(false);
       }
     } catch (error) {
-      console.error('Error adding new GST category:', error);
+      logger.error('Error adding new GST category:', error);
       toast.error('Failed to add GST category. Please try again.');
     }
   };

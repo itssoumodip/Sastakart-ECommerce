@@ -1,7 +1,7 @@
 const Coupon = require('../models/coupon');
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
-const Product = require('../models/product');
+
 
 // Create a new coupon
 exports.createCoupon = catchAsyncErrors(async (req, res, next) => {

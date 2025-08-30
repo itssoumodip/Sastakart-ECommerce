@@ -1,3 +1,5 @@
+import { logger } from '../utils/logger';
+
 // Toast configuration for consistent notification styling
 export const toastConfig = {
   duration: 3000, // 3 seconds

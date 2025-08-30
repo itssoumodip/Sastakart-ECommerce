@@ -95,7 +95,7 @@ const Register = () => {
               <div className="w-full flex justify-center">
                 <GoogleLogin
                   onSuccess={async (credentialResponse) => {
-                    console.log('Google login success:', credentialResponse);
+                    logger.debug('Google login success:', credentialResponse);
                     setIsLoading(true);
                     try {
                       const result = await googleLogin(credentialResponse);
@@ -104,14 +104,14 @@ const Register = () => {
                         navigate('/');
                       }
                     } catch (error) {
-                      console.error('Google sign up error:', error);
+                      logger.error('Google sign up error:', error);
                       toast.error('Google sign up failed. Please try again.', toastConfig.error);
                     } finally {
                       setIsLoading(false);
                     }
                   }}
                   onError={(error) => {
-                    console.error('Google login error:', error);
+                    logger.error('Google login error:', error);
                     toast.error('Google sign up failed. Please try again.', toastConfig.error);
                   }}
                   useOneTap

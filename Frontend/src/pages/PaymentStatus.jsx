@@ -4,6 +4,7 @@ import { CheckCircle, AlertTriangle, Loader } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import API_BASE_URL, { API_ENDPOINTS } from '../config/api';
+import { logger } from '../utils/logger';
 
 /**
  * PaymentStatus component to check and display the status of a payment after returning from PhonePe
@@ -19,13 +20,13 @@ const PaymentStatus = () => {
     // Function to check payment status
     const checkPaymentStatus = async () => {
       try {
-        console.log('Starting payment status check for order ID:', orderId);
+        logger.debug('Starting payment status check for order ID:', orderId);
         
         // Get auth token from localStorage
         const token = localStorage.getItem('token');
         
         if (!token) {
-          console.error('No auth token found in localStorage');
+          logger.error('No auth token found in localStorage');
           setStatus('failed');
           setError('Authentication error. Please log in and check your order status.');
           toast.error('Authentication error. Please log in and check your order status.');
@@ -47,7 +48,7 @@ const PaymentStatus = () => {
             if (response.data.success) {
               setPaymentData(response.data.paymentStatus);
               
-              console.log('Payment status response:', response.data.paymentStatus);
+              logger.debug('Payment status response:', response.data.paymentStatus);
               
               // Set status based on payment state
               if (response.data.paymentStatus.status === 'COMPLETED') {
@@ -57,56 +58,69 @@ const PaymentStatus = () => {
             
             // Check if we have shipping information
             if (!shippingInfo || Object.keys(shippingInfo).length === 0) {
-              console.error('No shipping information found in localStorage');
+              logger.error('No shipping information found in localStorage');
               setError('Missing shipping information. Please contact customer support.');
               setStatus('failed');
               return;
             }
             
-            console.log('Shipping info from localStorage:', shippingInfo);
+            logger.debug('Shipping info from localStorage:', shippingInfo);
             
-            try {
+              try {
               // Ensure orderId is valid
               if (!orderId) {
                 setError('Missing order reference ID. Please contact support.');
                 return;
               }
-              
+
               // Use the transaction ID from payment response if available, otherwise use orderId
               const transactionId = response.data.paymentStatus.transactionId || orderId;
-              console.log('Saving order with transaction ID:', transactionId);
-              
-              const saveOrderResponse = await axios.post(
-                `${API_BASE_URL}${API_ENDPOINTS.PAYMENTS}/save-order`,
-                {
-                  merchantTransactionId: transactionId, // Use the transaction ID from payment response or fallback to orderId
-                  cartItems,
-                  totalAmount: response.data.paymentStatus.amount,
-                  shippingInfo,
-                  paymentMethod: 'phonepe' // Explicitly set payment method to phonepe
-                },
-                {
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+              logger.debug('Saving order with transaction ID:', transactionId);
+
+              // If cartItems is empty, avoid calling save-order (server requires items) and surface a helpful message
+              if (!cartItems || cartItems.length === 0) {
+                logger.warn('No cart items found in localStorage; skipping order save to avoid server 400');
+                const displayError = 'Payment completed but no cart information was found to create the order. Please contact customer support with your order reference.';
+                setError(displayError);
+                toast.error(displayError);
+                // Still treat payment as successful since PhonePe returned COMPLETED
+                setStatus('success');
+                // Persist pending order info so support can reconcile if needed
+                localStorage.setItem('pendingOrderId', orderId);
+                localStorage.setItem('pendingOrderAmount', response.data.paymentStatus.amount);
+              } else {
+                const saveOrderResponse = await axios.post(
+                  `${API_BASE_URL}${API_ENDPOINTS.PAYMENTS}/save-order`,
+                  {
+                    merchantTransactionId: transactionId, // Use the transaction ID from payment response or fallback to orderId
+                    cartItems,
+                    totalAmount: response.data.paymentStatus.amount,
+                    shippingInfo,
+                    paymentMethod: 'phonepe' // Explicitly set payment method to phonepe
+                  },
+                  {
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json'
+                    }
                   }
-                }
-              );
-              
-              console.log('Order saved successfully:', saveOrderResponse.data);
-              toast.success('Order placed successfully!');
-              
-              // Clear cart after successful order
-              localStorage.removeItem('cart');
+                );
+
+                logger.debug('Order saved successfully:', saveOrderResponse.data);
+                toast.success('Order placed successfully!');
+
+                // Clear cart after successful order
+                localStorage.removeItem('cart');
+              }
             } catch (saveOrderError) {
-              console.error('Failed to save order:', saveOrderError);
+              logger.error('Failed to save order:', saveOrderError);
               
               // Get more detailed error information
               const errorMessage = saveOrderError.response?.data?.message || 
                 saveOrderError.message || 
                 'An unknown error occurred';
               
-              console.error('Error details:', errorMessage);
+              logger.error('Error details:', errorMessage);
               
               // Check for specific errors
               if (saveOrderError.response?.status === 401) {
@@ -119,11 +133,11 @@ const PaymentStatus = () => {
                 localStorage.setItem('pendingOrderAmount', response.data.paymentStatus.amount);
               } else if (errorMessage.includes('Payment verification failed')) {
                 // Handle payment verification errors
-                console.log('Payment verification failed, but transaction might still be successful');
+                logger.debug('Payment verification failed, but transaction might still be successful');
                 
                 // Retry with the transaction ID from the PhonePe response if available
                 if (response.data.paymentStatus.transactionId) {
-                  console.log('Retrying with PhonePe transaction ID:', response.data.paymentStatus.transactionId);
+                  logger.debug('Retrying with PhonePe transaction ID:', response.data.paymentStatus.transactionId);
                   
                   try {
                     const retryResponse = await axios.post(
@@ -143,11 +157,11 @@ const PaymentStatus = () => {
                       }
                     );
                     
-                    console.log('Retry successful:', retryResponse.data);
+                    logger.debug('Retry successful:', retryResponse.data);
                     toast.success('Order placed successfully!');
                     localStorage.removeItem('cart');
                   } catch (retryError) {
-                    console.error('Retry also failed:', retryError);
+                    logger.error('Retry also failed:', retryError);
                     const displayError = `Your payment was successful, but we encountered an issue saving your order. Please contact customer support with your order reference: ${orderId}`;
                     setError(displayError);
                     toast.error(displayError);
@@ -180,15 +194,15 @@ const PaymentStatus = () => {
           setError('Failed to verify payment status');
         }
       } catch (error) {
-        console.error('Error checking payment status:', error);
+        logger.error('Error checking payment status:', error);
         setStatus('failed');
         
         // Handle different error scenarios
         if (error.response) {
           // The request was made and the server responded with a status code
           // that falls out of the range of 2xx
-          console.error('Response error data:', error.response.data);
-          console.error('Response error status:', error.response.status);
+          logger.error('Response error data:', error.response.data);
+          logger.error('Response error status:', error.response.status);
           
           if (error.response.status === 401) {
             setError('Authentication error. Please log in again.');
@@ -199,11 +213,11 @@ const PaymentStatus = () => {
           }
         } else if (error.request) {
           // The request was made but no response was received
-          console.error('No response received:', error.request);
+          logger.error('No response received:', error.request);
           setError('No response from server. Please check your internet connection.');
         } else {
           // Something happened in setting up the request that triggered an Error
-          console.error('Error message:', error.message);
+          logger.error('Error message:', error.message);
           setError(error.message || 'An unexpected error occurred');
         }
       }

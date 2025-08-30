@@ -76,7 +76,7 @@ function OrderDetail() {
         setOrder(response.data.order);
       }
     } catch (error) {
-      console.error('Error fetching order:', error);
+      logger.error('Error fetching order:', error);
       toast.error('Failed to fetch order details');
     } finally {
       setLoading(false);
@@ -106,7 +106,7 @@ function OrderDetail() {
         setShowStatusModal(false);
       }
     } catch (error) {
-      console.error('Error updating order status:', error);
+      logger.error('Error updating order status:', error);
       toast.error(error.response?.data?.message || 'Failed to update order status');
     }
   };
@@ -124,7 +124,7 @@ function OrderDetail() {
         fetchOrderDetails(); // Refresh order details
       }
     } catch (error) {
-      console.error('Error collecting COD:', error);
+      logger.error('Error collecting COD:', error);
       toast.error(error.response?.data?.message || 'Failed to collect COD payment');
     }
   };
@@ -141,6 +141,20 @@ function OrderDetail() {
     };
     
     return statusFlow[currentStatus] || [];
+  };
+
+  // Helper to get a stable product id string for display
+  const getProductId = (item) => {
+    if (!item) return 'N/A';
+    const prod = item.product;
+    // If product is a plain string (ObjectId), return it
+    if (typeof prod === 'string') return prod;
+    // If product is populated object, try common id fields
+    if (prod && typeof prod === 'object') {
+      return (prod._id && prod._id.toString && prod._id.toString()) || prod.id || prod._id || 'N/A';
+    }
+    // Fallback to item._id (line item id) or N/A
+    return item._id?.toString?.() || 'N/A';
   };
 
   if (loading) {
@@ -357,12 +371,12 @@ function OrderDetail() {
             </div>            <div className="divide-y divide-gray-200">
               {order.orderItems?.map((item, index) => (
                 <div key={item._id || index} className="p-6 flex items-center">
-                  <div className="h-15 w-15 overflow-hidden flex-shrink-0 rounded-lg border border-gray-200">
-                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                  <div className="h-20 w-20 overflow-hidden flex-shrink-0 rounded-lg border border-gray-200">
+                    <img src={item.image} alt={item.name} className="h-full w-full object-contain" />
                   </div>                  <div className="ml-4 flex-1">
                     <h3 className="font-medium text-gray-900">{item.name}</h3>
                     <p className="text-sm text-gray-600">
-                      Product ID: {item.product?.toString() || item._id?.toString() || 'N/A'}
+                      Product ID: {getProductId(item)}
                     </p>
                   </div>
                   <div className="text-right">

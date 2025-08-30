@@ -30,22 +30,15 @@ apiClient.interceptors.request.use(
           'Authorization': `Bearer ${token}`,
         };
         
-        // For debugging only
-        if (!config.url.includes('/api/auth/me')) { // Avoid logging auth check requests
-          console.log(`API Request with auth token to: ${config.url}`);
-        }
-      } else if (!config.url.includes('/api/auth')) {
-        // If not an auth endpoint and we have no token, log a warning
-        console.warn(`API Request without auth token to: ${config.url}`);
       }
     } catch (error) {
-      console.error('Auth header setup error:', error);
+      // Silently fail and continue with default headers
     }
     
     return config;
   },
   error => {
-    console.error('Request interceptor error:', error);
+    // Request setup error
     return Promise.reject(error);
   }
 );
@@ -58,8 +51,7 @@ apiClient.interceptors.response.use(
     if (error.response) {
       const { status, data } = error.response;
       
-      // Log the error for debugging
-      console.error(`API Error ${status}:`, data);
+      // Handle error based on status code
       
       switch (status) {
         case 401:
@@ -75,7 +67,7 @@ apiClient.interceptors.response.use(
           
         case 404:
           // Not Found - resource doesn't exist
-          console.error(`Resource not found at: ${error.config.url}`);
+          // Skip toast for 404 errors
           // Don't show toast for 404s to avoid spamming the user
           break;
           
@@ -93,12 +85,10 @@ apiClient.interceptors.response.use(
           }
       }
     } else if (error.request) {
-      // Request made but no response received (network error)
-      console.error('Network error - no response received:', error.request);
+      // Handle network error
       toast.error('Network error. Please check your connection.');
     } else {
-      // Error setting up request
-      console.error('Error:', error.message);
+      // Handle request setup error
       toast.error('An error occurred. Please try again.');
     }
     

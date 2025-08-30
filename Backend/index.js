@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const passport = require('./utils/passport');
 const errorMiddleware = require('./middleware/errorMiddleware');
+const logger = require('./utils/logger');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -17,8 +18,6 @@ const uploadRoutes = require('./routes/upload');
 const dashboardRoutes = require('./routes/dashboard');
 const gstRoutes = require('./routes/gst');
 const couponRoutes = require('./routes/coupon');
-const debugRoutes = require('./routes/debug');
-const destinationRoutes = require('./routes/travel/destinations');
 
 const app = express();
 
@@ -76,8 +75,6 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/gst', gstRoutes);
 app.use('/api/coupons', couponRoutes);
-app.use('/api/debug', debugRoutes);
-app.use('/api/travel', destinationRoutes);
  
 // Database connection with improved configuration
 const connectDB = async () => {
@@ -97,9 +94,9 @@ const connectDB = async () => {
     };
 
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ecommerce', mongoOptions);
-    console.log('MongoDB Connected Successfully');
+    logger.debug('MongoDB Connected Successfully');
   } catch (error) {
-    console.error('MongoDB Connection Error:', error.message);
+    logger.error('MongoDB Connection Error:', error.message);
     // If initial connection fails, retry after 5 seconds
     setTimeout(connectDB, 5000);
   }
@@ -107,16 +104,16 @@ const connectDB = async () => {
 
 // Handle MongoDB connection events
 mongoose.connection.on('error', err => {
-  console.error('MongoDB Connection Error:', err.message);
+  logger.error('MongoDB Connection Error:', err.message);
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB Disconnected, trying to reconnect...');
+  logger.debug('MongoDB Disconnected, trying to reconnect...');
   connectDB();
 });
 
 mongoose.connection.on('reconnected', () => {
-  console.log('MongoDB Reconnected Successfully');
+  logger.debug('MongoDB Reconnected Successfully');
 });
 
 // Initialize database connection
@@ -128,19 +125,18 @@ app.use(errorMiddleware);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`API root available at http://localhost:${PORT}`);
-  console.log(`API routes registered:`);
-  console.log(` - Auth: /api/auth`);
-  console.log(` - Products: /api/products`);
-  console.log(` - Users: /api/users`);
-  console.log(` - Orders: /api/orders`);
-  console.log(` - Payment: /api/payment`);
-  console.log(` - Upload: /api/upload`);
-  console.log(` - Dashboard: /api/dashboard`);
-  console.log(` - GST: /api/gst`);
-  console.log(` - Coupons: /api/coupons`);
-  console.log(` - Travel: /api/travel`);
+  logger.debug(`Server running on port ${PORT}`);
+  logger.debug(`API root available at http://localhost:${PORT}`);
+  logger.debug(`API routes registered:`);
+  logger.debug(` - Auth: /api/auth`);
+  logger.debug(` - Products: /api/products`);
+  logger.debug(` - Users: /api/users`);
+  logger.debug(` - Orders: /api/orders`);
+  logger.debug(` - Payment: /api/payment`);
+  logger.debug(` - Upload: /api/upload`);
+  logger.debug(` - Dashboard: /api/dashboard`);
+  logger.debug(` - GST: /api/gst`);
+  logger.debug(` - Coupons: /api/coupons`);
 });
 
 module.exports = app;

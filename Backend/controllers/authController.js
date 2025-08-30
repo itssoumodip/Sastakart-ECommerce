@@ -3,7 +3,7 @@ const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const sendToken = require('../utils/jwtToken');
 const crypto = require('crypto');
-const passport = require('../utils/passport');
+
 
 // Register a user => /api/auth/register
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {

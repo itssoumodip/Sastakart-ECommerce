@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getAuthHeaders } from '../../utils/auth';
 import API_BASE_URL, { API_ENDPOINTS } from '../../config/api';
 import axios from 'axios';
+import { logger } from '../../utils/logger';
 
 const ApiConfigCheck = () => {
   const [apiConfig, setApiConfig] = useState({
@@ -25,11 +26,11 @@ const ApiConfigCheck = () => {
     const gstAnalyticsUrl = `${API_BASE_URL}${API_ENDPOINTS.GST_ANALYTICS}`;
     const couponsUrl = `${API_BASE_URL}${API_ENDPOINTS.COUPONS}`;
     
-    console.log('API Base URL:', baseUrl);
-    console.log('Environment Variable:', import.meta.env.VITE_API_URL);
-    console.log('GST Settings URL:', gstSettingsUrl);
-    console.log('GST Analytics URL:', gstAnalyticsUrl);
-    console.log('Coupons URL:', couponsUrl);
+    logger.debug('API Base URL:', baseUrl);
+    logger.debug('Environment Variable:', import.meta.env.VITE_API_URL);
+    logger.debug('GST Settings URL:', gstSettingsUrl);
+    logger.debug('GST Analytics URL:', gstAnalyticsUrl);
+    logger.debug('Coupons URL:', couponsUrl);
     
     setApiConfig({
       baseUrl,

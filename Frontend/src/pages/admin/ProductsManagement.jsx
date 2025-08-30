@@ -105,7 +105,7 @@ function ProductsManagement() {
         }
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      logger.error('Error fetching products:', error);
       toast.error('Failed to fetch products');
     } finally {
       setLoading(false);
@@ -126,7 +126,7 @@ function ProductsManagement() {
         fetchProducts(currentPage); // Refresh the products list
       }
     } catch (error) {
-      console.error('Error deleting product:', error);
+      logger.error('Error deleting product:', error);
       toast.error(error.response?.data?.message || 'Failed to delete product');
     }
   };

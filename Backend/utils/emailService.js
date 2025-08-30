@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const logger = require('./logger');
 
 // Create a transporter object
 const transporter = nodemailer.createTransport({
@@ -16,9 +17,9 @@ const transporter = nodemailer.createTransport({
 // Verify transporter configuration
 transporter.verify(function(error, success) {
   if (error) {
-    console.error('SMTP server connection error:', error);
+    logger.error('SMTP server connection error:', error);
   } else {
-    console.log('SMTP server connection verified and ready to send emails');
+    logger.debug('SMTP server connection verified and ready to send emails');
   }
 });
 
@@ -96,7 +97,7 @@ exports.sendOrderConfirmationEmail = async (options) => {
     await transporter.sendMail(message);
     return { success: true };
   } catch (error) {
-    console.error('Email sending failed:', error);
+    logger.error('Email sending failed:', error);
     return { success: false, error };
   }
 };
@@ -145,7 +146,7 @@ exports.sendShippingConfirmationEmail = async (options) => {
     await transporter.sendMail(message);
     return { success: true };
   } catch (error) {
-    console.error('Email sending failed:', error);
+    logger.error('Email sending failed:', error);
     return { success: false, error };
   }
 };
@@ -155,8 +156,8 @@ exports.sendPasswordResetEmail = async (options) => {
 
   // Log the attempt (not in production)
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`Attempting to send password reset email to: ${to}`);
-    console.log(`Reset URL: ${resetUrl}`);
+    logger.debug(`Attempting to send password reset email to: ${to}`);
+    logger.debug(`Reset URL: ${resetUrl}`);
   }
 
   // Create email message
@@ -214,14 +215,14 @@ exports.sendPasswordResetEmail = async (options) => {
 
   try {
     const info = await transporter.sendMail(message);
-    console.log('Password reset email sent:', info.messageId);
+    logger.debug('Password reset email sent:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error('Password reset email sending failed:', error);
+    logger.error('Password reset email sending failed:', error);
     // Log more detailed information about the error
     if (error.response) {
-      console.error('SMTP Response Code:', error.responseCode);
-      console.error('SMTP Response:', error.response);
+      logger.error('SMTP Response Code:', error.responseCode);
+      logger.error('SMTP Response:', error.response);
     }
     return { success: false, error: error.message };
   }
@@ -314,10 +315,10 @@ exports.sendOrderStatusUpdateEmail = async (options) => {
 
   try {
     const info = await transporter.sendMail(message);
-    console.log(`Order status update email sent for status ${status}:`, info.messageId);
+    logger.debug(`Order status update email sent for status ${status}:`, info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error(`Order status update email failed for status ${status}:`, error);
+    logger.error(`Order status update email failed for status ${status}:`, error);
     return { success: false, error: error.message };
   }
 };

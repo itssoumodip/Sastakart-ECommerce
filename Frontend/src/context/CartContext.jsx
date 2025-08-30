@@ -97,7 +97,7 @@ export const CartProvider = ({ children }) => {
         const parsedCart = JSON.parse(savedCart)
         dispatch({ type: 'LOAD_CART', payload: parsedCart })
       } catch (error) {
-        console.error('Error loading cart from localStorage:', error)
+        // Silently fail and continue without cart data
       }
     }
     
@@ -108,7 +108,7 @@ export const CartProvider = ({ children }) => {
         const parsedCoupon = JSON.parse(savedCoupon)
         dispatch({ type: 'APPLY_COUPON', payload: parsedCoupon })
       } catch (error) {
-        console.error('Error loading coupon from localStorage:', error)
+        // Silently fail and continue without coupon data
       }
     }
   }, [])
@@ -275,7 +275,7 @@ export const CartProvider = ({ children }) => {
         itemizedGst
       };
     } catch (error) {
-      console.error('Error calculating GST:', error);
+      // Silently fail and return zero GST
       return {
         totalGstAmount: 0,
         itemizedGst: {}

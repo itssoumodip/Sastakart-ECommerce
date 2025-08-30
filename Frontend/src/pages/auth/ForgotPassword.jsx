@@ -22,9 +22,9 @@ const ForgotPassword = () => {
       toast.success('Password reset instructions sent to your email')
       
       // Remove this log in production - only for testing
-      console.log('Password reset response:', response.data)
+      logger.debug('Password reset response:', response.data)
     } catch (error) {
-      console.error('Password reset error:', error)
+      logger.error('Password reset error:', error)
       
       if (error.response?.status === 404) {
         // Don't reveal if email exists or not (for security)

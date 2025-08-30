@@ -87,7 +87,7 @@ const Login = () => {
               <div className="w-full flex justify-center">
                 <GoogleLogin
                   onSuccess={async (credentialResponse) => {
-                    console.log('Google login success:', credentialResponse);
+                    logger.debug('Google login success:', credentialResponse);
                     setIsLoading(true);
                     try {
                       const result = await googleLogin(credentialResponse);
@@ -95,14 +95,14 @@ const Login = () => {
                         navigate(from, { replace: true });
                       }
                     } catch (error) {
-                      console.error('Google login error:', error);
+                      logger.error('Google login error:', error);
                       toast.error('Google login failed. Please try again.');
                     } finally {
                       setIsLoading(false);
                     }
                   }}
                   onError={(error) => {
-                    console.error('Google login error:', error);
+                    logger.error('Google login error:', error);
                     toast.error('Google login failed. Please try again.');
                   }}
                   useOneTap

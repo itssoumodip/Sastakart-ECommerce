@@ -63,7 +63,7 @@ function CODManagement() {
       setCodOrders(codOrdersData);
       setAnalytics(analyticsResponse.data.analytics);
     } catch (error) {
-      console.error('Error fetching COD data:', error);
+      logger.error('Error fetching COD data:', error);
       toast.error('Failed to load COD data');
     } finally {
       setLoading(false);
@@ -79,7 +79,7 @@ function CODManagement() {
       toast.success('COD payment collected successfully!');
       fetchCODData(); // Refresh data
     } catch (error) {
-      console.error('Error collecting COD:', error);
+      logger.error('Error collecting COD:', error);
       toast.error('Failed to collect COD payment');
     }
   };

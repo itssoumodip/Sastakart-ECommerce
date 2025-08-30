@@ -25,6 +25,7 @@ import { getAuthHeaders } from '../../utils/auth';
 import API_BASE_URL, { API_ENDPOINTS } from '../../config/api';
 import toast from 'react-hot-toast';
 import { format, parseISO } from 'date-fns';
+import { logger } from '../../utils/logger';
 
 const CouponManager = () => {
   const [loading, setLoading] = useState(true);
@@ -76,21 +77,21 @@ const CouponManager = () => {
     const fetchCoupons = async () => {
       setLoading(true);
       try {
-        console.log('Fetching coupons from:', API_BASE_URL + API_ENDPOINTS.COUPONS);
-        console.log('Auth Headers:', getAuthHeaders());
+        logger.debug('Fetching coupons from:', API_BASE_URL + API_ENDPOINTS.COUPONS);
+        logger.debug('Auth Headers:', getAuthHeaders());
         try {
           // For testing, we'll use the non-authenticated endpoint
           const response = await axios.get(
             `${API_BASE_URL}${API_ENDPOINTS.COUPONS}`
             // No auth headers for test endpoint
           );
-          console.log('Coupons Response:', response.status, response.data);
+          logger.debug('Coupons Response:', response.status, response.data);
           
           if (response.data.success) {
             setCoupons(response.data.coupons || []);
           }
         } catch (error) {
-          console.error('Coupons Error:', error.response ? {
+          logger.error('Coupons Error:', error.response ? {
             status: error.response.status,
             statusText: error.response.statusText,
             data: error.response.data
@@ -98,7 +99,7 @@ const CouponManager = () => {
           toast.error(`Coupons API Error: ${error.response ? error.response.status + ' ' + error.response.statusText : error.message}`);
         }
       } catch (error) {
-        console.error('Error fetching coupons:', error);
+        logger.error('Error fetching coupons:', error);
         toast.error('Failed to fetch coupons. Please try again.');
       } finally {
         setLoading(false);
@@ -119,7 +120,7 @@ const CouponManager = () => {
           setCategories(Object.keys(response.data.settings.rates || {}));
         }
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        logger.error('Error fetching categories:', error);
       }
     };
     
@@ -288,7 +289,7 @@ const CouponManager = () => {
       
       setShowModal(false);
     } catch (error) {
-      console.error('Error saving coupon:', error);
+      logger.error('Error saving coupon:', error);
       
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
@@ -312,7 +313,7 @@ const CouponManager = () => {
         setCoupons(prev => prev.filter(coupon => coupon._id !== id));
       }
     } catch (error) {
-      console.error('Error deleting coupon:', error);
+      logger.error('Error deleting coupon:', error);
       toast.error('Failed to delete coupon. Please try again.');
     }
   };

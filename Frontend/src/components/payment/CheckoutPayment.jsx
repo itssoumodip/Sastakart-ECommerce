@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { CreditCard, AlertTriangle } from 'lucide-react';
+import { logger } from '../../utils/logger';
 import PhonePePayment from './PhonePePayment';
 
 const LoadingPaymentForm = () => (
@@ -26,7 +27,7 @@ const CheckoutPayment = ({
     }) : '0.00';
     
   // Log shipping data for debugging
-  console.log("CheckoutPayment received shipping data:", shippingData);
+  logger.debug("CheckoutPayment received shipping data:", shippingData);
     
   return (
     <div>
@@ -38,7 +39,7 @@ const CheckoutPayment = ({
           <PhonePePayment
             amount={calculateTotal()} // Total amount in rupees
             onPaymentInitiated={(orderId) => {
-              console.log('Payment initiated with order ID:', orderId);
+              logger.debug('Payment initiated with order ID:', orderId);
               // You can store orderId in localStorage/sessionStorage here if needed
             }}
             onPaymentError={handlePaymentError}

@@ -2,6 +2,7 @@ const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const ErrorHandler = require('../utils/errorHandler');
 const Product = require('../models/product');
 const GSTRate = require('../models/gstRate');
+const logger = require('../utils/logger');
 
 // Initialize GST rates for all categories
 exports.initializeGSTRates = catchAsyncErrors(async (req, res, next) => {
@@ -60,11 +61,11 @@ exports.getGSTSettings = catchAsyncErrors(async (req, res, next) => {
 
 // Update GST settings
 exports.updateGSTSettings = catchAsyncErrors(async (req, res, next) => {
-    console.log('Updating GST Settings:', req.body);
+    logger.debug('Updating GST Settings:', req.body);
     const { category, rate } = req.body;
 
     if (!category || rate === undefined) {
-        console.error('Missing required fields:', { category, rate });
+        logger.error('Missing required fields:', { category, rate });
         return next(new ErrorHandler('Category and rate are required', 400));
     }
 
@@ -88,7 +89,7 @@ exports.updateGSTSettings = catchAsyncErrors(async (req, res, next) => {
             gstRate
         });
     } catch (error) {
-        console.error('Error updating GST rate:', error);
+        logger.error('Error updating GST rate:', error);
         return next(new ErrorHandler('Error updating GST rate', 500));
     }
 });

@@ -56,7 +56,7 @@ const CouponsManagement = () => {
         setCoupons(response.data.coupons);
       }
     } catch (error) {
-      console.error('Error fetching coupons:', error);
+      logger.error('Error fetching coupons:', error);
       toast.error('Failed to fetch coupons', toastConfig.error);
     } finally {
       setLoading(false);
@@ -89,7 +89,7 @@ const CouponsManagement = () => {
         handleCloseModal();
       }
     } catch (error) {
-      console.error('Error saving coupon:', error);
+      logger.error('Error saving coupon:', error);
       toast.error(
         error.response?.data?.message || 'Failed to save coupon',
         toastConfig.error
@@ -111,7 +111,7 @@ const CouponsManagement = () => {
         fetchCoupons();
       }
     } catch (error) {
-      console.error('Error deleting coupon:', error);
+      logger.error('Error deleting coupon:', error);
       toast.error(
         error.response?.data?.message || 'Failed to delete coupon',
         toastConfig.error

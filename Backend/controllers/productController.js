@@ -1,6 +1,7 @@
 const Product = require('../models/product');
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
+const logger = require('../utils/logger');
 
 // Get all products => /api/products
 exports.getProducts = catchAsyncErrors(async (req, res, next) => {
@@ -111,14 +112,14 @@ exports.getProductById = catchAsyncErrors(async (req, res, next) => {
 
 // Create new product => /api/products
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
-  console.log('Creating product: user authenticated:', req.user.id);
-  console.log('Product request body:', JSON.stringify({
+  logger.debug('Creating product: user authenticated:', req.user.id);
+  logger.debug('Product request body:', {
     title: req.body.title,
     category: req.body.category,
     price: req.body.price,
     // Don't log all fields to avoid clutter
     hasImages: Array.isArray(req.body.images) && req.body.images.length > 0
-  }));
+  });
   
   req.body.user = req.user.id;
   
@@ -138,7 +139,7 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
       product
     });
   } catch (error) {
-    console.error('Error creating product:', error);
+    logger.error('Error creating product:', error);
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
       return next(new ErrorHandler(`Validation Error: ${messages.join(', ')}`, 400));

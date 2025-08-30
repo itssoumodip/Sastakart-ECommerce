@@ -24,6 +24,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { toastConfig } from '../utils/toastConfig';
+import { logger } from '../utils/logger';
 
 const ProductDetail = () => {  const { id } = useParams();
   const navigate = useNavigate();
@@ -78,7 +79,8 @@ const ProductDetail = () => {  const { id } = useParams();
       return;
     }
     
-    try {      addToCart({
+    try {
+      addToCart({
         id: product._id,
         name: product.title,
         price: product.discountPrice || product.price,
@@ -90,10 +92,12 @@ const ProductDetail = () => {  const { id } = useParams();
         productType: product.productType || '',
         quantity: quantity,
         selectedSize,
-        selectedColor
+        selectedColor,
+        // Include gstRate from product so cart calculations use DB value
+        gstRate: typeof product.gstRate === 'number' ? product.gstRate : parseFloat(product.gstRate) || 18
       });
     } catch (error) {
-      console.error('Cart error:', error);
+      logger.error('Cart error:', error);
       toast.error('Failed to add to cart', toastConfig.error);
     }
   };
@@ -173,7 +177,7 @@ const ProductDetail = () => {  const { id } = useParams();
         setReviewInput({ rating: 5, comment: '' });
       }
     } catch (error) {
-      console.error('Review submission error:', error);
+      logger.error('Review submission error:', error);
       const errorMessage = error.response?.data?.message || 'Failed to submit review';
       toast.error(errorMessage);
     }

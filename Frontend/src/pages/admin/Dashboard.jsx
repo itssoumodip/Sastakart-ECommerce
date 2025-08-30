@@ -60,7 +60,7 @@ function Dashboard() {  const defaultStats = {
         }
       });
     } catch (err) {
-      console.error('Error fetching dashboard stats:', err);
+      logger.error('Error fetching dashboard stats:', err);
       const errorMessage = formatToastMessage(err.message || 'Failed to fetch dashboard stats');
       setError(errorMessage);
       toast.error(errorMessage, toastConfig.error);

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const ErrorHandler = require('../utils/errorHandler');
+const logger = require('../utils/logger');
 
 const orderSchema = new mongoose.Schema({
   shippingInfo: {
@@ -177,12 +178,12 @@ const orderSchema = new mongoose.Schema({
 orderSchema.pre('save', function(next) {
   // If payment method is not COD, ensure paymentInfo.id is set
   if (this.paymentMethod !== 'cod' && (!this.paymentInfo || !this.paymentInfo.id)) {
-    console.error('Missing paymentInfo.id for non-COD payment');
+    logger.error('Missing paymentInfo.id for non-COD payment');
     return next(new ErrorHandler('Payment information ID is required for non-COD orders', 400));
   }
   
   // Log validation check
-  console.log(`Order pre-save validation: Payment method=${this.paymentMethod}, Payment ID=${this.paymentInfo?.id}`);
+  logger.debug(`Order pre-save validation: Payment method=${this.paymentMethod}, Payment ID=${this.paymentInfo?.id}`);
   
   next();
 });

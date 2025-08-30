@@ -50,7 +50,7 @@ function UsersManagement() {
         setUsers(transformedUsers);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
+      logger.error('Error fetching users:', error);
       toast.error('Failed to fetch users');
     } finally {
       setLoading(false);
@@ -72,7 +72,7 @@ function UsersManagement() {
         setFormData({ name: '', email: '', role: 'user', status: 'Active' });
       }
     } catch (error) {
-      console.error('Error creating user:', error);
+      logger.error('Error creating user:', error);
       toast.error(error.response?.data?.message || 'Failed to create user');
     }
   };
@@ -93,7 +93,7 @@ function UsersManagement() {
         setFormData({ name: '', email: '', role: 'user', status: 'Active' });
       }
     } catch (error) {
-      console.error('Error updating user:', error);
+      logger.error('Error updating user:', error);
       toast.error(error.response?.data?.message || 'Failed to update user');
     }
   };
@@ -110,7 +110,7 @@ function UsersManagement() {
         fetchUsers(); // Refresh the users list
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
+      logger.error('Error deleting user:', error);
       toast.error(error.response?.data?.message || 'Failed to delete user');
     }
   };

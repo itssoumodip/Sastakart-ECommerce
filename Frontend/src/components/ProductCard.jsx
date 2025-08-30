@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
+import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { toast } from 'react-hot-toast';
 import { forwardRef } from 'react';
+import { logger } from '../utils/logger';
 
 const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) => {
   const { addToCart } = useCart();
@@ -30,10 +31,12 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
         brand: product.brand || '',        category: product.category || '',
         subcategory: product.subcategory || '',
         productType: product.productType || '',
-        quantity: 1
+        quantity: 1,
+        // Include gstRate from product so cart calculations use DB value
+        gstRate: typeof product.gstRate === 'number' ? product.gstRate : parseFloat(product.gstRate) || 18
       });
     } catch (error) {
-      console.error('Cart error:', error);
+      logger.error('Cart error:', error);
       // Let CartContext handle the error toast
     }
   };
@@ -179,22 +182,14 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
                   <span className="text-sm text-gray-500 line-through">₹{product.price}</span>
                 </>
               ) : (
-                <span className="font-semibold text-xl text-gray-900">₹{(product.price || 0)}</span>
+                <span className="text-3xl font-semibold text-gray-900">₹{product.price}</span>
               )}
             </div>
-            
             <motion.button
               onClick={handleAddToCart}
-              disabled={product.stock === 0}
-              className={`${
-                viewMode === 'list' 
-                  ? 'px-4 py-2 rounded-lg flex items-center gap-2 md:px-6' 
-                  : 'w-11 h-11 rounded-full flex items-center justify-center'
-              } shadow-md hover:shadow-lg ${
-                product.stock === 0
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-black text-white hover:bg-gray-800'
-              } transition-all duration-300`}
+              className={`px-4 py-2 rounded-full flex items-center gap-2 ${
+                product.stock === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'
+              }`}
               whileHover={product.stock > 0 ? { scale: 1.05 } : {}}
               whileTap={product.stock > 0 ? { scale: 0.95 } : {}}
             >

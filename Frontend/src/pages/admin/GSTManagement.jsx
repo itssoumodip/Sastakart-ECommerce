@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
+import { logger } from '../../utils/logger';
+import { useQueryClient } from 'react-query';
 
 const categories = [
   'Electronics',
@@ -27,6 +29,7 @@ const categories = [
 ];
 
 function GSTManagement() {
+  const queryClient = useQueryClient();
   const [gstRates, setGstRates] = useState({});
   const [analytics, setAnalytics] = useState({});
   const [loading, setLoading] = useState(true);
@@ -81,14 +84,14 @@ function GSTManagement() {
           });
           settingsResponse.data = newSettingsResponse.data;
         } catch (initError) {
-          console.error('Error initializing GST rates:', initError);
+          logger.error('Error initializing GST rates:', initError);
         }
       }
 
       setGstRates(settingsResponse.data.settings.rates);
       setAnalytics(analyticsResponse.data.analytics);
     } catch (error) {
-      console.error('Error fetching GST data:', error);
+      logger.error('Error fetching GST data:', error);
       toast.error('Failed to load GST data');
     } finally {
       setLoading(false);
@@ -111,9 +114,16 @@ function GSTManagement() {
       toast.success(`GST rate updated for ${category}`);
       setEditingCategory(null);
       setNewRate('');
-      fetchGSTData(); // Refresh data
+      await fetchGSTData(); // Refresh GST data
+      // Invalidate product queries so frontend re-fetches product data (gstRate updated server-side)
+      try {
+        queryClient.invalidateQueries('products');
+        queryClient.invalidateQueries('product');
+      } catch (e) {
+        // ignore query client errors
+      }
     } catch (error) {
-      console.error('Error updating GST rate:', error);
+      logger.error('Error updating GST rate:', error);
       toast.error('Failed to update GST rate');
     }
   };

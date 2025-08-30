@@ -125,7 +125,9 @@ const Wishlist = () => {
         image: product.image,
         brand: product.brand || '',
         stock: product.stock || 99,
-        quantity: 1
+        quantity: 1,
+        // Include gstRate from wishlist item so cart calculations use DB value
+        gstRate: typeof product.gstRate === 'number' ? product.gstRate : parseFloat(product.gstRate) || 18
       });
       toast.success(`${product.name} added to cart`);
       removeFromWishlist(product.id);

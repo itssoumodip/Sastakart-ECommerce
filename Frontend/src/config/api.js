@@ -3,15 +3,11 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // Configure axios defaults
 import axios from 'axios';
-import { getAuthHeaders } from '../utils/auth';
+
+import { logger } from '../utils/logger';
 
 // Set default base URL
 axios.defaults.baseURL = API_BASE_URL;
-
-// Log API configuration at startup
-console.log('API Configuration Loaded:');
-console.log('API_BASE_URL:', API_BASE_URL);
-console.log('Environment Variable:', import.meta.env.VITE_API_URL);
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
@@ -35,13 +31,13 @@ axios.interceptors.request.use(
       
       // Only log non-auth check requests to reduce noise
       if (!config.url?.includes('/api/auth/me')) {
-        console.log(`Request to ${config.url}:`, { 
+        logger.debug(`Request to ${config.url}:`, { 
           headers: { Authorization: token ? 'Bearer [TOKEN]' : 'None' },
           withCredentials: config.withCredentials
         });
       }
     } catch (error) {
-      console.error('Error setting up request headers:', error);
+      logger.error('Error setting up request headers:', error);
     }
     
     return config;
@@ -55,7 +51,7 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.log('API Error:', {
+    logger.error('API Error:', {
       url: error.config?.url,
       status: error.response?.status,
       message: error.message,
@@ -65,10 +61,10 @@ axios.interceptors.response.use(
     if (error.response?.status === 401) {
       // Handle unauthorized access but don't redirect if we're in checkout
       if (!window.location.pathname.includes('/checkout')) {
-        console.warn('401 error - redirecting to login (skipped for checkout pages)');
+        logger.warn('401 error - redirecting to login (skipped for checkout pages)');
         window.location.href = '/login';
       } else {
-        console.warn('401 error on checkout page - not redirecting automatically');
+        logger.warn('401 error on checkout page - not redirecting automatically');
         // Maybe show a modal or notification instead of redirecting
       }
     } else if (error.response?.status === 403) {
@@ -134,16 +130,7 @@ export const API_ENDPOINTS = {
   VERIFY_COUPON: (code) => `/api/coupons/code/${code}`,
   RECORD_COUPON_USAGE: '/api/coupons/record-usage',
   
-  // Travel Destinations endpoints
-  DESTINATIONS: '/api/travel/destinations',
-  POPULAR_DESTINATIONS: '/api/travel/destinations/popular',
-  DESTINATIONS_BY_CATEGORY: (category) => `/api/travel/destinations/category/${category}`,
-  DESTINATION_DETAILS: (id) => `/api/travel/destinations/${id}`,
-  DESTINATION_REVIEWS: (id) => `/api/travel/destinations/${id}/reviews`,
   
-  // Travel Destinations test endpoints
-  TEST_DESTINATIONS: '/api/travel/test/destinations',
-  TEST_POPULAR_DESTINATIONS: '/api/travel/test/destinations/popular'
 };
 
 export default API_BASE_URL;

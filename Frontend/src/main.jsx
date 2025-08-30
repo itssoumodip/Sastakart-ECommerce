@@ -11,6 +11,7 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import { WishlistProvider } from './context/WishlistContext.jsx'
 import { toastConfig, formatToastMessage } from './utils/toastConfig';
+import { logger } from './utils/logger';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,14 +66,8 @@ window.addEventListener('error', (event) => {
   return false;
 }, true);
 
-// Suppress specific console logs that are cluttering the console
-const originalConsoleLog = console.log;
-console.log = (...args) => {
-  // Skip logs about "PC plat undefined"
-  if (args.length > 0 && 
-      ((typeof args[0] === 'string' && args[0].includes('PC plat')) || 
-       (args.length > 1 && args[0] === 'PC' && args[1] === 'plat'))) {
-    return;
-  }
-  originalConsoleLog.apply(console, args);
-};
+// Provide a safe application logger wrapper and avoid overwriting global console
+const appLog = (...args) => logger.debug(...args);
+
+// If you need to filter noisy third-party logs, prefer targeted overrides per-library
+// rather than replacing `console.log` globally. Leave original console intact.

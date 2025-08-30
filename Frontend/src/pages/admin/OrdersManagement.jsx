@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, ArrowUpDown, Eye, ShoppingBag, Package, Truck, CheckCircle, Clock, DollarSign, CreditCard, XCircle, IndianRupee } from 'lucide-react';
+import phonePeIcon from '../../assets/payment/phonepeicon.svg';
 import toast from 'react-hot-toast';
 import { API_ENDPOINTS } from '../../config/api';
 import { getAuthHeaders } from '../../utils/auth';
@@ -62,14 +63,14 @@ function OrdersManagement() {
           total: order.totalPrice,
           status: order.orderStatus,
           itemCount: order.orderItems.length,
-          paymentMethod: order.paymentMethod || 'online'
+          paymentMethod: order.paymentMethod || 'PhonePe'
         })) || [];
 
         setOrders(transformedOrders);
         setError(null);
       }
     } catch (err) {
-      console.error('Error fetching orders:', err);
+      logger.error('Error fetching orders:', err);
       const errorMessage = formatToastMessage(err.response?.data?.message || 'Failed to fetch orders');
       setError(errorMessage);
       toast.error(errorMessage, toastConfig.error);
@@ -88,7 +89,7 @@ function OrdersManagement() {
         setCodAnalytics(response.data.analytics);
       }
     } catch (err) {
-      console.error('Error fetching COD analytics:', err);
+      logger.error('Error fetching COD analytics:', err);
     }
   };
 
@@ -125,7 +126,7 @@ function OrdersManagement() {
         fetchCodAnalytics();
       }
     } catch (error) {
-      console.error('Error collecting COD payment:', error);
+      logger.error('Error collecting COD payment:', error);
       toast.error(error.response?.data?.message || 'Failed to collect COD payment');
     }
   };
@@ -295,7 +296,7 @@ function OrdersManagement() {
 
         {/* Stats Cards */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8"
           variants={itemVariants}
         >
           <motion.div 
@@ -309,6 +310,21 @@ function OrdersManagement() {
               </div>
               <div className="p-3 bg-blue-100 rounded-lg">
                 <ShoppingBag className="h-6 w-6 text-blue-600" />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            className="card p-6 hover:shadow-lg transition-all duration-300"
+            whileHover={{ scale: 1.02, y: -2 }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Total PhonePe Orders</p>
+                <p className="text-2xl font-bold text-gray-900">{orders.filter(o => (o.paymentMethod || '').toLowerCase() === 'phonepe').length}</p>
+              </div>
+              <div className="p-3 bg-indigo-50 rounded-lg">
+                <img src={phonePeIcon} alt="PhonePe" className="h-6 w-6" />
               </div>
             </div>
           </motion.div>
@@ -501,7 +517,7 @@ function OrdersManagement() {
                           ) : (
                             <span className="inline-flex items-center">
                               <CreditCard className="h-4 w-4 mr-1" />
-                              Online
+                              PhonePe
                             </span>
                           )}
                         </div>

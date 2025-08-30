@@ -2,6 +2,7 @@ const PDFDocument = require('pdfkit');
 const Order = require('../models/order');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const ErrorHandler = require('../utils/errorHandler');
+const logger = require('../utils/logger');
 
 // Generate and download invoice PDF => /api/orders/:id/invoice
 const generateInvoice = catchAsyncErrors(async (req, res, next) => {
@@ -41,7 +42,7 @@ const generateInvoice = catchAsyncErrors(async (req, res, next) => {
   
   // Handle errors
   doc.on('error', (err) => {
-    console.error('PDF generation error:', err);
+    logger.error('PDF generation error:', err);
     if (!res.headersSent) {
       return next(new ErrorHandler('Error generating PDF invoice', 500));
     }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Package, ShoppingBag, Users, LogOut, Menu, X, ChevronDown, BarChart3, Sparkles, IndianRupee, FileText, Wrench } from 'lucide-react';
+import { Home, Package, ShoppingBag, Users, LogOut, Menu, X, BarChart3, Sparkles, IndianRupee, Wrench } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import UserAvatar from '../common/UserAvatar';
 import toast from 'react-hot-toast';
@@ -72,8 +72,8 @@ function AdminLayout() {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <div className="flex flex-col w-64">
-          <div className="flex flex-col h-0 flex-1 bg-gray-900">
+        <div className="flex flex-col w-60">
+          <div className="flex w-full fixed flex-col h-screen flex-1 bg-gray-900">
             {/* Sidebar header */}
             <motion.div 
               className="flex items-center h-16 flex-shrink-0 px-4 bg-gray-800"
@@ -175,7 +175,6 @@ function AdminLayout() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <LogOut className="h-5 w-5" />
                 </motion.button>
               </div>
             </motion.div>
@@ -271,7 +270,7 @@ function AdminLayout() {
                         firstName={user?.firstName} 
                         lastName={user?.lastName} 
                         size="sm"
-                        className="bg-indigo-500"
+                        className="bg-gray-500"
                       />
                     </div>
                     <div className="ml-3">
@@ -327,7 +326,7 @@ function AdminLayout() {
               </div>
             </div>
             
-            <div className="ml-4 flex items-center lg:ml-6">
+            {/* <div className="ml-4 flex items-center lg:ml-6">
               <div className="relative">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
@@ -345,7 +344,7 @@ function AdminLayout() {
                   </span>
                 </motion.div>
               </div>
-            </div>
+            </div> */}
           </div>
         </motion.div>
 

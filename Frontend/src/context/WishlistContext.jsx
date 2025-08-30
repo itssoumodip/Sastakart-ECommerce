@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useReducer, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { toastConfig } from '../utils/toastConfig';
+import { logger } from '../utils/logger';
 
 // Create context
 const WishlistContext = createContext();
@@ -76,7 +77,7 @@ export const WishlistProvider = ({ children }) => {
           });
         }
       } catch (error) {
-        console.error('Failed to load wishlist:', error);
+        logger.error('Failed to load wishlist:', error);
       } finally {
         // Set loading to false after a short delay to prevent flickering
         setTimeout(() => {
@@ -93,7 +94,7 @@ export const WishlistProvider = ({ children }) => {
     try {
       localStorage.setItem('wishlist', JSON.stringify(state.items));
     } catch (error) {
-      console.error('Failed to save wishlist to localStorage:', error);
+      logger.error('Failed to save wishlist to localStorage:', error);
     }  }, [state.items]);
   
   // Add item to wishlist
@@ -109,7 +110,8 @@ export const WishlistProvider = ({ children }) => {
         category: product.category,
         subcategory: product.subcategory || '',
         productType: product.productType || '',
-        brand: product.brand || ''
+        brand: product.brand || '',
+        gstRate: product.gstRate || 18
       }
     });
     toast.success('Added to wishlist', toastConfig.success);

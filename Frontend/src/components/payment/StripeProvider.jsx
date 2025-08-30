@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { logger } from '../../utils/logger';
 
 // Determine if we're in development mode
 const isDevelopment = import.meta.env.MODE === 'development';
@@ -14,7 +15,7 @@ if (isDevelopment && window.console && window.console.warn) {
         args[0].includes('Stripe.js integrations must use HTTPS')) {
       return;
     }
-    originalWarn.apply(window.console, args);
+    logger.warn(...args);
   };
 }
 
@@ -27,7 +28,7 @@ const StripeProvider = ({ children }) => {
   useEffect(() => {
     // Verify Stripe initialization
     stripePromise.catch(err => {
-      console.error('Stripe initialization error:', err);
+      logger.error('Stripe initialization error:', err);
       setError(err.message);
     });
   }, []);

@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
-import Cookies from 'js-cookie';
+
 import { API_ENDPOINTS } from '../../config/api';
 import UserAvatar from '../../components/common/UserAvatar';
 import {
@@ -21,14 +21,10 @@ import {
   EyeOff,
   Shield,
   Camera,
-  Settings,
-  Bell,
   Lock,
-  CreditCard,
   Package,
   Heart,
   LogOut,
-  Check,
   AlertCircle
 } from 'lucide-react';
 
@@ -94,7 +90,7 @@ const Profile = () => {
         throw new Error('Failed to update profile');
       }
     } catch (error) {
-      console.error('Profile update error:', error);
+      logger.error('Profile update error:', error);
       toast.error(error.response?.data?.message || 'Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
@@ -127,7 +123,7 @@ const Profile = () => {
         throw new Error('Failed to change password');
       }
     } catch (error) {
-      console.error('Password change error:', error);
+      logger.error('Password change error:', error);
       toast.error(error.response?.data?.message || 'Failed to change password. Please try again.');
     } finally {
       setLoading(false);
@@ -204,8 +200,8 @@ const Profile = () => {
             throw new Error('Failed to update profile picture');
           }
         } catch (error) {
-          console.error('Avatar upload error:', error);
-          console.error('Error details:', error.response?.data || error.message);
+          logger.error('Avatar upload error:', error);
+          logger.error('Error details:', error.response?.data || error.message);
           
           if (error.response?.status === 401) {
             toast.error('Please log in again to update your profile picture.', { id: 'avatar-upload' });
@@ -226,7 +222,7 @@ const Profile = () => {
       
       reader.readAsDataURL(file);
     } catch (error) {
-      console.error('Avatar upload error:', error);
+      logger.error('Avatar upload error:', error);
       toast.error('Failed to upload image', { id: 'avatar-upload' });
       setUploadingAvatar(false);
     }

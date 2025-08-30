@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import toast from 'react-hot-toast';
@@ -17,12 +17,8 @@ import {
   Filter,
   Calendar,
   ShoppingBag,
-  ExternalLink,
   ChevronDown,
   CreditCard,
-  Loader,
-  ArrowRight,
-  ArrowLeft,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -69,7 +65,7 @@ const Orders = () => {
       setOrders(data.orders || []);
     } catch (error) {
       toast.error('Failed to load orders');
-      console.error('Orders fetch error:', error);
+      logger.error('Orders fetch error:', error);
     } finally {
       setLoading(false);
     }
@@ -175,7 +171,7 @@ const Orders = () => {
       
       toast.success('Invoice downloaded successfully');
     } catch (error) {
-      console.error('Error downloading invoice:', error);
+      logger.error('Error downloading invoice:', error);
       const errorMessage = error.response?.data?.message || 'Failed to download invoice';
       toast.error(errorMessage);
     }
@@ -195,7 +191,7 @@ const Orders = () => {
         fetchOrders();
       }
     } catch (error) {
-      console.error('Error cancelling order:', error);
+      logger.error('Error cancelling order:', error);
       toast.error(error.response?.data?.message || 'Failed to cancel order');
     }
   };
@@ -445,7 +441,7 @@ const Orders = () => {
                         </div>
                         <div className="flex items-center mt-1">
                           <CreditCard className="h-4 w-4 text-gray-400 mr-1" />
-                          <span className="text-sm text-gray-500">Payment: {currentOrder.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Card'}</span>
+                          <span className="text-sm text-gray-500">Payment: {currentOrder.paymentMethod === 'cod' ? 'Cash on Delivery' : currentOrder.paymentMethod === 'phonepe' ? 'PhonePe' : 'Card'}</span>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -547,7 +543,7 @@ const Orders = () => {
                             </div>
                             <div className="flex items-center mt-1">
                               <CreditCard className="h-4 w-4 text-gray-400 mr-1" />
-                              <span className="text-sm text-gray-500">Payment: {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Card'}</span>
+                              <span className="text-sm text-gray-500">Payment: {order.paymentMethod === 'cod' ? 'Cash on Delivery' : order.paymentMethod === 'phonepe' ? 'PhonePe' : 'Card'}</span>
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2">
@@ -763,11 +759,11 @@ const SingleOrderView = ({
           {order.orderItems.map((item, index) => (
             <div key={index} className="grid grid-cols-12 gap-4 p-4 border-b last:border-b-0">
               <div className="col-span-2 md:col-span-1">
-                <div className="aspect-square bg-gray-200 rounded overflow-hidden">
+                <div className="aspect-square bg-white rounded overflow-hidden">
                   <img 
                     src={item.image} 
                     alt={item.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 </div>
               </div>

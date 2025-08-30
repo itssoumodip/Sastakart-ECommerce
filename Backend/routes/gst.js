@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../utils/logger');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const { 
     getGSTSettings, 
@@ -10,7 +11,7 @@ const {
 
 // Log all requests to this router
 router.use((req, res, next) => {
-    console.log(`GST Route: ${req.method} ${req.originalUrl}`);
+    logger.debug(`GST Route: ${req.method} ${req.originalUrl}`);
     next();
 });
 

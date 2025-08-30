@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('./catchAsyncErrors');
+const logger = require('../utils/logger');
 
 // Check if user is authenticated
 exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
@@ -19,11 +20,11 @@ exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
     }
   }
   
-  console.log(`Request path: ${req.method} ${req.originalUrl}`);
-  console.log(`Token found: ${!!token} (from ${tokenSource})`);
-  console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
-  console.log('Request cookies:', req.cookies);
-  console.log('Auth header:', req.headers.authorization);
+  logger.debug(`Request path: ${req.method} ${req.originalUrl}`);
+  logger.debug(`Token found: ${!!token} (from ${tokenSource})`);
+  logger.debug('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+  logger.debug('Request cookies:', req.cookies);
+  logger.debug('Auth header:', req.headers.authorization);
   
   if (!token) {
     return next(new ErrorHandler('Login first to access this resource.', 401));
@@ -31,19 +32,19 @@ exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
   
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Token decoded successfully:', decoded.id);
+    logger.debug('Token decoded successfully:', decoded.id);
     
     req.user = await User.findById(decoded.id);
     
     if (!req.user) {
-      console.log('User not found with token ID:', decoded.id);
+      logger.debug('User not found with token ID:', decoded.id);
       return next(new ErrorHandler('User not found with this token.', 401));
     }
     
-    console.log('User authenticated:', req.user.email);
+    logger.debug('User authenticated:', req.user.email);
     next();
   } catch (error) {
-    console.error('JWT Verification Error:', error.message);
+    logger.error('JWT Verification Error:', error.message);
     return next(new ErrorHandler('Invalid token. Please login again.', 401));
   }
 });

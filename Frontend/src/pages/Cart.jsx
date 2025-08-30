@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
@@ -13,25 +13,13 @@ import {
   ShoppingBag, 
   ArrowLeft,
   ArrowRight, 
-  Heart,
-  Star,
   Shield,
   Truck,
   RefreshCw,
-  Gift,
   Tag,
   Check,
-  Sparkles,
-  ShoppingCart,
-  Lock,
-  CreditCard,
-  Clock,
-  MapPin,
-  Trash2,
-  Search,
-  User,
-  Menu,
-  IndianRupee
+  IndianRupee,
+  Trash2
 } from 'lucide-react';
 import { toastConfig } from '../utils/toastConfig';
 import CouponForm from '../components/cart/CouponForm';
@@ -41,7 +29,7 @@ const Cart = () => {
   const { items: cartItems, updateQuantity, removeFromCart, getCartTotal, getCartItemsCount } = useCart();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(true); // Temporary admin state, replace with actual auth logic
+  
 
   const handleQuantityChange = (id, newQuantity) => {
     if (newQuantity < 1) return;
@@ -64,11 +52,12 @@ const Cart = () => {
       try {
         // Fetch the GST details including itemized rates
         const details = await getCartGstDetails();
+        // console.log("Details:", details);
         if (details) {
           setGstDetails(details);
         }
       } catch (error) {
-        console.error('Error loading GST details:', error);
+        // Show error toast and continue
         toast.error('Error loading GST details', toastConfig.error);
       } finally {
         setIsLoadingGst(false);
@@ -411,16 +400,8 @@ const Cart = () => {
                               </span>
                             )}
                           </div>
-                          {discountAmount > 0 && (
-                            <p className="text-xs text-green-600 mt-1">
-                              GST calculated on discounted amount
-                            </p>
-                          )}
-                          {discountAmount > 0 && (
-                            <p className="text-xs text-green-600 mt-1">
-                              GST calculated on discounted amount
-                            </p>
-                          )}
+
+
                         </>
                       )}
                     </div>

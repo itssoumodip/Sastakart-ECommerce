@@ -1,3 +1,5 @@
+
+
 const sendToken = (user, statusCode, res) => {
   // Create JWT token
   const token = user.getJwtToken();

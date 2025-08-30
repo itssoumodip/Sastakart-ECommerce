@@ -11,7 +11,7 @@ let memoryToken = null;
 export const syncToken = (token) => {
   if (!token) return null;
   
-  console.log('Syncing token across all storage mechanisms');
+  // Sync token across all storage mechanisms
   
   // Store in memory cache
   memoryToken = token;
@@ -51,13 +51,7 @@ export const getAuthToken = () => {
   const localToken = localStorage.getItem('authToken');
   const oldLocalToken = localStorage.getItem('token');
   
-  // Debug token sources
-  console.log('Token sources:', {
-    memory: !!memoryToken,
-    cookie: !!cookieToken,
-    localStorage: !!localToken,
-    oldLocalStorage: !!oldLocalToken
-  });
+  // Check token sources
   
   // Use the first available token
   const foundToken = cookieToken || localToken || oldLocalToken;
@@ -101,24 +95,12 @@ export const getAuthHeaders = () => {
   // Get token using our utility with synchronization
   const token = getAuthToken();
   
-  // More detailed debug information
-  console.log('Auth State:', {
-    hasToken: !!token,
-    tokenLength: token ? token.length : 0,
-    tokenStart: token ? `${token.substring(0, 10)}...` : null,
-    currentPage: window.location.pathname,
-    isAdminPage: window.location.pathname.startsWith('/admin')
-  });
-  
   if (token) {
-    const headers = { 
+    return { 
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     };
-    console.log('Auth Headers Set:', Object.keys(headers));
-    return headers;
   } else {
-    console.error('No authentication token found in any storage location');
     return {
       'Content-Type': 'application/json'
     };

@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { toastConfig } from '../../utils/toastConfig';
 import { isValidCouponFormat } from '../../utils/couponUtils';
+import { logger } from '../../utils/logger';
 import { Tag, X } from 'lucide-react';
 
 const CouponForm = ({ cartTotal, onCouponApplied, cartItems }) => {
@@ -94,7 +95,7 @@ const CouponForm = ({ cartTotal, onCouponApplied, cartItems }) => {
       setCouponCode('');
       setError('');
     } catch (error) {
-      console.error('Coupon error:', error);
+      logger.error('Coupon error:', error);
       setError(
         error.response?.data?.message || error.message || 
         'Failed to apply coupon. Please check the code and try again.'

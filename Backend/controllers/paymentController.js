@@ -1,18 +1,19 @@
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const Order = require('../models/order');
+const logger = require('../utils/logger');
 const axios = require('axios');
 const { Buffer } = require('node:buffer');
 const generateOrderId = require('../utils/payment/orderIdGenerator');
 const { generateChecksum } = require('../utils/payment/checksumGenerator');
 
 // Environment variables for PhonePe
-const PAYMENT_SALT_KEY = process.env.PAYMENT_SALT_KEY || '96434309-7796-489d-8924-ab56988a6076'; // Test key
-const MERCHANT_ID = process.env.MERCHANT_ID || 'PGTESTPAYUAT86'; // Test merchant ID
-const MERCHANT_BASE_URL = process.env.MERCHANT_BASE_URL || 'https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay';
-const MERCHANT_STATUS_URL = process.env.MERCHANT_STATUS_URL || 'https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/status';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+const PAYMENT_SALT_KEY = process.env.PAYMENT_SALT_KEY; // Test key
+const MERCHANT_ID = process.env.MERCHANT_ID // Test merchant ID
+const MERCHANT_BASE_URL = process.env.MERCHANT_BASE_URL;
+const MERCHANT_STATUS_URL = process.env.MERCHANT_STATUS_URL;
+const FRONTEND_URL = process.env.FRONTEND_URL;
+const BACKEND_URL = process.env.BACKEND_URL;
 
 // Create a new payment => /api/payment/create
 exports.createOrderPayment = catchAsyncErrors(async (req, res, next) => {
@@ -43,7 +44,7 @@ exports.createOrderPayment = catchAsyncErrors(async (req, res, next) => {
     }
     
     // Log the received shipping info for debugging
-    console.log('Received shipping info:', shippingInfo);
+    logger.debug('Received shipping info:', shippingInfo);
 
     // Generate a unique order ID using the helper function
     const orderId = generateOrderId();
@@ -99,7 +100,7 @@ exports.createOrderPayment = catchAsyncErrors(async (req, res, next) => {
             return next(new ErrorHandler('Invalid response from payment gateway', 500));
         }
     } catch (error) {
-        console.error('PhonePe payment creation error:', error.response?.data || error.message);
+        logger.error('PhonePe payment creation error:', error.response?.data || error.message);
         return next(new ErrorHandler(error.response?.data?.message || error.message, 500));
     }
 });
@@ -159,7 +160,7 @@ exports.checkOrderPaymentStatus = catchAsyncErrors(async (req, res, next) => {
             }
         });
     } catch (error) {
-        console.error('Payment status check error:', error.response?.data || error.message);
+        logger.error('Payment status check error:', error.response?.data || error.message);
         return next(new ErrorHandler(error.response?.data?.message || error.message, 500));
     }
 });
@@ -195,13 +196,13 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
     const { merchantTransactionId, cartItems, totalAmount, shippingInfo, paymentMethod = 'phonepe' } = req.body;
     
     try {
-        console.log('Save Order Request: ', { merchantTransactionId, totalAmount, paymentMethod });
-        console.log('Shipping Info Received: ', shippingInfo);
+        logger.debug('Save Order Request: ', { merchantTransactionId, totalAmount, paymentMethod });
+        logger.debug('Shipping Info Received: ', shippingInfo);
         
         // Special handling for the message port closed error
         // This happens when the browser closes the connection before the response is received
         req.on('close', () => {
-            console.log('Client closed connection, but we\'ll continue processing the order');
+            logger.debug('Client closed connection, but we\'ll continue processing the order');
         });
         
         if (!merchantTransactionId) {
@@ -240,7 +241,7 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
             }
         }
         
-        console.log('Processing payment verification for transaction:', transactionId);
+        logger.debug('Processing payment verification for transaction:', transactionId);
         
         // Prepare response variable to hold payment verification result
         let response;
@@ -251,7 +252,7 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
             if (process.env.NODE_ENV !== 'production' || 
                 transactionId.startsWith('ord-') || 
                 transactionId.startsWith('T2508')) {
-                console.log('Using development mode or direct order ID, skipping payment verification');
+                logger.debug('Using development mode or direct order ID, skipping payment verification');
                 // Create a mock successful response
                 response = {
                     data: {
@@ -282,18 +283,18 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
                 
                 // Validate response
                 if (!response.data || !response.data.success) {
-                    console.error('PhonePe API error response:', response.data);
+                    logger.error('PhonePe API error response:', response.data);
                     throw new Error('Invalid response from payment gateway');
                 }
                 
                 if (!response.data.data || !response.data.data.state) {
-                    console.error('PhonePe API missing state data:', response.data);
+                    logger.error('PhonePe API missing state data:', response.data);
                     throw new Error('Missing payment state');
                 }
                 
                 // Get payment state
                 paymentState = response.data.data.state;
-                console.log('Payment state from PhonePe:', paymentState);
+                logger.debug('Payment state from PhonePe:', paymentState);
                 
                 // Validate payment state
                 if (paymentState !== 'COMPLETED' && paymentState !== 'PENDING') {
@@ -302,18 +303,18 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
                 
                 // Ensure we have a transaction ID
                 if (!response.data.data.transactionId) {
-                    console.log('No transactionId in PhonePe response, using merchantTransactionId instead:', transactionId);
+                    logger.debug('No transactionId in PhonePe response, using merchantTransactionId instead:', transactionId);
                     response.data.data.transactionId = transactionId;
                 } else {
-                    console.log('Found transactionId in PhonePe response:', response.data.data.transactionId);
+                    logger.debug('Found transactionId in PhonePe response:', response.data.data.transactionId);
                 }
             }
         } catch (apiError) {
-            console.error('PhonePe API request error:', apiError.message);
+            logger.error('PhonePe API request error:', apiError.message);
             
             // For development environment, use a mock successful response
             if (process.env.NODE_ENV !== 'production') {
-                console.log('Allowing order save in development mode despite payment API error');
+                logger.debug('Allowing order save in development mode despite payment API error');
                 response = {
                     data: {
                         data: {
@@ -340,10 +341,10 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
         
         // Ensure we have a valid user ID
         if (!req.user || !req.user._id) {
-            console.error('User ID missing in request');
+            logger.error('User ID missing in request');
             return next(new ErrorHandler('User authentication error', 401));
         }
-        console.log('Creating order for user:', req.user._id);
+        logger.debug('Creating order for user:', req.user._id);
         
         // Calculate proper price breakdowns
         const itemsPrice = parseFloat((totalAmount * 0.82).toFixed(2));
@@ -353,7 +354,7 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
         // Create a new order with proper mapping to the schema
         // Ensure merchantTransactionId is set for paymentInfo.id
         if (!merchantTransactionId) {
-            console.error('Missing merchantTransactionId for payment information');
+            logger.error('Missing merchantTransactionId for payment information');
             return next(new ErrorHandler('Payment transaction ID is required', 400));
         }
         
@@ -361,7 +362,7 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
         // Use either the transactionId from the response or the merchantTransactionId if not available
         const paymentId = response.data.data.transactionId || merchantTransactionId;
         
-        console.log('Using payment ID for order:', paymentId);
+        logger.debug('Using payment ID for order:', paymentId);
         
         const order = new Order({
             user: req.user._id,
@@ -399,8 +400,8 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
         
         try {
             await order.save();
-            console.log('Order saved successfully:', order._id);
-            console.log('Payment Method saved:', order.paymentMethod);
+            logger.debug('Order saved successfully:', order._id);
+            logger.debug('Payment Method saved:', order.paymentMethod);
             
             // Fetch user details to get email
             const userPopulatedOrder = await Order.findById(order._id).populate('user', 'name email');
@@ -431,9 +432,9 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
                         }
                     }
                 });
-                console.log('Order confirmation email sent successfully');
+                logger.debug('Order confirmation email sent successfully');
             } catch (emailError) {
-                console.error('Failed to send order confirmation email:', emailError);
+                logger.error('Failed to send order confirmation email:', emailError);
                 // Don't fail the order creation if email sending fails
             }
             
@@ -443,11 +444,11 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
                 order
             });
         } catch (saveError) {
-            console.error('Order save error:', saveError);
+            logger.error('Order save error:', saveError);
             return next(new ErrorHandler(`Error saving order: ${saveError.message}`, 500));
         }
     } catch (error) {
-        console.error('Order save error:', error);
+        logger.error('Order save error:', error);
         return next(new ErrorHandler(error.message, 500));
     }
 });

@@ -1,3 +1,5 @@
+const logger = require('../logger');
+
 /**
  * Generates a unique order ID for payment transactions
  * @returns {string} A unique order ID

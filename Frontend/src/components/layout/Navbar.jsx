@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo, useRef } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
@@ -77,48 +77,15 @@ const NavbarComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Store counts in refs to avoid re-renders
-  const countsRef = useRef({
-    cart: getCartItemsCount(),
-    wishlist: getWishlistCount()
-  });
+  // Use state for counts instead of refs to ensure proper re-renders
+  const [cartCount, setCartCount] = useState(getCartItemsCount());
+  const [wishlistCount, setWishlistCount] = useState(getWishlistCount());
   
-  // Update counts without triggering re-renders
+  // Update counts when cart/wishlist changes
   useEffect(() => {
-    const updateCounts = () => {
-      // Update internal ref
-      countsRef.current = {
-        cart: getCartItemsCount(),
-        wishlist: getWishlistCount()
-      };
-      
-      // Direct DOM updates bypassing React
-      document.querySelectorAll('.cart-count').forEach(el => {
-        el.textContent = countsRef.current.cart;
-        if (countsRef.current.cart > 0) {
-          el.style.display = 'flex';
-        } else {
-          el.style.display = 'none';
-        }
-      });
-      
-      document.querySelectorAll('.wishlist-count').forEach(el => {
-        el.textContent = countsRef.current.wishlist;
-        if (countsRef.current.wishlist > 0) {
-          el.style.display = 'flex';
-        } else {
-          el.style.display = 'none';
-        }
-      });
-    };
-    
-    // Initial update without re-render
-    updateCounts();
-    
-    // Set very infrequent updates for production
-    const interval = setInterval(updateCounts, 5000);
-    return () => clearInterval(interval);
-  }, [getCartItemsCount, getWishlistCount]);
+    setCartCount(getCartItemsCount());
+    setWishlistCount(getWishlistCount());
+  }, [getCartItemsCount(), getWishlistCount()]);
   
   // Reset menus on route change
   useEffect(() => {
@@ -187,8 +154,8 @@ const NavbarComponent = () => {
               <div className="relative">
                 <Heart className="h-6 w-6" />
                 <span className="wishlist-count absolute -top-1.5 -right-1.5 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-sm"
-                     style={{display: countsRef.current.wishlist > 0 ? 'flex' : 'none'}}>
-                  {countsRef.current.wishlist}
+                     style={{display: wishlistCount > 0 ? 'flex' : 'none'}}>
+                  {wishlistCount}
                 </span>
               </div>
             </Link>
@@ -198,8 +165,8 @@ const NavbarComponent = () => {
               <div className="relative">
                 <ShoppingCart className="h-6 w-6" />
                 <span className="cart-count absolute -top-1.5 -right-1.5 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-sm"
-                     style={{display: countsRef.current.cart > 0 ? 'flex' : 'none'}}>
-                  {countsRef.current.cart}
+                     style={{display: cartCount > 0 ? 'flex' : 'none'}}>
+                  {cartCount}
                 </span>
               </div>
             </Link>
@@ -228,7 +195,7 @@ const NavbarComponent = () => {
                       <Link
                         to="/profile"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsUserMenuOpen(false)}
+                        onClick={() => setMenus(prev => ({...prev, user: false}))}
                       >
                         <User className="h-4 w-4 mr-3" />
                         Profile
@@ -236,7 +203,7 @@ const NavbarComponent = () => {
                       <Link
                         to="/profile/orders"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsUserMenuOpen(false)}
+                        onClick={() => setMenus(prev => ({...prev, user: false}))}
                       >
                         <Package className="h-4 w-4 mr-3" />
                         Orders
@@ -245,7 +212,7 @@ const NavbarComponent = () => {
                         <Link
                           to="/admin"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={() => setMenus(prev => ({...prev, user: false}))}
                         >
                           <Settings className="h-4 w-4 mr-3" />
                           Admin
@@ -287,9 +254,9 @@ const NavbarComponent = () => {
               className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors duration-200"
             >
               <ShoppingCart className="h-6 w-6" />
-              {countsRef.current.cart > 0 && (
+              {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {countsRef.current.cart}
+                  {cartCount}
                 </span>
               )}
             </Link>
@@ -319,18 +286,18 @@ const NavbarComponent = () => {
               <Link
                 to="/products"
                 className="block text-gray-700 hover:text-gray-900 transition-colors duration-200 font-medium"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => setMenus(prev => ({...prev, main: false}))}
               >
                 Products
               </Link>              <Link
                 to="/wishlist"
                 className="flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200 font-medium"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => setMenus(prev => ({...prev, main: false}))}
               >
                 <span>Wishlist</span>
-                {countsRef.current.wishlist > 0 && (
+                {wishlistCount > 0 && (
                   <span className="ml-2 bg-amber-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                    {countsRef.current.wishlist}
+                    {wishlistCount}
                   </span>
                 )}
               </Link>
@@ -348,14 +315,14 @@ const NavbarComponent = () => {
                   <Link
                     to="/profile"
                     className="block text-gray-700 hover:text-gray-900 transition-colors duration-200"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => setMenus(prev => ({...prev, main: false}))}
                   >
                     Profile
                   </Link>
                   <Link
                     to="/profile/orders"
                     className="block text-gray-700 hover:text-gray-900 transition-colors duration-200"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => setMenus(prev => ({...prev, main: false}))}
                   >
                     Orders
                   </Link>
@@ -363,7 +330,7 @@ const NavbarComponent = () => {
                     <Link
                       to="/admin"
                       className="block text-gray-700 hover:text-gray-900 transition-colors duration-200"
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={() => setMenus(prev => ({...prev, main: false}))}
                     >
                       Admin Panel
                     </Link>
@@ -380,14 +347,14 @@ const NavbarComponent = () => {
                   <Link
                     to="/login"
                     className="block w-full text-center py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => setMenus(prev => ({...prev, main: false}))}
                   >
                     Login
                   </Link>
                   <Link
                     to="/register"
                     className="block w-full text-center py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => setMenus(prev => ({...prev, main: false}))}
                   >
                     Sign Up
                   </Link>
@@ -402,6 +369,6 @@ const NavbarComponent = () => {
 };
 
 // Extreme stabilization with pure component
-const StableNavbar = memo(NavbarComponent, () => true);
+const StableNavbar = memo(NavbarComponent);
 
 export default StableNavbar;

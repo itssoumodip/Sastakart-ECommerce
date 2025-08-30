@@ -34,14 +34,14 @@ const ResetPassword = () => {
       });
       
       toast.success('Password reset successfully');
-      console.log('Password reset successful:', response.data);
+      logger.debug('Password reset successful:', response.data);
       
       // Redirect to login after a brief delay so the user sees the success message
       setTimeout(() => {
         navigate('/login');
       }, 2000);
     } catch (error) {
-      console.error('Password reset error:', error);
+      logger.error('Password reset error:', error);
       
       if (error.response?.status === 400 && error.response?.data?.message?.includes('expired')) {
         toast.error('Password reset link has expired. Please request a new one.');

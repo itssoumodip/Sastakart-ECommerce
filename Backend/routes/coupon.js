@@ -11,10 +11,11 @@ const {
     applyCoupon,
     recordCouponUsage
 } = require('../controllers/couponController');
+const logger = require('../utils/logger');
 
 // Log all requests to this router
 router.use((req, res, next) => {
-    console.log(`Coupon Route: ${req.method} ${req.originalUrl}`);
+    logger.debug(`Coupon Route: ${req.method} ${req.originalUrl}`);
     next();
 });
 
