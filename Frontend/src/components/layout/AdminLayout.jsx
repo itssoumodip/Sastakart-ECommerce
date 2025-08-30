@@ -59,9 +59,8 @@ function AdminLayout() {
     { to: '/admin/products', icon: Package, label: 'Products' },
     { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
     { to: '/admin/users', icon: Users, label: 'Users' },
-    { to: '/admin/gst', icon: IndianRupee, label: 'GST Management' },
-    { to: '/admin/coupons', icon: Sparkles, label: 'Coupons' },
-    { to: '/admin/api-config-check', icon: Wrench, label: 'API Config Check' },
+  { to: '/admin/gst', icon: IndianRupee, label: 'GST Management' },
+  { to: '/admin/coupons', icon: Sparkles, label: 'Coupons' },
   ];
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -73,7 +72,7 @@ function AdminLayout() {
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="flex flex-col w-60">
-          <div className="flex w-full fixed flex-col h-screen flex-1 bg-gray-900">
+          <div className="sticky top-0 flex flex-col h-screen bg-gray-900 justify-between">
             {/* Sidebar header */}
             <motion.div 
               className="flex items-center h-16 flex-shrink-0 px-4 bg-gray-800"

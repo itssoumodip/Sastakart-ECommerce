@@ -31,7 +31,6 @@ import UsersManagement from './pages/admin/UsersManagement'
 import CODManagement from './pages/admin/CODManagement'
 import GSTManagement from './pages/admin/GSTManagement'
 import CouponManager from './pages/admin/CouponManager'
-import ApiConfigCheck from './pages/admin/ApiConfigCheck'
 
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
@@ -59,7 +58,7 @@ function App() {
           <Route path="cod" element={<CODManagement />} />
           <Route path="gst" element={<GSTManagement />} />
           <Route path="coupons" element={<CouponManager />} />
-          <Route path="api-config-check" element={<ApiConfigCheck />} />
+          
         </Route>
       </Route>
 

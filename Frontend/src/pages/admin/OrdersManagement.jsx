@@ -227,7 +227,7 @@ function OrdersManagement() {
         );      case 'COD_Pending':
         return (
           <span className={`${baseClasses} bg-purple-100 text-purple-800`}>
-            <DollarSign className="h-3 w-3 mr-1" />
+            <IndianRupee className="h-3 w-3 mr-1" />
             COD Pending
           </span>
         );
@@ -352,7 +352,7 @@ function OrdersManagement() {
               <div>
                 <p className="text-gray-600 text-sm font-medium">COD Pending</p>
                 <p className="text-2xl font-bold text-gray-900">{codAnalytics.pendingCOD || 0}</p>
-                <p className="text-sm text-gray-500 mt-1">₹{(codAnalytics.pendingAmount || 0).toLocaleString('en-IN')}</p>
+                <p className="text-sm text-gray-500 mt-1">₹{(codAnalytics.pendingCODAmount || 0).toLocaleString('en-IN')}</p>
               </div>
               <div className="p-3 bg-yellow-100 rounded-lg">
                 <Clock className="h-6 w-6 text-yellow-600" />
@@ -368,7 +368,7 @@ function OrdersManagement() {
               <div>
                 <p className="text-gray-600 text-sm font-medium">COD Collected</p>
                 <p className="text-2xl font-bold text-gray-900">{codAnalytics.collectedCOD || 0}</p>
-                <p className="text-sm text-gray-500 mt-1">₹{(codAnalytics.collectedAmount || 0).toLocaleString('en-IN')}</p>
+                <p className="text-sm text-gray-500 mt-1">₹{(codAnalytics.collectedCODAmount || 0).toLocaleString('en-IN')}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
                 <CheckCircle className="h-6 w-6 text-green-600" />
@@ -511,7 +511,7 @@ function OrdersManagement() {
                         <div className="flex items-center text-sm text-gray-500">
                           {order.paymentMethod === 'cod' ? (
                             <span className="inline-flex items-center">
-                              <DollarSign className="h-4 w-4 mr-1" />
+                              <IndianRupee className="h-4 w-4 mr-1" />
                               COD
                             </span>
                           ) : (
