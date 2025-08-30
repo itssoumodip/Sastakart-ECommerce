@@ -173,18 +173,23 @@ const ProductCard = forwardRef(({ product, index = 0, viewMode = 'grid' }, ref) 
             </div>
           </div>
           
-          {/* Price and Add to Cart */}
+            {/* Price, Stock and Add to Cart */}
           <div className="flex items-center justify-between mt-auto">
             <div className="flex flex-col">
-              {product.discountPrice && product.discountPrice < product.price ? (
-                <>
-                  <span className="font-semibold text-xl text-gray-900">₹{product.discountPrice}</span>
-                  <span className="text-sm text-gray-500 line-through">₹{product.price}</span>
-                </>
-              ) : (
-                <span className="text-3xl font-semibold text-gray-900">₹{product.price}</span>
-              )}
+              {/* Don't show a bottom 'Out of Stock' label here; the image overlay already indicates OOS. */}
+              {product.stock > 0 ? (
+                product.discountPrice && product.discountPrice < product.price ? (
+                  <>
+                    <span className="font-semibold text-xl text-gray-900">₹{product.discountPrice}</span>
+                    <span className="text-sm text-gray-500 line-through">₹{product.price}</span>
+                  </>
+                ) : (
+                  <span className="text-3xl font-semibold text-gray-900">₹{product.price}</span>
+                )
+              ) : null}
             </div>
+            {/* stock count removed from card preview as requested */}
+
             <motion.button
               onClick={handleAddToCart}
               className={`px-4 py-2 rounded-full flex items-center gap-2 ${

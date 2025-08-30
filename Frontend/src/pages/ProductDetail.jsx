@@ -330,36 +330,38 @@ const ProductDetail = () => {  const { id } = useParams();
                     </span>
                   </div>
                   
-                  {product.stock > 0 ? (
-                    <span className="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                      In Stock
-                    </span>
+                  {typeof product.stock === 'number' ? (
+                    product.stock > 10 ? (
+                      <span className="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                        In Stock • {product.stock}
+                      </span>
+                    ) : product.stock > 0 ? (
+                      <span className="px-2.5 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                        Only {product.stock} left
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                        Out of Stock
+                      </span>
+                    )
                   ) : (
-                    <span className="px-2.5 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
-                      Out of Stock
-                    </span>
+                    <span className="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">In Stock</span>
                   )}
                 </div>
                 
-                {/* Price */}
+                {/* Price (only shown when in stock) */}
                 <div className="flex items-center gap-4">
-                {product.discountPrice && product.discountPrice < product.price ? (
-                  <>
-                    <span className="text-3xl font-semibold text-gray-900">
-                      ₹{product.discountPrice}
-                    </span>
-                    <span className="text-xl text-gray-500 line-through">
-                      ₹{product.price}
-                    </span>
-                    <span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                      Save ₹{(product.price - product.discountPrice).toFixed(2)}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-3xl font-semibold text-gray-900">
-                    ₹{product.price}
-                  </span>
-                )}
+                {product.stock > 0 ? (
+                  product.discountPrice && product.discountPrice < product.price ? (
+                    <>
+                      <span className="text-3xl font-semibold text-gray-900">₹{product.discountPrice}</span>
+                      <span className="text-xl text-gray-500 line-through">₹{product.price}</span>
+                      <span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Save ₹{(product.price - product.discountPrice).toFixed(2)}</span>
+                    </>
+                  ) : (
+                    <span className="text-3xl font-semibold text-gray-900">₹{product.price}</span>
+                  )
+                ) : null}
               </div>
               </div>
 

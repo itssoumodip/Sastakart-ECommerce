@@ -183,17 +183,16 @@ const PaymentStatus = () => {
               }
             }
             
-            // If order was saved (either initial save or retry), clear cart once and notify via CartContext
+            // If order was saved (either initial save or retry), clear cart once
             if (orderSaved) {
               try {
                 localStorage.removeItem('cart');
               } catch (e) {
                 logger.error('Error removing cart from localStorage:', e);
               }
-              // Clear cart silently (suppress CartContext toast) since we will show a single success toast here
+              // Clear cart silently (suppress CartContext toast)
               try { clearCart('phonepe-order', true); } catch (e) { logger.debug('clearCart not available:', e); }
-              // Single success toast for saved orders
-              try { toast.success('Order placed successfully!'); } catch (e) { logger.debug('toast failed:', e); }
+              // NOTE: success message is displayed on the page itself — do not show a toast here to avoid duplicates
             }
           } else {
             setStatus('failed');

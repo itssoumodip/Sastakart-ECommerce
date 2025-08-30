@@ -634,7 +634,7 @@ const Checkout = () => {
           </label>
           {!codAllowed && (
             <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
-              Cash on Delivery is not available for orders above ₹{COD_MAX_AMOUNT.toLocaleString('en-IN')}. Please use PhonePe or another supported payment method.
+              Cash on Delivery is not available for orders above ₹{COD_MAX_AMOUNT.toLocaleString('en-IN')}. Please use PhonePe.
             </div>
           )}
         </div>

@@ -1,6 +1,7 @@
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const Order = require('../models/order');
+const Product = require('../models/product');
 const logger = require('../utils/logger');
 const axios = require('axios');
 const { Buffer } = require('node:buffer');
@@ -400,6 +401,33 @@ exports.saveOrder = catchAsyncErrors(async (req, res, next) => {
             await order.save();
             logger.debug('Order saved successfully:', order._id);
             logger.debug('Payment Method saved:', order.paymentMethod);
+
+            // Reserve stock for each ordered item (decrement inventory)
+            // This mirrors the logic used in the main order controller so orders
+            // created via the payment flow also reduce product.stock.
+            for (const item of order.orderItems) {
+                try {
+                    const product = await Product.findById(item.product);
+                    if (!product) continue;
+
+                    product.stock = (product.stock || 0) - (item.quantity || 0);
+
+                    // Ensure stock doesn't go negative
+                    if (product.stock <= 0) {
+                        product.stock = 0;
+                        product.status = 'Out of Stock';
+                    } else if (product.stock < (product.lowStockAlert || 10)) {
+                        product.status = 'Low Stock';
+                    } else {
+                        product.status = 'Active';
+                    }
+
+                    await product.save({ validateBeforeSave: false });
+                } catch (stockErr) {
+                    logger.error(`Failed to reserve stock for product ${item.product} during payment save:`, stockErr);
+                    // Don't fail the order save if a stock update fails; log and continue
+                }
+            }
             
             // Fetch user details to get email
             const userPopulatedOrder = await Order.findById(order._id).populate('user', 'name email');
