@@ -212,14 +212,18 @@ export const CartProvider = ({ children }) => {
     }    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
     toast.success('Cart updated', toastConfig.success);
   }
-  const clearCart = (reason) => {
+  const clearCart = (reason, suppressToast = false) => {
     dispatch({ type: 'CLEAR_CART' });
-    if (reason === 'cod-order') {
-      toast.success('Order placed successfully', toastConfig.success);
-    } else {
-      toast.success('Cart cleared', toastConfig.success);
+    if (!suppressToast) {
+      if (reason === 'cod-order') {
+        toast.success('Order placed successfully', toastConfig.success);
+      } else {
+        toast.success('Cart cleared', toastConfig.success);
+      }
     }
-  };  const getCartTotal = () => {
+  };
+
+  const getCartTotal = () => {
     // Ensure all price calculations are valid numbers and properly formatted
     return parseFloat(
       state.items.reduce((total, item) => {

@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
+import { toastConfig } from '../utils/toastConfig';
 import Cookies from 'js-cookie';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,7 +29,8 @@ import {
   Shield,
   Star,
   ArrowRight,
-  Banknote
+  Banknote,
+  AlertTriangle
 } from 'lucide-react';
 
 const Checkout = () => {
@@ -43,51 +45,21 @@ const Checkout = () => {
   const [paymentIntent, setPaymentIntent] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [authToken, setAuthToken] = useState(null);
+  const processingRef = useRef(false);
   const [gstDetails, setGstDetails] = useState({ totalGstAmount: 0, gstRates: [] });
   const [isLoadingGst, setIsLoadingGst] = useState(true);
 
-  const shippingForm = useForm({
-    defaultValues: {
-      email: user?.email || '',
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      company: '',
-      address: '',
-      apartment: '',
-      city: '',
-      country: 'India',
-      state: '',
-      postalCode: '',
-      phone: ''
-    }
-  });
+  const shippingForm = useForm();
 
-  const paymentForm = useForm({
-    defaultValues: {
-      cardNumber: '',
-      expiryDate: '',
-      cvv: '',
-      nameOnCard: '',
-      billingAddress: 'same'
-    }
-  });
-  // Effect to check cart items and load GST details
   useEffect(() => {
-    if ((!cartItems || cartItems.length === 0) && !orderPlaced) {
-      navigate('/cart');
-      toast.error('Your cart is empty');
-      return;
-    }
-
     const loadGstDetails = async () => {
       setIsLoadingGst(true);
       try {
         const details = await getCartGstDetails();
-        logger.debug('Checkout: Loaded GST details:', details);
-        setGstDetails(details);
+        setGstDetails(details || { totalGstAmount: 0, gstRates: [] });
       } catch (error) {
-        logger.error('Error loading GST details:', error);
-        toast.error('Error loading GST details. Using default rates.');
+        logger.error('Failed to load GST details', error);
+        setGstDetails({ totalGstAmount: 0, gstRates: [] });
       } finally {
         setIsLoadingGst(false);
       }
@@ -160,6 +132,10 @@ const Checkout = () => {
     return parseFloat(total.toFixed(2));
   };
 
+  // Business rule: COD not allowed for very large orders
+  const COD_MAX_AMOUNT = 100000;
+  const codAllowed = calculateTotal() <= COD_MAX_AMOUNT;
+
 
   const handleNextStep = () => {
     if (step < 3) {
@@ -185,25 +161,37 @@ const Checkout = () => {
   };
 
   const handlePaymentSuccess = async (paymentData) => {
+    // Prevent duplicate submissions
+    if (processingRef.current) return;
+    processingRef.current = true;
+
     setPaymentIntent(paymentData);
     setLoading(true);
-    
+
     try {
       const shippingData = shippingForm.getValues();
-      await createOrder(shippingData, paymentData);
-      toast.success('Order confirmed! Preparing your items for shipping...');
+      const res = await createOrder(shippingData, paymentData);
+      // Only show success when createOrder confirms success
+      if (res && res.success) {
+        toast.success('Order confirmed! Preparing your items for shipping...');
+      }
     } catch (error) {
       logger.error('Order creation failed:', error);
       handlePaymentError(error);
     } finally {
       setLoading(false);
+      processingRef.current = false;
     }
   };
 
   const handleCODOrder = async () => {
+    // Prevent duplicate submissions
+    if (processingRef.current) return;
+    processingRef.current = true;
+
     setLoading(true);
     setPaymentError(null);
-    
+
     try {
       const shippingData = shippingForm.getValues();
       const codPaymentData = {
@@ -211,27 +199,35 @@ const Checkout = () => {
         status: 'pending',
         method: 'cod'
       };
-      await createOrder(shippingData, codPaymentData);
-      toast.success('Your Cash on Delivery order has been placed successfully!');
+      const res = await createOrder(shippingData, codPaymentData);
+      if (res && res.success) {
+        toast.success('Your Cash on Delivery order has been placed successfully!');
+      }
     } catch (error) {
       logger.error('COD order creation failed:', error);
       handlePaymentError(error);
     } finally {
       setLoading(false);
+      processingRef.current = false;
     }
-  };  const createOrder = async (shippingData, paymentData) => {
-    // Ensure values are properly formatted as numbers with two decimal places
+  };
+
+  const createOrder = async (shippingData, paymentData) => {
+  // Ensure values are properly formatted as numbers with two decimal places
     // Use parseFloat to convert string values and fix decimal places
     const total = parseFloat(calculateTotal().toFixed(2));
     const subtotalFormatted = parseFloat(getCartTotal().toFixed(2));
     const taxFormatted = parseFloat(calculateTax().toFixed(2));
     const shippingFormatted = parseFloat(calculateShipping().toFixed(2));
     const discountFormatted = parseFloat(calculateDiscount().toFixed(2));
+  // Determine effective payment method (paymentData may come from a direct COD flow)
+  const effectivePaymentMethod = (paymentData && (paymentData.method || paymentData.paymentMethod)) || paymentMethod;
     
-    // Validate amounts to prevent unrealistic values
-    if (total > 100000 || subtotalFormatted > 100000) {
-      toast.error('Order total exceeds maximum allowed amount', toastConfig.error);
-      return;
+    // Validate amounts to prevent unrealistic values for non-PhonePe methods
+    // PhonePe supports higher amounts, so only block for other methods
+  if (effectivePaymentMethod !== 'phonepe' && (total > 100000 || subtotalFormatted > 100000)) {
+      // Throw and let callers handle the error to avoid duplicate success/error toasts
+      throw new Error('Order total exceeds maximum allowed amount');
     }
     
     const orderData = {
@@ -262,7 +258,7 @@ const Checkout = () => {
         id: paymentData.id || 'GST-' + Date.now(), // Generate an ID if one isn't provided
         status: paymentData.status || 'pending'
       },
-      paymentMethod: paymentMethod,
+  paymentMethod: effectivePaymentMethod,
       itemsPrice: subtotalFormatted,
       taxPrice: taxFormatted,
       shippingPrice: shippingFormatted,
@@ -318,7 +314,7 @@ const Checkout = () => {
     // Submit order with our secure axios instance
     const response = await secureAxios.post('/api/orders', orderData);
 
-    if (response.data.success) {
+    if (response.data && response.data.success) {
       // If coupon was applied, record its usage
       if (coupon && coupon.code) {
         try {
@@ -334,15 +330,20 @@ const Checkout = () => {
       
       clearCart();
       setOrderPlaced(true);
+      // navigate with the actual payment method used in the order
       navigate('/order-success', { 
         state: { 
           orderId: response.data.order._id,
           total: calculateTotal(),
-          paymentMethod: paymentMethod,
+          paymentMethod: orderData.paymentMethod,
           couponApplied: coupon ? coupon.code : null
         } 
       });
+      // return the response so callers can decide on showing success
+      return response.data;
     }
+    // If not successful, throw so callers can handle the error path
+    throw new Error(response.data?.message || 'Order creation failed');
   };
 
   const StepIndicator = () => (
@@ -612,6 +613,8 @@ const Checkout = () => {
               value="cod"
               checked={paymentMethod === 'cod'}
               onChange={(e) => setPaymentMethod(e.target.value)}
+              disabled={!codAllowed}
+              title={!codAllowed ? 'COD unavailable for orders above ₹100,000. Please choose PhonePe.' : 'Cash on Delivery'}
               className="sr-only"
             />
             <div className={`w-4 h-4 ml-1 md:w-5 md:h-5 border-2 rounded-full mr-2 md:mr-3 md:ml-1 flex items-center justify-center ${
@@ -629,6 +632,11 @@ const Checkout = () => {
               <span className="text-xs md:text-sm text-gray-500">₹50 charge</span>
             </div>
           </label>
+          {!codAllowed && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+              Cash on Delivery is not available for orders above ₹{COD_MAX_AMOUNT.toLocaleString('en-IN')}. Please use PhonePe or another supported payment method.
+            </div>
+          )}
         </div>
       </div>{/* Payment Error Display */}
       {paymentError && (
@@ -705,20 +713,23 @@ const Checkout = () => {
           </div>
         ) : null}
       </div>
-        <div className="flex sm:flex-row items-center flex-col gap-3 justify-between pt-4 md:pt-6">        <button
+      <div className="flex sm:flex-row items-center flex-col gap-3 justify-between pt-4 md:pt-6">
+        <button
           type="button"
           onClick={handlePrevStep}
           className="bg-white text-gray-700 px-4 md:px-6 py-2.5 md:py-3 rounded-full text-sm md:text-base font-medium border border-gray-300 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center gap-1.5 shadow-sm w-full sm:w-auto"
         >
           <ChevronLeft className="w-3.5 h-3.5 md:w-4 md:h-4" />
           Back to Shipping
-        </button>          <button
+        </button>
+
+        <button
           type="button"
           onClick={paymentMethod === 'cod' ? handleCODOrder : handleNextStep}
-          disabled={loading}
+          disabled={loading || (paymentMethod === 'cod' && !codAllowed)}
           className={`px-4 md:px-6 py-2.5 md:py-3 rounded-full text-sm md:text-base font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center gap-1.5 shadow-md w-full sm:w-auto ${
-            paymentMethod === 'cod' 
-              ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500' 
+            paymentMethod === 'cod'
+              ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
               : paymentMethod === 'phonepe'
               ? 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500'
               : 'bg-gray-500 text-white focus:ring-gray-500'
@@ -736,12 +747,12 @@ const Checkout = () => {
             </>
           ) : paymentMethod === 'phonepe' ? (
             <>
-              <img 
-                src={phonePeIcon} 
-                alt="PhonePe" 
-                className="w-4 h-4 md:w-5 md:h-5 mr-1.5" 
+              <img
+                src={phonePeIcon}
+                alt="PhonePe"
+                className="w-4 h-4 md:w-5 md:h-5 mr-1.5"
               />
-              
+
               Continue with PhonePe
             </>
           ) : (
@@ -752,7 +763,6 @@ const Checkout = () => {
           )}
         </button>
       </div>
-
     </motion.div>
   );
 
@@ -876,7 +886,7 @@ const Checkout = () => {
             
             <button
               onClick={handleCODOrder}
-              disabled={loading}
+              disabled={loading || !codAllowed}
               className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center"
             >
               {loading ? (
@@ -1135,6 +1145,6 @@ const Checkout = () => {
     </>
   );
 
-};
+}
 
 export default Checkout;

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertTriangle, Loader } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { useCart } from '../context/CartContext';
 import API_BASE_URL, { API_ENDPOINTS } from '../config/api';
 import { logger } from '../utils/logger';
 
@@ -15,6 +16,7 @@ const PaymentStatus = () => {
   const [paymentData, setPaymentData] = useState(null);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { clearCart } = useCart();
 
   useEffect(() => {
     // Function to check payment status
@@ -66,6 +68,7 @@ const PaymentStatus = () => {
             
             logger.debug('Shipping info from localStorage:', shippingInfo);
             
+              let orderSaved = false;
               try {
               // Ensure orderId is valid
               if (!orderId) {
@@ -107,10 +110,7 @@ const PaymentStatus = () => {
                 );
 
                 logger.debug('Order saved successfully:', saveOrderResponse.data);
-                toast.success('Order placed successfully!');
-
-                // Clear cart after successful order
-                localStorage.removeItem('cart');
+                orderSaved = true;
               }
             } catch (saveOrderError) {
               logger.error('Failed to save order:', saveOrderError);
@@ -158,8 +158,7 @@ const PaymentStatus = () => {
                     );
                     
                     logger.debug('Retry successful:', retryResponse.data);
-                    toast.success('Order placed successfully!');
-                    localStorage.removeItem('cart');
+                    orderSaved = true;
                   } catch (retryError) {
                     logger.error('Retry also failed:', retryError);
                     const displayError = `Your payment was successful, but we encountered an issue saving your order. Please contact customer support with your order reference: ${orderId}`;
@@ -184,8 +183,18 @@ const PaymentStatus = () => {
               }
             }
             
-            // Clear cart after successful order
-            localStorage.removeItem('cart');
+            // If order was saved (either initial save or retry), clear cart once and notify via CartContext
+            if (orderSaved) {
+              try {
+                localStorage.removeItem('cart');
+              } catch (e) {
+                logger.error('Error removing cart from localStorage:', e);
+              }
+              // Clear cart silently (suppress CartContext toast) since we will show a single success toast here
+              try { clearCart('phonepe-order', true); } catch (e) { logger.debug('clearCart not available:', e); }
+              // Single success toast for saved orders
+              try { toast.success('Order placed successfully!'); } catch (e) { logger.debug('toast failed:', e); }
+            }
           } else {
             setStatus('failed');
           }

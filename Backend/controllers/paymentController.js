@@ -25,10 +25,8 @@ exports.createOrderPayment = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler('Invalid payment amount', 400));
     }
 
-    // Prevent unrealistically large amounts
-    if (totalAmount > 100000) { // 1 lakh in rupees
-      return next(new ErrorHandler('Payment amount exceeds maximum allowed', 400));
-    }
+    // No hard upper cap here — PhonePe can support higher amounts; production limits should
+    // be enforced via business rules or gateway configuration rather than a fixed server-side cap.
     
     // Validate shipping information
     if (!shippingInfo) {

@@ -1,5 +1,6 @@
 const Order = require('../models/order');
 const Product = require('../models/product');
+const logger = require('../utils/logger');
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const emailService = require('../utils/emailService');
@@ -17,10 +18,7 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
     totalPrice 
   } = req.body;
 
-  // Validate total price to prevent unrealistic values
-  if (totalPrice > 1000000) {
-    return next(new ErrorHandler('Invalid order total amount', 400));
-  }
+  // No hard upper cap enforced here; payment provider or business rules should control limits.
 
   // Calculate total GST based on order items
   let totalGstAmount = 0;
@@ -90,6 +88,15 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
   }
 
   const order = await Order.create(orderData);
+
+  // Reserve stock: decrement product stock immediately after order creation
+  for (const item of order.orderItems) {
+    try {
+      await updateStock(item.product, item.quantity);
+    } catch (err) {
+      logger.error(`Failed to reserve stock for product ${item.product}:`, err);
+    }
+  }
 
   // Fetch user details to get email
   const userPopulatedOrder = await Order.findById(order._id).populate('user', 'name email');
@@ -183,10 +190,6 @@ exports.updateOrder = catchAsyncErrors(async (req, res, next) => {
   if (order.orderStatus === 'Delivered') {
     return next(new ErrorHandler('You have already delivered this order', 400));
   }
-
-  order.orderItems.forEach(async item => {
-    await updateStock(item.product, item.quantity);
-  });
 
   order.orderStatus = req.body.status;
 
@@ -370,10 +373,8 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
   if (status === 'Delivered') {
     order.deliveredAt = Date.now();
     
-    // Update stock for delivered orders
-    order.orderItems.forEach(async item => {
-      await updateStock(item.product, item.quantity);
-    });
+  // Stock was reserved at order creation; no-op on Delivered to avoid double-decrement
+  // Optionally implement stock finalization logic here if needed
   }
 
   if (status === 'COD_Collected') {
@@ -474,6 +475,19 @@ exports.cancelOrder = catchAsyncErrors(async (req, res, next) => {
     timestamp: new Date(),
     updatedBy: req.user._id
   });
+
+  // Restore reserved stock for cancelled orders
+  for (const item of order.orderItems) {
+    try {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.stock = (product.stock || 0) + (item.quantity || 0);
+        await product.save({ validateBeforeSave: false });
+      }
+    } catch (err) {
+      logger.error(`Failed to restore stock for product ${item.product} on cancel:`, err);
+    }
+  }
 
   await order.save({ validateBeforeSave: false });
 
