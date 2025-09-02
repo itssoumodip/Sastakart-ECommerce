@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import googleIcon from '../../assets/google-icon.svg'
 import { GoogleLogin } from '@react-oauth/google'
+import { logger } from '../../utils/logger'
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
