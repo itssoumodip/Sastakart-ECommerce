@@ -7,6 +7,7 @@ import { API_ENDPOINTS } from '../../config/api';
 import { getAuthHeaders } from '../../utils/auth';
 import { toastConfig, formatToastMessage } from '../../utils/toastConfig';
 import toast from 'react-hot-toast';
+import { logger } from '../../utils/logger';
 
 function Dashboard() {  const defaultStats = {
     totalSales: 0,

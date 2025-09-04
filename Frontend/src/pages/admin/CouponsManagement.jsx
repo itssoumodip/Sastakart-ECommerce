@@ -20,6 +20,7 @@ import { toastConfig } from '../../utils/toastConfig';
 import { formatDate } from '../../utils/dateUtils';
 import API_BASE_URL from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
+import { logger } from '../../utils/logger';
 
 const CouponsManagement = () => {
   const [coupons, setCoupons] = useState([]);

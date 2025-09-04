@@ -5,6 +5,7 @@ import { ArrowLeft, Printer, Mail, Phone, Truck, Package, Clock, CheckCircle, Al
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { getAuthHeaders } from '../../utils/auth';
+import { logger } from '../../utils/logger';
 
 function OrderDetail() {
   const { id } = useParams();

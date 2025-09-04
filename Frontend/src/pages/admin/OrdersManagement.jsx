@@ -10,6 +10,7 @@ import { getAuthHeaders } from '../../utils/auth';
 import { useAuth } from '../../context/AuthContext';
 import { toastConfig, formatToastMessage } from '../../utils/toastConfig';
 import axios from 'axios';
+import { logger } from '../../utils/logger';
 
 function OrdersManagement() {
   const navigate = useNavigate();

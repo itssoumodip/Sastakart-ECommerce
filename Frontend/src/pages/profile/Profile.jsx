@@ -27,6 +27,7 @@ import {
   LogOut,
   AlertCircle
 } from 'lucide-react';
+import { logger } from '../../utils/logger';
 
 const Profile = () => {
   const { user, updateUser, logout, loadUser } = useAuth();

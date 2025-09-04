@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, X, Upload, Package, Save, Eye, Trash2, Edit3, Shopping
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { getAuthToken, getAuthHeaders } from '../../utils/auth';
+import { logger } from '../../utils/logger';
 
 function ProductForm() {
   const { id } = useParams();

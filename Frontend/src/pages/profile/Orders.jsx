@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
+import { logger } from '../../utils/logger';
 
 const Orders = () => {
   const navigate = useNavigate();

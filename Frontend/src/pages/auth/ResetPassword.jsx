@@ -1,11 +1,12 @@
-import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
-import { Helmet } from 'react-helmet-async'
-import { Eye, EyeOff } from 'lucide-react'
-import axios from 'axios'
-import toast from 'react-hot-toast'
-import { motion } from 'framer-motion'
+import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { Helmet } from 'react-helmet-async';
+import { Eye, EyeOff } from 'lucide-react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import { logger } from '../../utils/logger';
 
 const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false)

@@ -18,6 +18,7 @@ import { getAuthHeaders } from '../../utils/auth';
 import API_BASE_URL, { API_ENDPOINTS } from '../../config/api';
 import LoadingSpinner from '../common/LoadingSpinner';
 import toast from 'react-hot-toast';
+import { logger } from '../../utils/logger';
 
 const DestinationsManagement = () => {
   const [destinations, setDestinations] = useState([]);

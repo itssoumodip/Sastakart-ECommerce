@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
+import { logger } from '../../utils/logger';
 
 function CODManagement() {
   const [codOrders, setCodOrders] = useState([]);

@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api';
 import { getAuthHeaders } from '../../utils/auth';
+import { logger } from '../../utils/logger';
 
 function UsersManagement() {
   const [users, setUsers] = useState([]);

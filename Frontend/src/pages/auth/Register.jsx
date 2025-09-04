@@ -11,6 +11,7 @@ import toast from 'react-hot-toast'
 import googleIcon from '../../assets/google-icon.svg'
 import { toastConfig, formatToastMessage } from '../../utils/toastConfig'
 import { GoogleLogin } from '@react-oauth/google'
+import { logger } from '../../utils/logger';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false)

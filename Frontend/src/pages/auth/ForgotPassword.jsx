@@ -6,6 +6,7 @@ import { Mail } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
+import { logger } from '../../utils/logger';
 
 const ForgotPassword = () => {
   const [isSubmitted, setIsSubmitted] = useState(false)

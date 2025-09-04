@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api';
 import { getAuthToken, getAuthHeaders } from '../../utils/auth';
+import { logger } from '../../utils/logger';
 
 function ProductsManagement() {
   const [products, setProducts] = useState([]);
