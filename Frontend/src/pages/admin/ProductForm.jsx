@@ -8,6 +8,14 @@ import toast from 'react-hot-toast';
 import { getAuthToken, getAuthHeaders } from '../../utils/auth';
 import { logger } from '../../utils/logger';
 
+// Ensure logger is available - use console as fallback if not
+const safeLogger = logger || {
+  log: console.log,
+  error: console.error,
+  warn: console.warn,
+  debug: console.debug
+};
+
 function ProductForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -135,7 +143,7 @@ function ProductForm() {
           setValue('features', product.features?.join(', '));
           setUploadedImages(product.images || []);
         } catch (error) {
-          logger.error('Error fetching product details:', error);
+          safeLogger.error('Error fetching product details:', error);
           toast.error('Failed to load product details');
           navigate('/admin/products');
         } finally {
@@ -176,6 +184,7 @@ function ProductForm() {
         })
       );
 
+      safeLogger.debug('Uploading images to server...');
       // Upload to server
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/products/upload`, {
         method: 'POST',
@@ -188,15 +197,15 @@ function ProductForm() {
       });
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to upload images');
+        const errorData = await response.json().catch(() => ({ message: 'Failed to upload images' }));
+        throw new Error(errorData.message || `Server error: ${response.status}`);
       }
       
       const data = await response.json();
       setUploadedImages(prev => [...prev, ...data.images]);
       toast.success('Images uploaded successfully!');
     } catch (error) {
-      logger.error('Error uploading images:', error);
+      safeLogger.error('Error uploading images:', error);
       toast.error(error.message || 'Failed to upload images');
     } finally {
       setLoading(false);
@@ -251,13 +260,13 @@ function ProductForm() {
         images: uploadedImages
       };
       
-      logger.debug('Submitting product data:', productData);
+      safeLogger.debug('Submitting product data:', productData);
 
       const url = isEditMode 
         ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}`
         : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`;      // Get and log the auth token to ensure it's available
       const token = getAuthToken();
-      logger.debug('Using auth token:', token ? 'present' : 'missing');
+      safeLogger.debug('Using auth token:', token ? 'present' : 'missing');
       
       const response = await fetch(url, {
         method: isEditMode ? 'PUT' : 'POST',
@@ -270,14 +279,14 @@ function ProductForm() {
         body: JSON.stringify(productData)
       });      if (!response.ok) {
         const errorData = await response.json();
-        logger.error('Server error response:', errorData);
+        safeLogger.error('Server error response:', errorData);
         throw new Error(errorData.message || 'Failed to save product');
       }
 
       toast.success(`Product ${isEditMode ? 'updated' : 'created'} successfully`);
       navigate('/admin/products');
     } catch (error) {
-      logger.error('Error saving product:', error);
+      safeLogger.error('Error saving product:', error);
       toast.error(error.message || 'Failed to save product');
     } finally {
       setLoading(false);
@@ -287,7 +296,7 @@ function ProductForm() {
   const testAuth = async () => {
     try {
       const token = getAuthToken();
-      logger.debug('Testing auth with token:', !!token);
+      // Debug logging removed
       
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/test`, {
         method: 'GET',
@@ -299,7 +308,7 @@ function ProductForm() {
       });
       
       const data = await response.json();
-      logger.debug('Auth test response:', data);
+      // Debug logging removed
       
       if (response.ok) {
         toast.success(`Auth working! User: ${data.user.email} (${data.user.role})`);
@@ -307,7 +316,7 @@ function ProductForm() {
         toast.error(`Auth failed: ${data.message}`);
       }
     } catch (error) {
-      logger.error('Auth test error:', error);
+      console.error('Auth test error:', error);
       toast.error('Auth test failed');
     }
   };
@@ -334,7 +343,7 @@ function ProductForm() {
       toast.success('Product deleted successfully');
       navigate('/admin/products');
     } catch (error) {
-      logger.error('Error deleting product:', error);
+      console.error('Error deleting product:', error);
       toast.error(error.message || 'Failed to delete product');
     } finally {
       setLoading(false);
@@ -342,17 +351,17 @@ function ProductForm() {
   };
   useEffect(() => {
     if (currentCategory) {
-      logger.debug('Current Category:', currentCategory);
-      logger.debug('Available subcategories:', Object.keys(categoryTree[currentCategory] || {}));
+      // Debug logging removed
+      // Debug logging removed
     }
   }, [currentCategory]);
   
   useEffect(() => {
     if (currentCategory && currentSubcategory) {
-      logger.debug('Current Subcategory:', currentSubcategory);
-      logger.debug('Available product types:', categoryTree[currentCategory]?.[currentSubcategory] || []);
-      logger.debug('Product types array?', Array.isArray(categoryTree[currentCategory]?.[currentSubcategory]));
-      logger.debug('Full category tree structure:', categoryTree);
+      // Debug logging removed
+      // Debug logging removed
+      // Debug logging removed
+      // Debug logging removed
     }
   }, [currentCategory, currentSubcategory]);
 
@@ -706,7 +715,7 @@ function ProductForm() {
                           // Reset subcategory and product type when category changes
                           setValue('subcategory', '');
                           setValue('productType', '');
-                          logger.debug('Category changed to:', e.target.value);
+                          // Debug logging removed
                         }
                       })}
                       className="input"
@@ -730,8 +739,8 @@ function ProductForm() {
                           onChange: (e) => {
                             // Reset product type when subcategory changes
                             setValue('productType', '');
-                            logger.debug('Subcategory changed to:', e.target.value);
-                            logger.debug('Product types available:', categoryTree[currentCategory]?.[e.target.value] || []);
+                            // Debug logging removed
+                            // Debug logging removed
                           }
                         })}
                         className="input"

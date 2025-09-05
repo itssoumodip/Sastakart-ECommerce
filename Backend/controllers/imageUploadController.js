@@ -1,6 +1,7 @@
 const cloudinary = require('../utils/cloudinary');
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
+const logger = require('../utils/logger');
 
 // Test authentication => /api/upload/test
 exports.testAuth = catchAsyncErrors(async (req, res, next) => {
