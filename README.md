@@ -429,9 +429,3 @@ Admin pages live in `Frontend/src/pages/admin/` and corresponding API routes are
 ## Contributing
 
 Fork, branch, test, and open a PR. Keep changes small and focused.
-
----
-
-If you'd like, I can now:
-- run the backend + frontend locally and smoke-test the PhonePe save-order flow (verify DB stock decrement and cart clearing), or
-- add a short troubleshooting section documenting common runtime errors (PhonePe checksum failures, SMTP issues, MongoDB auth problems).
